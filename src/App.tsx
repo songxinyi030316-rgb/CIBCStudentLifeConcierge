@@ -127,7 +127,7 @@ const familyMembers: FamilyMember[] = [
 
 const navItems: { route: Route; label: string; icon: LucideIcon }[] = [
   { route: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { route: "ai", label: "Opportunity Detector", icon: Sparkles },
+  { route: "ai", label: "Life Stage Engine", icon: Sparkles },
   { route: "planning", label: "Family Status", icon: Gauge },
   { route: "investments", label: "Goal Evaluator", icon: PiggyBank },
   { route: "family", label: "Family Admin", icon: UsersRound },
@@ -405,8 +405,8 @@ const tasks = [
 
 const featureCards: { title: string; text: string; icon: LucideIcon }[] = [
   {
-    title: "Family Opportunity Detector",
-    text: "Detect age-based family moments that can naturally route members toward relevant CIBC support.",
+    title: "Life Stage Engine",
+    text: "Detect upcoming family milestones and route them to the right FamilyOS module or CIBC support.",
     icon: Sparkles
   },
   {
@@ -503,6 +503,85 @@ const youthLifecyclePath = [
   ["Age 16", "First job readiness", "Payroll deposit, budgeting, tax basics, spending alerts"],
   ["Age 18", "Student banking transition", "Own account, consent reset, credit education, RESP withdrawals"],
   ["Age 21-25", "Independent financial life", "Credit building, emergency reserve, TFSA education, first investing"]
+] as const;
+
+const engineSignals = [
+  ["Ages", "Emma 17, Ethan 11, Grace 72"],
+  ["Relationships", "Parents, child, elder parent"],
+  ["Goals", "Education, housing, caregiving, legacy"],
+  ["Accounts", "RESP, mortgage, cards, TFSA, RRSP"],
+  ["Permissions", "Caregiver mode and view-only sharing"],
+  ["Events", "University, free trials, renewal, care alerts"]
+] as const;
+
+const engineMilestones = [
+  {
+    category: "University transition",
+    member: "Emma Chen",
+    when: "Next 10 months",
+    trigger: "Emma turns 18 before university starts.",
+    nextAction: "Review RESP withdrawal planning, rent budgeting, student banking, and account ownership.",
+    module: "Education Planner",
+    route: "education" as Route,
+    cibcPathway: "Student banking + RESP planning",
+    confidence: "High",
+    icon: GraduationCap,
+    image: educationImage,
+    imageAlt: "Student and parent planning university banking and RESP timing"
+  },
+  {
+    category: "Teen money habits",
+    member: "Ethan Chen",
+    when: "Now",
+    trigger: "Ethan is at an age where families often introduce allowance tracking and savings goals.",
+    nextAction: "Create a parent-guided money habit plan that can later lead into youth banking.",
+    module: "Education Planner",
+    route: "education" as Route,
+    cibcPathway: "Youth savings habits",
+    confidence: "Medium",
+    icon: PiggyBank,
+    image: educationImage,
+    imageAlt: "Family education planning illustration"
+  },
+  {
+    category: "Caregiving",
+    member: "Grace Chen",
+    when: "This quarter",
+    trigger: "Grace has rising care spending and permissioned caregiver support.",
+    nextAction: "Review care permissions, unusual activity alerts, approved bill payment, and POA readiness.",
+    module: "Caregiving Mode",
+    route: "caregiving" as Route,
+    cibcPathway: "Trusted access + fraud alerts",
+    confidence: "Medium",
+    icon: HeartPulse,
+    image: caregivingImage,
+    imageAlt: "Caregiving support planning illustration"
+  },
+  {
+    category: "Homeownership",
+    member: "Alex & Jamie",
+    when: "14 months",
+    trigger: "Mortgage renewal is approaching while education and caregiving costs are active.",
+    nextAction: "Review the housing plan, renewal readiness, HELOC use, and advisor conversation timing.",
+    module: "Housing Hub",
+    route: "housing" as Route,
+    cibcPathway: "Mortgage renewal planning",
+    confidence: "High",
+    icon: Home,
+    image: onboardingImage,
+    imageAlt: "Family reviewing home and milestone planning"
+  }
+] as const;
+
+const actionAreas = [
+  ["Education Planner", "Triggered by university, school, first job, and account ownership milestones.", "Emma age-18 transition", "education"],
+  ["Housing Hub", "Triggered by homeownership and mortgage renewal milestones.", "Mortgage renewal", "housing"],
+  ["Caregiving Mode", "Triggered by elder support, unusual activity, and trusted-access needs.", "Grace care support", "caregiving"],
+  ["Goal Evaluator", "Triggered when milestone timing needs savings, GIC, liquidity, or advisor comparison.", "RESP and reserves", "investments"],
+  ["Subscription Control", "Triggered by recurring payments, free trials, and shared family cards.", "Trials ending", "subscriptions"],
+  ["Protection", "Triggered by dependents, mortgage balance, caregiving, and beneficiary review.", "Coverage review", "protection"],
+  ["Documents", "Triggered by university leases, POA, wills, insurance, and property documents.", "POA readiness", "documents"],
+  ["Permissions", "Triggered by age 18, caregiving access, shared accounts, and emergency access.", "Consent review", "permissions"]
 ] as const;
 
 const gicRates = {
@@ -1236,20 +1315,22 @@ function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
     <main className="family-dashboard">
       <section className="priority-banner">
         <div>
-          <span>Family Opportunity Detector</span>
-          <h2>FamilyOS found 4 moments where CIBC can help</h2>
+          <span>Life Stage Engine</span>
+          <h2>Here is what your family should prepare for next</h2>
           <p>
-            This is not a separate replacement product. It detects family opportunities and routes members toward
-            existing CIBC tools, accounts, products, and advisor support at the right moment.
+            FamilyOS reviews family ages, goals, accounts, permissions, and events to detect the next financial
+            milestone before the family has to ask.
           </p>
           <button className="primary-button compact" onClick={() => onNavigate("ai")}>
-            View detected opportunities
+            Open Life Stage Engine
           </button>
         </div>
         <div className="priority-visual">
           <img src={onboardingImage} alt="Family reviewing financial priorities together" />
         </div>
       </section>
+
+      <MilestoneEngineSummary onNavigate={onNavigate} />
 
       <LifeStageMap onNavigate={onNavigate} />
 
@@ -1469,7 +1550,7 @@ function PlanningPage({
 
 function PlanningOverview({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const cards = [
-    ["Family opportunities", "Action Recommended", "Emma turns 18 before university; Ethan is ready for money habits.", "Open Opportunity Detector", "ai"],
+    ["Family milestones", "Action Recommended", "Emma turns 18 before university; Ethan is ready for money habits.", "Open Life Stage Engine", "ai"],
     ["Education", "Needs Review", "RESP path may fall short by $7,800.", "Open Education Plan", "education"],
     ["Housing", "On Track", "Mortgage renewal preparation starts in 8 months.", "Open Housing Plan", "housing"],
     ["Subscriptions", "Action Recommended", "Two trials convert to paid plans this week.", "Manage Subscriptions", "subscriptions"],
@@ -1481,7 +1562,7 @@ function PlanningOverview({ onNavigate }: { onNavigate: (route: Route) => void }
     <main className="module-page planning-overview">
       <div className="section-heading">
         <h2>Family Status Overview</h2>
-        <p>Layer 2 summarizes the household's current responsibilities after Opportunity Detector identifies what is coming next.</p>
+        <p>Layer 2 summarizes the household's current responsibilities after Life Stage Engine identifies what is coming next.</p>
       </div>
       <FamilyStatusVisual />
       <div className="planning-card-grid">
@@ -2430,53 +2511,73 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   return (
     <ModulePage
       icon={Sparkles}
-      kicker="Family Opportunity Detector"
-      title="What should this family prepare for next?"
-      summary="FamilyOS looks for family moments such as school, first job, age 18, caregiving, and retirement, then points the family toward relevant CIBC support."
-      insight="FamilyOS is an opportunity detector, not a replacement financial product. It explains the moment, why it matters, and where CIBC can help."
+      kicker="Life Stage Engine"
+      title="What milestone is coming next?"
+      summary="FamilyOS reviews each family member's life stage, relationships, goals, accounts, permissions, and upcoming events to detect the next financial moment."
+      insight="Families often miss opportunities not because CIBC products do not exist, but because they do not know the right moment to act."
     >
       <section className="detector-intro">
         <div>
-          <span>Plain-language flow</span>
-          <h2>Detect a moment. Explain it. Connect to CIBC.</h2>
+          <span>Family milestone engine</span>
+          <h2>Detect the next milestone. Route to the right action area.</h2>
           <blockquote>
             CIBC FamilyOS doesn&rsquo;t wait for families to ask the right questions&mdash;it helps them discover what
             matters next.
           </blockquote>
           <p>
-            The page is intentionally simple: first show the most important opportunities, then show the family timeline,
-            then show the transparent AI details for anyone who wants to inspect the reasoning.
+            It does not replace existing CIBC tools. It connects life moments to Education, Housing, Caregiving,
+            Investments, Subscription Control, Protection, Documents, Permissions, and advisor prompts.
           </p>
         </div>
-        <div className="detector-flow">
-          {[
-            ["1", "Detect", "Emma is turning 18 before university."],
-            ["2", "Explain", "This is when student banking and account ownership become relevant."],
-            ["3", "Connect", "Open the education plan or route to CIBC support."]
-          ].map(([step, title, text]) => (
-            <article key={title}>
-              <span>{step}</span>
-              <strong>{title}</strong>
-              <p>{text}</p>
-            </article>
-          ))}
+        <div className="detector-visual-stack">
+          <img src={onboardingImage} alt="Family reviewing milestones and financial next steps together" />
+          <div className="detector-flow">
+            {[
+              ["1", "Review context", "Ages, roles, goals, accounts, permissions, and upcoming events."],
+              ["2", "Find milestone", "Emma turns 18, Ethan builds habits, Grace needs care support."],
+              ["3", "Route action", "Open the right module or suggest a CIBC product/advisor pathway."]
+            ].map(([step, title, text]) => (
+              <article key={title}>
+                <span>{step}</span>
+                <strong>{title}</strong>
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
-      <Panel title="Start Here: 3 Opportunities">
-        <div className="priority-moment-grid">
-          {lifeStageMoments.slice(0, 3).map(({ member, timing, stage, recommendation, pathway, cta, route, icon: Icon }, index) => (
-            <article className={index === 1 ? "priority" : ""} key={member}>
+      <Panel title="What The Engine Reviews">
+        <div className="engine-signal-grid">
+          {engineSignals.map(([label, value]) => (
+            <article key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Upcoming Family Milestones">
+        <div className="milestone-card-grid">
+          {engineMilestones.map(({ category, member, when, trigger, nextAction, module, route, cibcPathway, confidence, icon: Icon, image, imageAlt }, index) => (
+            <article className={index === 0 ? "priority" : ""} key={category}>
+              <img className="milestone-image" src={image} alt={imageAlt} />
               <div className="priority-moment-top">
-                <span>{timing}</span>
+                <span>{when}</span>
                 <Icon size={20} />
               </div>
-              <h3>{member}</h3>
-              <strong>{stage}</strong>
-              <p>{recommendation}</p>
-              <small>{pathway}</small>
-              <button className={index === 1 ? "primary-button compact" : "secondary-button compact"} onClick={() => onNavigate(route)}>
-                {cta}
+              <h3>{category}</h3>
+              <strong>{member}</strong>
+              <p>{trigger}</p>
+              <em>{nextAction}</em>
+              <div className="milestone-route-row">
+                <span>FamilyOS: {module}</span>
+                <span>CIBC: {cibcPathway}</span>
+                <span>Confidence: {confidence}</span>
+              </div>
+              <button className={index === 0 ? "primary-button compact" : "secondary-button compact"} onClick={() => onNavigate(route)}>
+                Open {module}
               </button>
             </article>
           ))}
@@ -2484,6 +2585,22 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
       </Panel>
 
       <LifeStageMap onNavigate={onNavigate} />
+
+      <Panel title="Connected Action Areas">
+        <p className="panel-lede">
+          Existing modules become action areas triggered by the Life Stage Engine, not separate destinations users have
+          to discover on their own.
+        </p>
+        <div className="action-area-grid">
+          {actionAreas.map(([area, description, trigger, route]) => (
+            <button key={area} onClick={() => onNavigate(route as Route)}>
+              <span>{trigger}</span>
+              <strong>{area}</strong>
+              <p>{description}</p>
+            </button>
+          ))}
+        </div>
+      </Panel>
 
       <Panel title="Child-to-CIBC Journey">
         <p className="panel-lede">
@@ -2528,7 +2645,7 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </Panel>
       </div>
 
-      <Panel title="Transparent AI Details">
+      <Panel title="Educational, Consent-Aware Recommendations">
         <div className="insight-page-grid simplified">
           {simplifiedInsights.map((insight) => (
             <article className="insight-card" key={insight.title}>
@@ -2979,14 +3096,43 @@ function CheckLine({ children }: { children: ReactNode }) {
   );
 }
 
+function MilestoneEngineSummary({ onNavigate }: { onNavigate: (route: Route) => void }) {
+  const topMilestone = engineMilestones[0];
+  return (
+    <section className="engine-summary">
+      <div className="engine-summary-main">
+        <div className="engine-badge">
+          <Sparkles size={22} />
+        </div>
+        <div>
+          <span>Life Stage Engine</span>
+          <h2>One proactive layer connects every FamilyOS module.</h2>
+          <p>
+            The engine looks across ages, relationships, goals, CIBC accounts, permissions, and upcoming events, then
+            turns them into clear next best actions.
+          </p>
+        </div>
+      </div>
+      <div className="engine-summary-action">
+        <span>Top detected milestone</span>
+        <strong>{topMilestone.member}: {topMilestone.category}</strong>
+        <p>{topMilestone.nextAction}</p>
+        <button className="secondary-button compact" onClick={() => onNavigate(topMilestone.route)}>
+          Open {topMilestone.module}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function FamilyOSLayerMap({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const layers: Array<{ title: string; label: string; route: Route; icon: LucideIcon; items: string[] }> = [
     {
       title: "Layer 1",
-      label: "Opportunity Detector",
+      label: "Life Stage Engine",
       route: "ai",
       icon: Sparkles,
-      items: ["Ages", "Milestones", "Eligibility", "Next-best moments"]
+      items: ["Ages", "Goals", "Accounts", "Permissions", "Milestones"]
     },
     {
       title: "Layer 2",
@@ -3015,7 +3161,7 @@ function FamilyOSLayerMap({ onNavigate }: { onNavigate: (route: Route) => void }
     <section className="visual-panel">
       <div className="section-heading">
         <h2>How FamilyOS Thinks</h2>
-        <p>A layered model that detects household opportunities and routes them into existing CIBC pathways.</p>
+        <p>A layered model where the Life Stage Engine detects the next milestone, then routes to the right action area.</p>
       </div>
       <div className="layer-map">
         {layers.map(({ title, label, route, icon: Icon, items }) => (
@@ -3037,7 +3183,7 @@ function LifeStageMap({ onNavigate }: { onNavigate: (route: Route) => void }) {
   return (
     <section className="visual-panel life-stage-panel">
       <div className="section-heading">
-        <h2>Family Opportunity Timeline</h2>
+        <h2>Family Milestone Timeline</h2>
         <p>
           A simple timeline of who needs attention now, what is coming next, and how CIBC can help.
         </p>
@@ -3144,7 +3290,7 @@ function AIProductRoutingMap() {
   return (
     <section className="visual-panel">
       <div className="section-heading">
-        <h2>From Family Opportunity to CIBC Pathway</h2>
+        <h2>From Family Milestone to CIBC Pathway</h2>
         <p>The assistant stays educational: it detects eligibility moments and routes to existing CIBC support.</p>
       </div>
       <div className="routing-map">
@@ -3246,8 +3392,8 @@ function DataTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
 function routeTitle(route: Route) {
   const titles: Partial<Record<Route, string>> = {
     overview: "Dashboard",
-    insights: "Opportunity Detector",
-    ai: "Opportunity Detector"
+    insights: "Life Stage Engine",
+    ai: "Life Stage Engine"
   };
   return titles[route] ?? navItems.find((item) => item.route === route)?.label ?? "Dashboard";
 }
