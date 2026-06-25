@@ -73,6 +73,46 @@ type PlanningSubRoute =
   | "protection"
   | "legacy";
 
+type Opportunity = {
+  title: string;
+  why: string;
+  action: string;
+  support: string;
+  type: "Learn" | "Plan" | "Review" | "Book advisor";
+  confidence: "High" | "Medium";
+  consent: string;
+  route: Route;
+};
+
+type LifeStage = {
+  stage: string;
+  appliesTo: string;
+  trigger: string;
+  why: string;
+  risks: string[];
+  products: string[];
+  nextActions: string[];
+  advisor: boolean;
+  opportunities: Opportunity[];
+};
+
+type RoadmapItem = {
+  title: string;
+  timing: string;
+  action: string;
+  route: Route;
+};
+
+type MemberRoadmap = {
+  member: string;
+  age: string;
+  role: string;
+  focus: string;
+  image: string;
+  route: Route;
+  roadmap: RoadmapItem[];
+};
+
 type FamilyMember = {
   name: string;
   relationship: string;
@@ -583,6 +623,856 @@ const actionAreas = [
   ["Documents", "Triggered by university leases, POA, wills, insurance, and property documents.", "POA readiness", "documents"],
   ["Permissions", "Triggered by age 18, caregiving access, shared accounts, and emergency access.", "Consent review", "permissions"]
 ] as const;
+
+const lifeStageKnowledgeBase: LifeStage[] = [
+  {
+    stage: "Age 0-2: Newborn & Early Family Setup",
+    appliesTo: "New parents and newborn children",
+    trigger: "A new child joins the household and family cash flow changes.",
+    why: "Early setup creates more time for education savings, protection planning, and family document readiness.",
+    risks: ["Education savings delayed", "Beneficiaries not updated", "Emergency fund no longer sized for dependents"],
+    products: ["RESP", "Family protection review", "CIBC advisor meeting", "Document vault"],
+    nextActions: ["Open education goal", "Review protection", "Add beneficiary reminder"],
+    advisor: true,
+    opportunities: [
+      {
+        title: "Start or Review RESP Contributions",
+        why: "Starting early gives the family more time to save for education and use available government grants.",
+        action: "Review education savings target and contribution rhythm.",
+        support: "RESP, education savings advice, advisor meeting",
+        type: "Plan",
+        confidence: "High",
+        consent: "No child account access required.",
+        route: "education"
+      },
+      {
+        title: "Family Protection Review",
+        why: "A new dependent can change insurance and emergency cash needs.",
+        action: "Review life, disability, and critical illness coverage with a CIBC advisor.",
+        support: "Protection review, advisor conversation",
+        type: "Book advisor",
+        confidence: "Medium",
+        consent: "Uses household goal context, not private medical details.",
+        route: "protection"
+      },
+      {
+        title: "Beneficiary Update Reminder",
+        why: "Beneficiary and estate documents often lag behind family changes.",
+        action: "Add a beneficiary review task and upload relevant documents.",
+        support: "Documents Vault, Wealth & Legacy checklist",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Document sharing remains controlled by the owner.",
+        route: "documents"
+      },
+      {
+        title: "Child Benefit Cash Flow Plan",
+        why: "New benefits and new expenses can change the monthly budget.",
+        action: "Create a family cash flow category for child benefits, childcare, and savings.",
+        support: "Cash flow planning, savings account",
+        type: "Plan",
+        confidence: "Medium",
+        consent: "Uses household-level planning categories only.",
+        route: "cashflow"
+      }
+    ]
+  },
+  {
+    stage: "Age 3-5: Early Childhood",
+    appliesTo: "Preschool children and parents managing childcare",
+    trigger: "Childcare, school preparation, and family budget needs become more predictable.",
+    why: "Families can adjust education savings and monthly cash flow before school costs arrive.",
+    risks: ["Childcare costs crowd out savings", "Education target becomes stale", "Protection needs not revisited"],
+    products: ["RESP", "Budgeting support", "Insurance review", "Advisor check-in"],
+    nextActions: ["Update education target", "Review childcare budget", "Check coverage"],
+    advisor: false,
+    opportunities: [
+      {
+        title: "RESP Progress Check",
+        why: "A small annual check helps families stay aligned with the education goal.",
+        action: "Compare current RESP rhythm with the family education target.",
+        support: "RESP, education goal tracking",
+        type: "Review",
+        confidence: "High",
+        consent: "Uses verified RESP balance where available.",
+        route: "education"
+      },
+      {
+        title: "Childcare Cost Planning",
+        why: "Childcare costs can be one of the largest temporary household expenses.",
+        action: "Build a childcare category into the family cash flow view.",
+        support: "Cash flow planner, savings buffer",
+        type: "Plan",
+        confidence: "Medium",
+        consent: "Uses categories, not itemized private transactions.",
+        route: "cashflow"
+      },
+      {
+        title: "Early Money Habit Introduction",
+        why: "Simple save, share, and spend conversations can start before a child has an account.",
+        action: "Create a parent-guided habit prompt for small family goals.",
+        support: "Family goal coaching, savings goal",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "No child account is opened automatically.",
+        route: "education"
+      },
+      {
+        title: "Insurance Coverage Review",
+        why: "Coverage may need to reflect childcare, mortgage, and family dependency needs.",
+        action: "Review coverage assumptions and beneficiary information.",
+        support: "Insurance & Protection, advisor review",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Recommendation is informational only.",
+        route: "protection"
+      }
+    ]
+  },
+  {
+    stage: "Age 6-11: Primary School",
+    appliesTo: "Ethan Chen and school-age children",
+    trigger: "Children begin handling small choices, school expenses, and goal-setting conversations.",
+    why: "This is a gentle window to build savings habits before teen spending begins.",
+    risks: ["Money habits start late", "RESP is not reviewed", "Parents miss teaching moments"],
+    products: ["Savings goals", "RESP tracking", "Family financial literacy prompts"],
+    nextActions: ["Start savings goal", "Set allowance rhythm", "Review RESP progress"],
+    advisor: false,
+    opportunities: [
+      {
+        title: "Basic Savings Goal",
+        why: "A simple goal teaches progress, patience, and trade-offs.",
+        action: "Create a parent-guided savings goal for Ethan.",
+        support: "Savings goal, family coaching prompt",
+        type: "Plan",
+        confidence: "High",
+        consent: "Parent-guided only; no independent account access required.",
+        route: "education"
+      },
+      {
+        title: "Allowance Rhythm",
+        why: "A consistent rhythm makes spending and saving easier to discuss.",
+        action: "Set a weekly or monthly allowance prompt and savings split.",
+        support: "Family cash flow, savings habit",
+        type: "Plan",
+        confidence: "Medium",
+        consent: "No transaction visibility is shared with the child.",
+        route: "cashflow"
+      },
+      {
+        title: "RESP Progress Tracking",
+        why: "Primary school is a good checkpoint before high school costs and university planning accelerate.",
+        action: "Review RESP balance, contribution rhythm, and education assumptions.",
+        support: "RESP, Education Planner",
+        type: "Review",
+        confidence: "High",
+        consent: "Uses verified CIBC RESP data if permissioned.",
+        route: "education"
+      },
+      {
+        title: "Parent-Guided Spending Reflection",
+        why: "Families can discuss spending choices before a teen card is needed.",
+        action: "Create a monthly reflection prompt for spend, save, and give choices.",
+        support: "Family financial literacy, goal coaching",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Educational prompt only.",
+        route: "education"
+      }
+    ]
+  },
+  {
+    stage: "Age 12-15: Pre-Teen Money Skills",
+    appliesTo: "Pre-teens preparing for more independent spending",
+    trigger: "The child may start making more digital purchases and asking for more financial independence.",
+    why: "Families can introduce supervised habits before first job income or credit conversations.",
+    risks: ["Unsupervised digital spending", "Subscription awareness is weak", "Savings goals are unclear"],
+    products: ["Spending alerts", "Savings goals", "Subscription Control", "Digital banking education"],
+    nextActions: ["Create spending guardrails", "Introduce digital banking basics", "Review subscriptions"],
+    advisor: false,
+    opportunities: [
+      {
+        title: "Supervised Debit Habits",
+        why: "Pre-teens can learn payment basics with parent-guided guardrails.",
+        action: "Discuss supervised spending rules and alert preferences.",
+        support: "Spending alerts, youth banking education",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Parent supervision depends on account ownership and permission.",
+        route: "permissions"
+      },
+      {
+        title: "Savings Goal Tracking",
+        why: "Visible progress helps make saving feel concrete.",
+        action: "Link a savings goal to a school, hobby, or family milestone.",
+        support: "Savings goal, FamilyOS goal tracking",
+        type: "Plan",
+        confidence: "High",
+        consent: "Goal visibility is family-controlled.",
+        route: "education"
+      },
+      {
+        title: "Family Subscription Awareness",
+        why: "Teen digital services often create recurring charges parents miss.",
+        action: "Review family subscriptions and set trial alerts.",
+        support: "Subscription Control, card alerts",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Visibility depends on card ownership and sharing permissions.",
+        route: "subscriptions"
+      },
+      {
+        title: "Responsible Spending Discussion",
+        why: "A short family conversation can prevent avoidable overdraft, impulse spending, or hidden subscriptions.",
+        action: "Use a guided conversation checklist before more independent spending.",
+        support: "Financial literacy prompts",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Educational only; no account change is made.",
+        route: "education"
+      }
+    ]
+  },
+  {
+    stage: "Age 16-17: First Job / Teen Income",
+    appliesTo: "Teens with part-time work or summer income",
+    trigger: "First income creates a natural moment to introduce banking routines.",
+    why: "Direct deposit, tax basics, and automated savings can make CIBC useful before adulthood.",
+    risks: ["Income is spent without a plan", "Tax basics are missed", "Savings automation starts late"],
+    products: ["Student account review", "Direct deposit", "Savings automation", "Spending alerts"],
+    nextActions: ["Set income split", "Review student account", "Add tax basics reminder"],
+    advisor: false,
+    opportunities: [
+      {
+        title: "Direct Deposit Setup",
+        why: "First paycheques are a natural reason to introduce daily banking.",
+        action: "Prepare direct deposit details and income categories.",
+        support: "Student banking, direct deposit setup",
+        type: "Plan",
+        confidence: "High",
+        consent: "Teen account setup requires appropriate ownership and consent.",
+        route: "education"
+      },
+      {
+        title: "First Income Budgeting",
+        why: "A simple split between spend, save, and future goals creates healthy routines.",
+        action: "Create a first-income allocation plan.",
+        support: "Budgeting tools, savings automation",
+        type: "Plan",
+        confidence: "High",
+        consent: "Educational recommendation only.",
+        route: "cashflow"
+      },
+      {
+        title: "Tax Basics Education",
+        why: "Teens with income may need help understanding slips, filing, and refunds.",
+        action: "Add a tax-season preparation reminder.",
+        support: "Financial literacy prompt, documents vault",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Does not provide tax advice.",
+        route: "documents"
+      },
+      {
+        title: "Spending Alerts",
+        why: "Alerts can help teens and parents catch overspending early.",
+        action: "Review alert preferences and privacy settings.",
+        support: "Card alerts, permissions",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Alerts depend on account owner consent.",
+        route: "permissions"
+      }
+    ]
+  },
+  {
+    stage: "Age 17-18: University Transition",
+    appliesTo: "Emma Chen",
+    trigger: "Emma is 17 and university is expected within the next 12 months.",
+    why: "Tuition, rent, RESP withdrawals, banking, credit education, and parent support converge at once.",
+    risks: ["RESP withdrawal timing missed", "Rent budget incomplete", "Student banking starts too late"],
+    products: ["RESP", "Student banking", "Budgeting tools", "Advisor meeting"],
+    nextActions: ["Review RESP withdrawal plan", "Estimate tuition and rent", "Discuss credit-building"],
+    advisor: true,
+    opportunities: [
+      {
+        title: "RESP Withdrawal Planning",
+        why: "RESP withdrawals should be planned before first-year tuition and living costs arrive.",
+        action: "Review withdrawal timing, education cost assumptions, and documentation.",
+        support: "RESP, education savings advice, advisor meeting",
+        type: "Review",
+        confidence: "High",
+        consent: "Uses verified RESP context and education goal data.",
+        route: "education"
+      },
+      {
+        title: "Rent and Living Cost Budget",
+        why: "Rent, food, books, and transit can create a gap even when tuition is planned.",
+        action: "Build Emma's first-year living expense budget.",
+        support: "Education Planner, parent support transfer planning",
+        type: "Plan",
+        confidence: "High",
+        consent: "Student sharing preferences should be reviewed.",
+        route: "education"
+      },
+      {
+        title: "Student Banking Setup",
+        why: "The transition to university is a strong moment to introduce Emma to CIBC directly.",
+        action: "Review student account options and direct deposit readiness.",
+        support: "Student banking, CIBC advisor prompt",
+        type: "Learn",
+        confidence: "High",
+        consent: "Account setup requires Emma's consent when applicable.",
+        route: "education"
+      },
+      {
+        title: "Credit Education",
+        why: "Understanding credit before using it can prevent costly mistakes.",
+        action: "Open the credit-building checklist and discuss responsible use.",
+        support: "Credit education, student credit card education",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Educational only; no credit product is opened.",
+        route: "education"
+      },
+      {
+        title: "Scholarship / OSAP Placeholder",
+        why: "External funding can reduce parent support needs and RESP pressure.",
+        action: "Add funding placeholders and required dates.",
+        support: "Documents Vault, Education Planner",
+        type: "Plan",
+        confidence: "Medium",
+        consent: "Self-reported education funding context only.",
+        route: "documents"
+      }
+    ]
+  },
+  {
+    stage: "Age 18: Account Ownership Transition",
+    appliesTo: "Young adults turning 18 and their parents",
+    trigger: "Legal adulthood changes account ownership, visibility, consent, and credit education needs.",
+    why: "Families can reset privacy and support rules without losing helpful guidance.",
+    risks: ["Parent visibility continues without review", "Credit begins without education", "Student misses eligible tools"],
+    products: ["Student banking", "Credit education", "FHSA education", "Permissions"],
+    nextActions: ["Review consent", "Update ownership expectations", "Discuss credit and privacy"],
+    advisor: false,
+    opportunities: [
+      {
+        title: "Review Parent Visibility and Permissions",
+        why: "Turning 18 is a natural point to confirm what parents can still see or do.",
+        action: "Review view-only, alerts, transfer, and document permissions.",
+        support: "Permissions, consent management",
+        type: "Review",
+        confidence: "High",
+        consent: "Account owner controls access.",
+        route: "permissions"
+      },
+      {
+        title: "Independent Account Ownership",
+        why: "The young adult may need clearer ownership and self-management routines.",
+        action: "Confirm which accounts are owned, shared, or parent-managed.",
+        support: "Student banking, account ownership review",
+        type: "Review",
+        confidence: "High",
+        consent: "Ownership is not changed automatically.",
+        route: "accounts"
+      },
+      {
+        title: "Student Credit Card Education",
+        why: "Credit decisions can affect future borrowing and housing.",
+        action: "Review credit concepts, payment reminders, and spending limits.",
+        support: "Credit education, alerts",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Educational only; no credit decision is made.",
+        route: "education"
+      },
+      {
+        title: "FHSA Education if Eligible",
+        why: "Some young adults may benefit from learning about first-home savings early.",
+        action: "Add an FHSA education prompt for future eligibility review.",
+        support: "FHSA education, advisor prompt",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Eligibility must be confirmed before action.",
+        route: "investments"
+      }
+    ]
+  },
+  {
+    stage: "Age 19-25: Early Independence",
+    appliesTo: "Students, graduates, renters, and early-career adults",
+    trigger: "Rent, income, credit, subscriptions, tax filing, and first investments begin to matter.",
+    why: "CIBC can become the daily financial partner as the young adult becomes independent.",
+    risks: ["Credit score damage", "No emergency fund", "Subscription creep", "Investing starts without basics"],
+    products: ["TFSA education", "FHSA education", "CreditSmart-style education", "Subscription Control"],
+    nextActions: ["Build emergency target", "Review credit habits", "Control subscriptions"],
+    advisor: false,
+    opportunities: [
+      {
+        title: "Emergency Fund Target",
+        why: "Renters and early-career adults need a buffer before bigger goals.",
+        action: "Set a starter emergency fund target.",
+        support: "Savings account, cash flow planner",
+        type: "Plan",
+        confidence: "High",
+        consent: "Uses self-managed budget context.",
+        route: "cashflow"
+      },
+      {
+        title: "Credit Score Building",
+        why: "Good credit can affect rentals, phone plans, and future borrowing.",
+        action: "Review payment reminders, utilization basics, and alert setup.",
+        support: "Credit education, card alerts",
+        type: "Learn",
+        confidence: "High",
+        consent: "No credit product is recommended without review.",
+        route: "education"
+      },
+      {
+        title: "TFSA and First Investment Guidance",
+        why: "Young adults often need education before choosing investment products.",
+        action: "Compare saving, GIC, and TFSA education pathways.",
+        support: "TFSA education, GIC Planner, advisor review",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Suitability requires advisor review.",
+        route: "investments"
+      },
+      {
+        title: "Subscription Control",
+        why: "Streaming, apps, gyms, and trials can quietly reduce monthly flexibility.",
+        action: "Review recurring charges and set trial controls.",
+        support: "Subscription Control, card controls",
+        type: "Review",
+        confidence: "High",
+        consent: "Requires card transaction visibility.",
+        route: "subscriptions"
+      },
+      {
+        title: "Tax Season Preparation",
+        why: "Students and early-career adults often need help organizing slips and tuition forms.",
+        action: "Create a tax document checklist.",
+        support: "Documents Vault, financial literacy prompt",
+        type: "Plan",
+        confidence: "Medium",
+        consent: "Does not provide tax advice.",
+        route: "documents"
+      }
+    ]
+  },
+  {
+    stage: "Adult Family Building",
+    appliesTo: "Partners coordinating shared household decisions",
+    trigger: "A couple begins sharing expenses, goals, dependents, or long-term plans.",
+    why: "FamilyOS can route conversations into shared goals without forcing joint account control.",
+    risks: ["Unclear bill ownership", "Protection gaps", "Emergency fund underbuilt"],
+    products: ["Shared cash flow", "Joint goal planning", "Protection review", "Advisor prompt"],
+    nextActions: ["Create shared goals", "Assign bill responsibilities", "Review beneficiaries"],
+    advisor: true,
+    opportunities: [
+      {
+        title: "Shared Household Cash Flow",
+        why: "Shared bills are easier to manage when responsibilities are clear.",
+        action: "Assign bill ownership and safe-to-spend targets.",
+        support: "Cash Flow Manager, bill assignments",
+        type: "Plan",
+        confidence: "High",
+        consent: "Only shared accounts and permissioned data are shown.",
+        route: "cashflow"
+      },
+      {
+        title: "Partner Financial Conversation",
+        why: "Goals, debt, savings, and risk comfort should be discussed early.",
+        action: "Open a guided partner conversation prompt.",
+        support: "Family goal planning, advisor prompt",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Private account details are not exposed automatically.",
+        route: "planning"
+      },
+      {
+        title: "Beneficiary Review",
+        why: "Partnership, children, and property ownership can change beneficiary needs.",
+        action: "Review beneficiaries and document locations.",
+        support: "Wealth & Legacy, Documents Vault",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Document visibility is permission-based.",
+        route: "documents"
+      },
+      {
+        title: "Family Emergency Fund",
+        why: "Shared responsibilities can increase the amount of cash the household should keep flexible.",
+        action: "Estimate a household emergency reserve target.",
+        support: "Savings, GIC liquidity comparison, cash flow planner",
+        type: "Plan",
+        confidence: "High",
+        consent: "Uses household-level ranges and goals.",
+        route: "investments"
+      }
+    ]
+  },
+  {
+    stage: "Homeownership",
+    appliesTo: "Homeowners, first-time buyers, and renewing mortgage clients",
+    trigger: "Mortgage, property tax, insurance, HELOC, and home maintenance decisions converge.",
+    why: "Housing moments are high-value opportunities for timely CIBC support and advisor routing.",
+    risks: ["Renewal left too late", "HELOC use grows unchecked", "Insurance and property costs are underestimated"],
+    products: ["Mortgage readiness", "HELOC review", "Home insurance", "Rate scenario planning"],
+    nextActions: ["Review renewal clock", "Stress-test cash flow", "Check renovation reserve"],
+    advisor: true,
+    opportunities: [
+      {
+        title: "Mortgage Renewal Preparation",
+        why: "Starting early gives the family time to compare scenarios and organize documents.",
+        action: "Open the mortgage renewal checklist and advisor prompt.",
+        support: "Housing Hub, CIBC mortgage advisor",
+        type: "Book advisor",
+        confidence: "High",
+        consent: "Uses verified mortgage context where available.",
+        route: "housing"
+      },
+      {
+        title: "Down Payment or Home Upgrade Planning",
+        why: "Families may need to balance education, emergency reserve, and housing goals.",
+        action: "Compare savings and GIC liquidity scenarios.",
+        support: "Goal Evaluator, GIC Planner, advisor review",
+        type: "Plan",
+        confidence: "Medium",
+        consent: "Self-reported property ranges are optional.",
+        route: "investments"
+      },
+      {
+        title: "HELOC Caution",
+        why: "HELOC utilization can quietly reduce future flexibility.",
+        action: "Review repayment rhythm and alert thresholds.",
+        support: "Housing Hub, cash flow review",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Only permissioned credit data is used.",
+        route: "housing"
+      },
+      {
+        title: "Home Insurance / Protection Review",
+        why: "Mortgage balance, dependents, and property value can change protection needs.",
+        action: "Review home and family protection coverage.",
+        support: "Insurance & Protection, advisor conversation",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Informational prompt only.",
+        route: "protection"
+      }
+    ]
+  },
+  {
+    stage: "Caregiving",
+    appliesTo: "Adult children, caregivers, and elder parents",
+    trigger: "Care spending, trusted access, fraud monitoring, and POA readiness become active.",
+    why: "FamilyOS can help support aging parents without implying unlimited control over their accounts.",
+    risks: ["Fraud goes unnoticed", "Care budget unclear", "Permissions are too broad or too weak"],
+    products: ["Caregiving Mode", "Trusted contact", "Fraud alerts", "Documents Vault"],
+    nextActions: ["Review care permissions", "Set spending alerts", "Check POA readiness"],
+    advisor: true,
+    opportunities: [
+      {
+        title: "Parent Support Budget",
+        why: "Care spending can become recurring and unpredictable.",
+        action: "Set a care budget and review month-to-date spending.",
+        support: "Caregiving Mode, cash flow planner",
+        type: "Plan",
+        confidence: "High",
+        consent: "Care visibility depends on Grace's permission.",
+        route: "caregiving"
+      },
+      {
+        title: "Caregiving Permissions",
+        why: "Family support works best when view, pay, and transfer permissions are explicit.",
+        action: "Review Alex, Jamie, and Grace's care access settings.",
+        support: "Permissions, caregiver mode",
+        type: "Review",
+        confidence: "High",
+        consent: "Grace can grant or revoke access.",
+        route: "permissions"
+      },
+      {
+        title: "Fraud Monitoring",
+        why: "Unusual transactions may need family attention if the account owner consents.",
+        action: "Review unusual activity and trusted contact settings.",
+        support: "Fraud alerts, unusual transaction review",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Alerts are permission-based and revocable.",
+        route: "caregiving"
+      },
+      {
+        title: "POA Document Readiness",
+        why: "Families often need documents before a crisis, not during one.",
+        action: "Upload or confirm POA and care documents.",
+        support: "Documents Vault, Wealth & Legacy",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Documents are not shared unless permissioned.",
+        route: "documents"
+      },
+      {
+        title: "Long-Term Care Expense Planning",
+        why: "Care reserves can run below target if monthly support increases.",
+        action: "Estimate care reserve needs and advisor review timing.",
+        support: "Caregiving Mode, advisor prompt",
+        type: "Book advisor",
+        confidence: "Medium",
+        consent: "Uses care budget trends, not medical details.",
+        route: "caregiving"
+      }
+    ]
+  },
+  {
+    stage: "Retirement Transition",
+    appliesTo: "Pre-retirees and retirees shifting from saving to income",
+    trigger: "Income sources, registered plans, benefits, bills, and protection needs change.",
+    why: "Retirement transition is a natural moment for advisor-supported planning and simpler account routines.",
+    risks: ["Income timing unclear", "Fraud risk increases", "Documents are stale"],
+    products: ["RRSP/RRIF education", "CPP/OAS education", "Bill management", "Advisor review"],
+    nextActions: ["Map income sources", "Review fraud alerts", "Update beneficiaries"],
+    advisor: true,
+    opportunities: [
+      {
+        title: "Retirement Income Planning",
+        why: "Families need to understand when income will arrive and how bills will be paid.",
+        action: "Create a retirement income map.",
+        support: "RRSP/RRIF education, advisor meeting",
+        type: "Book advisor",
+        confidence: "High",
+        consent: "Suitability and tax treatment require advisor review.",
+        route: "investments"
+      },
+      {
+        title: "Simplified Bill Management",
+        why: "A simpler bill flow can reduce missed payments and caregiver stress.",
+        action: "Review autopay, alerts, and approved bill support.",
+        support: "Bill payments, alerts, caregiver permissions",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Payment authority requires explicit permission.",
+        route: "permissions"
+      },
+      {
+        title: "Fraud Alerts",
+        why: "Fraud and scams can become a bigger concern in retirement.",
+        action: "Set unusual activity alerts and trusted contact preferences.",
+        support: "Fraud alerts, trusted contact",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Alerts depend on account owner consent.",
+        route: "caregiving"
+      },
+      {
+        title: "Estate Document Review",
+        why: "Documents should reflect current beneficiaries, contacts, and intentions.",
+        action: "Review will, POA, insurance, and contact list status.",
+        support: "Documents Vault, Wealth & Legacy",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Document sharing is role-based.",
+        route: "documents"
+      }
+    ]
+  },
+  {
+    stage: "Legacy & Wealth Transfer",
+    appliesTo: "Families organizing documents, beneficiaries, and transfer intentions",
+    trigger: "Wealth, property, insurance, care, and family roles need coordination.",
+    why: "FamilyOS can make next steps visible without giving legal, tax, or investment advice.",
+    risks: ["Will or POA missing", "Beneficiaries stale", "Family does not know where documents are"],
+    products: ["Documents Vault", "Beneficiary checklist", "Advisor booking", "Permissions"],
+    nextActions: ["Review document checklist", "Confirm beneficiaries", "Book advisor if needed"],
+    advisor: true,
+    opportunities: [
+      {
+        title: "Will Status",
+        why: "A missing or stale will can create uncertainty for the family.",
+        action: "Mark will status and add a document reminder.",
+        support: "Documents Vault, Wealth & Legacy",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Document contents are not exposed automatically.",
+        route: "documents"
+      },
+      {
+        title: "POA Status",
+        why: "POA readiness matters before caregiving needs become urgent.",
+        action: "Confirm POA status for Grace and trusted contacts.",
+        support: "Documents Vault, Caregiving Mode",
+        type: "Review",
+        confidence: "Medium",
+        consent: "Access remains revocable and role-based.",
+        route: "permissions"
+      },
+      {
+        title: "Insurance Beneficiary Review",
+        why: "Beneficiaries may not reflect current family intentions.",
+        action: "Add a beneficiary review task and advisor prompt.",
+        support: "Insurance & Protection, advisor review",
+        type: "Book advisor",
+        confidence: "Medium",
+        consent: "Informational only; no beneficiary is changed in FamilyOS.",
+        route: "protection"
+      },
+      {
+        title: "Family Conversation Prompt",
+        why: "Families often need a structured way to discuss roles, documents, and contacts.",
+        action: "Generate a family discussion checklist.",
+        support: "Wealth & Legacy, Documents Vault",
+        type: "Learn",
+        confidence: "Medium",
+        consent: "Shared only with permissioned family members.",
+        route: "documents"
+      },
+      {
+        title: "Document Sharing Permissions",
+        why: "The right people need access to the right documents, without broad account control.",
+        action: "Review who can view, manage, or receive document alerts.",
+        support: "Permissions, Documents Vault",
+        type: "Review",
+        confidence: "High",
+        consent: "Access is consent-based and revocable.",
+        route: "permissions"
+      }
+    ]
+  }
+];
+
+const memberRoadmaps: MemberRoadmap[] = [
+  {
+    member: "Alex Chen",
+    age: "42",
+    role: "Primary user / parent",
+    focus: "Housing, caregiving, retirement, and protection overlap.",
+    image: onboardingImage,
+    route: "housing",
+    roadmap: [
+      { title: "Mortgage renewal", timing: "14 months", action: "Prepare renewal scenarios", route: "housing" },
+      { title: "Family cash flow", timing: "This month", action: "Review parent support and safe balance", route: "cashflow" },
+      { title: "Parent caregiving", timing: "This quarter", action: "Confirm Grace's care permissions", route: "caregiving" },
+      { title: "Retirement contribution review", timing: "This year", action: "Compare TFSA/RRSP/GIC pathways", route: "investments" },
+      { title: "Protection planning", timing: "Annual", action: "Review coverage against mortgage and dependents", route: "protection" }
+    ]
+  },
+  {
+    member: "Jamie Chen",
+    age: "40",
+    role: "Spouse / partner",
+    focus: "Shared bills, protection, RESP planning, and retirement goals.",
+    image: heroImage,
+    route: "cashflow",
+    roadmap: [
+      { title: "Household cash flow", timing: "This month", action: "Review shared bills and assignments", route: "cashflow" },
+      { title: "Insurance/protection review", timing: "Annual", action: "Check coverage and beneficiaries", route: "protection" },
+      { title: "RESP planning", timing: "Before tuition", action: "Confirm contribution rhythm and gap", route: "education" },
+      { title: "Retirement goal review", timing: "This year", action: "Review Jamie RRSP goal alignment", route: "investments" }
+    ]
+  },
+  {
+    member: "Emma Chen",
+    age: "17",
+    role: "Student",
+    focus: "University, student banking, rent budgeting, account ownership, and credit education.",
+    image: educationImage,
+    route: "education",
+    roadmap: [
+      { title: "University transition", timing: "Next 10 months", action: "Open first-year affordability plan", route: "education" },
+      { title: "RESP withdrawal planning", timing: "Before tuition", action: "Review withdrawal timing and documents", route: "education" },
+      { title: "Student banking", timing: "Before move-in", action: "Review student account setup", route: "education" },
+      { title: "Rent budgeting", timing: "Before lease", action: "Build rent and living-cost budget", route: "cashflow" },
+      { title: "Account ownership transition", timing: "At 18", action: "Review privacy and parent visibility", route: "permissions" },
+      { title: "Credit education", timing: "At 18", action: "Open credit-building checklist", route: "education" },
+      { title: "FHSA education if eligible", timing: "At 18+", action: "Add first-home savings education prompt", route: "investments" }
+    ]
+  },
+  {
+    member: "Ethan Chen",
+    age: "11",
+    role: "Dependent",
+    focus: "Primary school money habits, savings goals, allowance rhythm, and RESP tracking.",
+    image: educationImage,
+    route: "education",
+    roadmap: [
+      { title: "Primary school money habits", timing: "Now", action: "Start save/spend/give prompt", route: "education" },
+      { title: "Savings goal", timing: "Now", action: "Create parent-guided goal", route: "education" },
+      { title: "Allowance rhythm", timing: "This month", action: "Set allowance and savings split", route: "cashflow" },
+      { title: "RESP tracking", timing: "Annual", action: "Review education savings progress", route: "education" },
+      { title: "Pre-teen debit preparation", timing: "Age 12+", action: "Discuss supervised spending guardrails", route: "permissions" }
+    ]
+  },
+  {
+    member: "Grace Chen",
+    age: "72",
+    role: "Care recipient",
+    focus: "Retirement income, caregiving permissions, fraud alerts, bills, and legacy documents.",
+    image: caregivingImage,
+    route: "caregiving",
+    roadmap: [
+      { title: "Retirement income review", timing: "This year", action: "Map income and bill timing", route: "investments" },
+      { title: "Caregiving permissions", timing: "This quarter", action: "Review Alex and Jamie access", route: "permissions" },
+      { title: "POA readiness", timing: "This quarter", action: "Upload or confirm POA status", route: "documents" },
+      { title: "Fraud alerts", timing: "Now", action: "Review unusual activity and trusted contacts", route: "caregiving" },
+      { title: "Simplified bill management", timing: "This month", action: "Confirm approved bill payment settings", route: "caregiving" },
+      { title: "Legacy document review", timing: "Annual", action: "Review will, beneficiaries, and contacts", route: "documents" }
+    ]
+  }
+];
+
+const topRecommendations = [
+  {
+    priority: "High",
+    member: "Emma",
+    title: "University transition",
+    trigger: "Turns 18 before first-year tuition",
+    cta: "Open Life Stage Engine",
+    route: "ai" as Route
+  },
+  {
+    priority: "Medium",
+    member: "Ethan",
+    title: "Money habit window",
+    trigger: "Age 11 is a natural moment for savings goals",
+    cta: "Create habit plan",
+    route: "education" as Route
+  },
+  {
+    priority: "High",
+    member: "Grace",
+    title: "Caregiving and fraud protection",
+    trigger: "Care spending increased and unusual activity needs review",
+    cta: "Review care plan",
+    route: "caregiving" as Route
+  },
+  {
+    priority: "Medium",
+    member: "Alex + Jamie",
+    title: "Mortgage renewal",
+    trigger: "Renewal is 14 months away",
+    cta: "Review housing plan",
+    route: "housing" as Route
+  },
+  {
+    priority: "Medium",
+    member: "Family",
+    title: "Subscription trial ending",
+    trigger: "Two trials convert this week",
+    cta: "Manage subscriptions",
+    route: "subscriptions" as Route
+  }
+];
+
+const scanSteps = [
+  "Scanning family ages...",
+  "Checking goals...",
+  "Reviewing account context...",
+  "Matching CIBC opportunities...",
+  "Recommendations ready"
+];
 
 const gicRates = {
   Cashable: {
@@ -1268,61 +2158,18 @@ function renderRoute(
 }
 
 function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
-  const opportunities = [
-    {
-      category: "Life Stage",
-      title: "Emma is approaching the CIBC student banking moment",
-      why: "She turns 18 before university, when account ownership, student banking, credit education, and RESP withdrawals become more urgent.",
-      action: "Prepare the transition checklist and decide what Emma controls herself.",
-      cta: "Open Life Stage Plan",
-      route: "ai" as Route
-    },
-    {
-      category: "Life Stage",
-      title: "Ethan is ready for early money habits",
-      why: "At age 11, FamilyOS can help parents introduce savings goals and allowance routines before teen spending begins.",
-      action: "Create a parent-guided habit plan that can later lead into youth banking.",
-      cta: "Open Education Path",
-      route: "education" as Route
-    },
-    {
-      category: "Housing",
-      title: "Mortgage renewal in 14 months",
-      why: "Starting early gives the family time to review rates, HELOC utilization, and debt repayment scenarios.",
-      action: "Prepare renewal documents and review rate scenarios.",
-      cta: "Open Housing Plan",
-      route: "housing" as Route
-    },
-    {
-      category: "Subscriptions",
-      title: "Two free trials convert this week",
-      why: "Meal Kit Trial and Streaming Sports Trial could add $114.98/month if no action is taken.",
-      action: "Cancel, cap, or create merchant-specific trial controls.",
-      cta: "Manage Subscriptions",
-      route: "subscriptions" as Route
-    },
-    {
-      category: "Caregiving",
-      title: "Grace's care spending increased 18%",
-      why: "Care-related spending has risen quarter-over-quarter and one unusual transaction is pending review.",
-      action: "Review the flagged transaction and adjust care alerts.",
-      cta: "Review Caregiving",
-      route: "caregiving" as Route
-    }
-  ];
-
   return (
     <main className="family-dashboard">
       <section className="priority-banner">
         <div>
           <span>Life Stage Engine</span>
-          <h2>Here is what your family should prepare for next</h2>
+          <h2>Top AI recommendations for the Chen Family</h2>
           <p>
-            FamilyOS reviews family ages, goals, accounts, permissions, and events to detect the next financial
-            milestone before the family has to ask.
+            FamilyOS helps families never miss the next important financial milestone by turning age, goals,
+            accounts, permissions, and events into next best actions.
           </p>
           <button className="primary-button compact" onClick={() => onNavigate("ai")}>
-            Open Life Stage Engine
+            Run Life Stage Scan
           </button>
         </div>
         <div className="priority-visual">
@@ -1330,30 +2177,47 @@ function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
       </section>
 
-      <MilestoneEngineSummary onNavigate={onNavigate} />
-
-      <LifeStageMap onNavigate={onNavigate} />
-
-      <FamilyOSLayerMap onNavigate={onNavigate} />
-
-      <section className="recommended-actions">
+      <section className="recommended-actions compact-recommendations">
         <div className="section-heading">
-          <h2>Next Best Family Actions</h2>
+          <h2>Top AI Recommendations</h2>
           <p>
-            Recommendations start with family life moments, then create natural reasons to explore CIBC support when it
-            is relevant.
+            Families do not miss opportunities because products do not exist. They miss them because they do not know
+            the right moment to act.
           </p>
         </div>
-        <div className="opportunity-grid">
-          {opportunities.map((item) => (
-            <article className="priority-action-card" key={item.title}>
-              <span>{item.category}</span>
+        <div className="top-recommendation-grid">
+          {topRecommendations.map((item) => (
+            <article className="top-recommendation-card" key={item.title}>
+              <div>
+                <span className={`priority-pill ${item.priority.toLowerCase()}`}>{item.priority}</span>
+                <small>{item.member}</small>
+              </div>
               <h3>{item.title}</h3>
-              <p>{item.why}</p>
-              <small>{item.action}</small>
+              <p>{item.trigger}</p>
               <button className="secondary-button compact" onClick={() => onNavigate(item.route)}>
                 {item.cta}
               </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="card calm-card">
+        <div className="card-title-row">
+          <div>
+            <h2>Upcoming Timeline Preview</h2>
+            <p>Who needs attention now, what comes next, and where FamilyOS routes the family.</p>
+          </div>
+          <button className="secondary-button compact" onClick={() => onNavigate("ai")}>
+            Explore all stages
+          </button>
+        </div>
+        <div className="dashboard-timeline-preview">
+          {lifeStageMoments.map((moment) => (
+            <article key={moment.member}>
+              <span>{moment.timing}</span>
+              <strong>{moment.member}</strong>
+              <p>{moment.stage}</p>
             </article>
           ))}
         </div>
@@ -1372,42 +2236,25 @@ function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         <ReadinessMatrix />
       </section>
 
-      <section className="module-preview-section">
-        <div className="section-heading">
-          <h2>Relationship Growth Pathways</h2>
-          <p>How FamilyOS can attract the next family member to CIBC by detecting the right moment to introduce support.</p>
+      <section className="card calm-card">
+        <div className="card-title-row">
+          <div>
+            <h2>Quick Actions</h2>
+            <p>Open the action area behind each recommendation.</p>
+          </div>
         </div>
-        <div className="module-preview-grid compact-preview">
-          <PreviewCard
-            title="Youth-to-Student Pathway"
-            route="ai"
-            onNavigate={onNavigate}
-            stats={[
-              ["Ethan", "Money habits"],
-              ["Emma", "Student banking"],
-              ["CIBC value", "Next-generation loyalty"]
-            ]}
-          />
-          <PreviewCard
-            title="Goal-to-Product Pathway"
-            route="investments"
-            onNavigate={onNavigate}
-            stats={[
-              ["Education", "RESP + GIC timing"],
-              ["Emergency", "Liquidity review"],
-              ["Advisor", "Suitability check"]
-            ]}
-          />
-          <PreviewCard
-            title="Care-to-Legacy Pathway"
-            route="caregiving"
-            onNavigate={onNavigate}
-            stats={[
-              ["Grace", "Care budget"],
-              ["Documents", "POA + will"],
-              ["Permissions", "Consent-based access"]
-            ]}
-          />
+        <div className="quick-action-row">
+          {[
+            ["Education Planner", "education"],
+            ["Caregiving Mode", "caregiving"],
+            ["Subscription Control", "subscriptions"],
+            ["Goal Evaluator", "investments"],
+            ["Family Admin", "family"]
+          ].map(([label, route]) => (
+            <button key={label} className="secondary-button compact" onClick={() => onNavigate(route as Route)}>
+              {label}
+            </button>
+          ))}
         </div>
       </section>
     </main>
@@ -2505,23 +3352,50 @@ function PermissionsPage({ compact = false }: { compact?: boolean }) {
 
 function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const primaryMilestone = engineMilestones[0];
-  const friendlyMilestones = engineMilestones.slice(0, 3);
-  const contextLabels = ["Ages", "Goals", "Accounts", "Permissions", "Events"];
-  const routeAreas = actionAreas.slice(0, 5);
-  const journeyMoments = youthLifecyclePath.slice(1);
+  const [selectedStageIndex, setSelectedStageIndex] = useState(5);
+  const [revealedCount, setRevealedCount] = useState(lifeStageKnowledgeBase[5].opportunities.length);
+  const [scanStatus, setScanStatus] = useState("Recommendations ready");
+  const [scanning, setScanning] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(memberRoadmaps[2].member);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
+  const selectedStage = lifeStageKnowledgeBase[selectedStageIndex];
+  const activeMember = memberRoadmaps.find((member) => member.member === selectedMember) ?? memberRoadmaps[0];
+  const visibleOpportunities = selectedStage.opportunities.slice(0, revealedCount);
+
+  const selectStage = (index: number) => {
+    setSelectedStageIndex(index);
+    setRevealedCount(lifeStageKnowledgeBase[index].opportunities.length);
+    setScanStatus("Recommendations ready");
+    setScanning(false);
+  };
+
+  const runLifeStageScan = () => {
+    setScanning(true);
+    setRevealedCount(0);
+    scanSteps.forEach((step, index) => {
+      window.setTimeout(() => setScanStatus(step), index * 480);
+    });
+    selectedStage.opportunities.forEach((_, index) => {
+      window.setTimeout(() => setRevealedCount(index + 1), 1650 + index * 260);
+    });
+    window.setTimeout(() => {
+      setScanStatus("Recommendations ready");
+      setScanning(false);
+    }, 1650 + selectedStage.opportunities.length * 260 + 450);
+  };
 
   return (
     <ModulePage
       icon={Sparkles}
       kicker="Life Stage Engine"
-      title="What should your family prepare for next?"
-      summary="FamilyOS turns life moments into simple next steps, then routes families to the right CIBC support area."
+      title="Life-stage recommendations that know when to act"
+      summary="FamilyOS helps families never miss the next important financial milestone by matching life stages to CIBC support pathways."
       insight="Families often miss opportunities not because CIBC products do not exist, but because they do not know the right moment to act."
     >
       <section className="detector-intro">
         <div>
           <span>Family milestone engine</span>
-          <h2>One clear next step for every family stage.</h2>
+          <h2>Explore the next CIBC opportunity for every age and stage.</h2>
           <blockquote>
             CIBC FamilyOS doesn&rsquo;t wait for families to ask the right questions&mdash;it helps them discover what
             matters next.
@@ -2571,34 +3445,114 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
       </section>
 
-      <Panel title="Upcoming Family Milestones">
-        <div className="friendly-milestone-grid">
-          {friendlyMilestones.map(({ category, member, when, module, route, icon: Icon, image, imageAlt }) => (
-            <article key={category}>
-              <img src={image} alt={imageAlt} />
-              <div>
-                <span>{when}</span>
-                <Icon size={18} />
-              </div>
-              <h3>{member}</h3>
-              <p>{category}</p>
-              <button className="secondary-button compact" onClick={() => onNavigate(route)}>
-                Open {module}
+      <section className="life-stage-explorer">
+        <div className="card-title-row">
+          <div>
+            <span className="section-kicker">Explore Life Stage Opportunities</span>
+            <h2>{selectedStage.stage}</h2>
+            <p>
+              Move across life stages to see what FamilyOS notices, why it matters, and how it routes the family to
+              relevant CIBC support.
+            </p>
+          </div>
+          <button className="primary-button compact" onClick={runLifeStageScan}>
+            Run Life Stage Scan
+          </button>
+        </div>
+
+        <div className="stage-slider-panel">
+          <input
+            aria-label="Life stage selector"
+            type="range"
+            min={0}
+            max={lifeStageKnowledgeBase.length - 1}
+            value={selectedStageIndex}
+            onChange={(event) => selectStage(Number(event.target.value))}
+            onInput={(event) => selectStage(Number(event.currentTarget.value))}
+          />
+          <div className="stage-chip-row">
+            {lifeStageKnowledgeBase.map((stage, index) => (
+              <button
+                key={stage.stage}
+                className={index === selectedStageIndex ? "active" : ""}
+                onClick={() => selectStage(index)}
+              >
+                {stage.stage.split(":")[0]}
               </button>
-            </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="scan-status">
+          <div>
+            <Sparkles size={18} />
+            <strong>{scanStatus}</strong>
+          </div>
+          <span>{visibleOpportunities.length} of {selectedStage.opportunities.length} opportunities visible</span>
+        </div>
+
+        <div className="stage-detail-grid">
+          <article className="stage-context-card">
+            <span>Who it applies to</span>
+            <strong>{selectedStage.appliesTo}</strong>
+            <p>{selectedStage.why}</p>
+            <div className="stage-meta-grid">
+              <div>
+                <small>Trigger</small>
+                <b>{selectedStage.trigger}</b>
+              </div>
+              <div>
+                <small>Advisor recommended</small>
+                <b>{selectedStage.advisor ? "Yes" : "No"}</b>
+              </div>
+            </div>
+          </article>
+
+          <article className="stage-context-card">
+            <span>Key risks</span>
+            <div className="risk-chip-row">
+              {selectedStage.risks.map((risk) => (
+                <small key={risk}>{risk}</small>
+              ))}
+            </div>
+            <span>Relevant CIBC support</span>
+            <div className="support-chip-row">
+              {selectedStage.products.map((product) => (
+                <small key={product}>{product}</small>
+              ))}
+            </div>
+          </article>
+        </div>
+
+        <div className="opportunity-engine-grid">
+          {visibleOpportunities.map((opportunity, index) => (
+            <button
+              className={`engine-opportunity-card ${scanning ? "revealing" : ""}`}
+              key={opportunity.title}
+              onClick={() => setSelectedOpportunity(opportunity)}
+              style={{ animationDelay: `${index * 90}ms` }}
+            >
+              <span>{opportunity.type}</span>
+              <h3>{opportunity.title}</h3>
+              <p>{opportunity.why}</p>
+              <div>
+                <small>{opportunity.confidence} confidence</small>
+                <small>{opportunity.support}</small>
+              </div>
+            </button>
           ))}
         </div>
-      </Panel>
+      </section>
 
       <Panel title="How It Connects">
         <div className="context-chip-row" aria-label="Signals reviewed by the Life Stage Engine">
           <strong>Looks at</strong>
-          {contextLabels.map((label) => (
+          {["Ages", "Relationships", "Goals", "Accounts", "Permissions", "Events"].map((label) => (
             <span key={label}>{label}</span>
           ))}
         </div>
         <div className="route-chip-grid">
-          {routeAreas.map(([area, , trigger, route]) => (
+          {actionAreas.slice(0, 5).map(([area, , trigger, route]) => (
             <button key={area} onClick={() => onNavigate(route as Route)}>
               <span>{trigger}</span>
               <strong>{area}</strong>
@@ -2607,14 +3561,52 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
       </Panel>
 
-      <Panel title="Child-to-CIBC Journey">
-        <div className="simple-journey-row">
-          {journeyMoments.map(([age, moment], index) => (
-            <article className={age === "Age 18" ? "active" : ""} key={age}>
-              <i>{index + 1}</i>
-              <span>{age}</span>
-              <strong>{moment}</strong>
-            </article>
+      <Panel title="Member-Specific Roadmaps">
+        <div className="member-roadmap-layout">
+          <div className="roadmap-member-list">
+            {memberRoadmaps.map((member) => (
+              <button
+                key={member.member}
+                className={member.member === selectedMember ? "active" : ""}
+                onClick={() => setSelectedMember(member.member)}
+              >
+                <span>{member.age}</span>
+                <strong>{member.member}</strong>
+                <small>{member.role}</small>
+              </button>
+            ))}
+          </div>
+          <div className="roadmap-detail-card">
+            <img src={activeMember.image} alt={`${activeMember.member} roadmap`} />
+            <div>
+              <span className="section-kicker">{activeMember.member}</span>
+              <h3>{activeMember.focus}</h3>
+              <div className="roadmap-list">
+                {activeMember.roadmap.map((item) => (
+                  <button key={item.title} onClick={() => onNavigate(item.route)}>
+                    <span>{item.timing}</span>
+                    <strong>{item.title}</strong>
+                    <small>{item.action}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Panel>
+
+      <Panel title="Family Opportunity Timeline">
+        <div className="full-stage-timeline">
+          {lifeStageKnowledgeBase.map((stage, index) => (
+            <button
+              key={stage.stage}
+              className={index === selectedStageIndex ? "active" : ""}
+              onClick={() => selectStage(index)}
+            >
+              <span>{index + 1}</span>
+              <strong>{stage.stage.split(":")[0]}</strong>
+              <small>{stage.opportunities.length} opportunities</small>
+            </button>
           ))}
         </div>
       </Panel>
@@ -2633,7 +3625,119 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
           <span>Major decisions route to human review.</span>
         </article>
       </section>
+
+      {selectedOpportunity && (
+        <OpportunityModal
+          opportunity={selectedOpportunity}
+          stage={selectedStage}
+          onClose={() => setSelectedOpportunity(null)}
+          onNavigate={onNavigate}
+        />
+      )}
     </ModulePage>
+  );
+}
+
+function OpportunityModal({
+  opportunity,
+  stage,
+  onClose,
+  onNavigate
+}: {
+  opportunity: Opportunity;
+  stage: LifeStage;
+  onClose: () => void;
+  onNavigate: (route: Route) => void;
+}) {
+  const noticed = [
+    stage.trigger,
+    `${stage.opportunities.length} related opportunities in this stage`,
+    `${opportunity.confidence} confidence based on mock family context`
+  ];
+
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={opportunity.title}>
+      <section className="opportunity-modal">
+        <div className="modal-title-row">
+          <div>
+            <span>{stage.stage}</span>
+            <h2>{opportunity.title}</h2>
+          </div>
+          <button className="ghost-button compact" onClick={onClose}>
+            Close
+          </button>
+        </div>
+
+        <div className="modal-grid">
+          <article>
+            <span>Trigger</span>
+            <p>{stage.trigger}</p>
+          </article>
+          <article>
+            <span>Why now</span>
+            <p>{opportunity.why}</p>
+          </article>
+          <article>
+            <span>What FamilyOS noticed</span>
+            <ul>
+              {noticed.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+          <article>
+            <span>Recommended next steps</span>
+            <ul>
+              <li>{opportunity.action}</li>
+              {stage.nextActions.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+        </div>
+
+        <div className="modal-support-card">
+          <div>
+            <strong>Related CIBC support</strong>
+            <p>{opportunity.support}</p>
+          </div>
+          <div>
+            <strong>Data used</strong>
+            <p>Family profile age, active goals, verified CIBC context, and optional self-reported ranges where shared.</p>
+          </div>
+          <div>
+            <strong>Confidence</strong>
+            <p>{opportunity.confidence}</p>
+          </div>
+          <div>
+            <strong>Consent / privacy note</strong>
+            <p>{opportunity.consent}</p>
+          </div>
+        </div>
+
+        <div className="advisor-disclaimer">
+          <AlertTriangle size={17} />
+          <span>Recommendations are educational and should be reviewed with a CIBC advisor for major decisions.</span>
+        </div>
+
+        <div className="modal-actions">
+          <button className="secondary-button compact">Learn more</button>
+          <button
+            className="primary-button compact"
+            onClick={() => {
+              onClose();
+              onNavigate(opportunity.route);
+            }}
+          >
+            Open related module
+          </button>
+          <button className="secondary-button compact">Book advisor</button>
+          <button className="ghost-button compact" onClick={onClose}>
+            Remind me later
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
