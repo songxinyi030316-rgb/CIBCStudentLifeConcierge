@@ -2504,38 +2504,39 @@ function PermissionsPage({ compact = false }: { compact?: boolean }) {
 }
 
 function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
-  const simplifiedInsights = aiInsights.filter((insight) =>
-    ["Life Stage", "Education", "Subscriptions", "Caregiving"].includes(insight.category)
-  );
+  const primaryMilestone = engineMilestones[0];
+  const friendlyMilestones = engineMilestones.slice(0, 3);
+  const contextLabels = ["Ages", "Goals", "Accounts", "Permissions", "Events"];
+  const routeAreas = actionAreas.slice(0, 5);
+  const journeyMoments = youthLifecyclePath.slice(1);
 
   return (
     <ModulePage
       icon={Sparkles}
       kicker="Life Stage Engine"
-      title="What milestone is coming next?"
-      summary="FamilyOS reviews each family member's life stage, relationships, goals, accounts, permissions, and upcoming events to detect the next financial moment."
+      title="What should your family prepare for next?"
+      summary="FamilyOS turns life moments into simple next steps, then routes families to the right CIBC support area."
       insight="Families often miss opportunities not because CIBC products do not exist, but because they do not know the right moment to act."
     >
       <section className="detector-intro">
         <div>
           <span>Family milestone engine</span>
-          <h2>Detect the next milestone. Route to the right action area.</h2>
+          <h2>One clear next step for every family stage.</h2>
           <blockquote>
             CIBC FamilyOS doesn&rsquo;t wait for families to ask the right questions&mdash;it helps them discover what
             matters next.
           </blockquote>
           <p>
-            It does not replace existing CIBC tools. It connects life moments to Education, Housing, Caregiving,
-            Investments, Subscription Control, Protection, Documents, Permissions, and advisor prompts.
+            It looks at family age stages, goals, accounts, and consent settings, then suggests the next helpful action.
           </p>
         </div>
         <div className="detector-visual-stack">
           <img src={onboardingImage} alt="Family reviewing milestones and financial next steps together" />
           <div className="detector-flow">
             {[
-              ["1", "Review context", "Ages, roles, goals, accounts, permissions, and upcoming events."],
-              ["2", "Find milestone", "Emma turns 18, Ethan builds habits, Grace needs care support."],
-              ["3", "Route action", "Open the right module or suggest a CIBC product/advisor pathway."]
+              ["1", "Review", "Family context"],
+              ["2", "Detect", "Next milestone"],
+              ["3", "Route", "Best action area"]
             ].map(([step, title, text]) => (
               <article key={title}>
                 <span>{step}</span>
@@ -2547,36 +2548,41 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
       </section>
 
-      <Panel title="What The Engine Reviews">
-        <div className="engine-signal-grid">
-          {engineSignals.map(([label, value]) => (
-            <article key={label}>
-              <span>{label}</span>
-              <strong>{value}</strong>
-            </article>
-          ))}
+      <section className="engine-focus-card">
+        <div className="focus-copy">
+          <span className="section-kicker">Next best action</span>
+          <h2>{primaryMilestone.member}: {primaryMilestone.category}</h2>
+          <p>{primaryMilestone.trigger}</p>
+          <div className="focus-points">
+            <span>Prepare student banking</span>
+            <span>Review RESP withdrawals</span>
+            <span>Plan first-year rent support</span>
+          </div>
+          <button className="primary-button compact" onClick={() => onNavigate(primaryMilestone.route)}>
+            Open {primaryMilestone.module}
+          </button>
         </div>
-      </Panel>
+        <div className="focus-visual">
+          <img src={primaryMilestone.image} alt={primaryMilestone.imageAlt} />
+          <div>
+            <strong>{primaryMilestone.when}</strong>
+            <span>{primaryMilestone.confidence} confidence</span>
+          </div>
+        </div>
+      </section>
 
       <Panel title="Upcoming Family Milestones">
-        <div className="milestone-card-grid">
-          {engineMilestones.map(({ category, member, when, trigger, nextAction, module, route, cibcPathway, confidence, icon: Icon, image, imageAlt }, index) => (
-            <article className={index === 0 ? "priority" : ""} key={category}>
-              <img className="milestone-image" src={image} alt={imageAlt} />
-              <div className="priority-moment-top">
+        <div className="friendly-milestone-grid">
+          {friendlyMilestones.map(({ category, member, when, module, route, icon: Icon, image, imageAlt }) => (
+            <article key={category}>
+              <img src={image} alt={imageAlt} />
+              <div>
                 <span>{when}</span>
-                <Icon size={20} />
+                <Icon size={18} />
               </div>
-              <h3>{category}</h3>
-              <strong>{member}</strong>
-              <p>{trigger}</p>
-              <em>{nextAction}</em>
-              <div className="milestone-route-row">
-                <span>FamilyOS: {module}</span>
-                <span>CIBC: {cibcPathway}</span>
-                <span>Confidence: {confidence}</span>
-              </div>
-              <button className={index === 0 ? "primary-button compact" : "secondary-button compact"} onClick={() => onNavigate(route)}>
+              <h3>{member}</h3>
+              <p>{category}</p>
+              <button className="secondary-button compact" onClick={() => onNavigate(route)}>
                 Open {module}
               </button>
             </article>
@@ -2584,86 +2590,49 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
       </Panel>
 
-      <LifeStageMap onNavigate={onNavigate} />
-
-      <Panel title="Connected Action Areas">
-        <p className="panel-lede">
-          Existing modules become action areas triggered by the Life Stage Engine, not separate destinations users have
-          to discover on their own.
-        </p>
-        <div className="action-area-grid">
-          {actionAreas.map(([area, description, trigger, route]) => (
+      <Panel title="How It Connects">
+        <div className="context-chip-row" aria-label="Signals reviewed by the Life Stage Engine">
+          <strong>Looks at</strong>
+          {contextLabels.map((label) => (
+            <span key={label}>{label}</span>
+          ))}
+        </div>
+        <div className="route-chip-grid">
+          {routeAreas.map(([area, , trigger, route]) => (
             <button key={area} onClick={() => onNavigate(route as Route)}>
               <span>{trigger}</span>
               <strong>{area}</strong>
-              <p>{description}</p>
             </button>
           ))}
         </div>
       </Panel>
 
       <Panel title="Child-to-CIBC Journey">
-        <p className="panel-lede">
-          The clearest growth opportunity is helping parents introduce CIBC at useful child and student moments.
-        </p>
-        <div className="child-journey-timeline">
-          {youthLifecyclePath.map(([age, moment, detail], index) => (
+        <div className="simple-journey-row">
+          {journeyMoments.map(([age, moment], index) => (
             <article className={age === "Age 18" ? "active" : ""} key={age}>
-              <span>{age}</span>
               <i>{index + 1}</i>
+              <span>{age}</span>
               <strong>{moment}</strong>
-              <p>{detail}</p>
             </article>
           ))}
         </div>
       </Panel>
 
-      <div className="two-column">
-        <Panel title="Why this helps CIBC">
-          <div className="strategy-strip simplified">
-            {[
-              ["Attract", "Children meet CIBC when it is genuinely useful."],
-              ["Deepen", "Parents see CIBC coordinating family moments, not just accounts."],
-              ["Retain", "Students and caregivers stay connected through consent-based support."]
-            ].map(([title, text]) => (
-              <article key={title}>
-                <strong>{title}</strong>
-                <p>{text}</p>
-              </article>
-            ))}
-          </div>
-        </Panel>
-        <Panel title="Privacy and control">
-          <div className="advisor-disclaimer">
-            <AlertTriangle size={17} />
-            <span>
-              The detector explains opportunities. It does not open accounts, move money, or expose personal details
-              without consent.
-            </span>
-          </div>
-          <InsightText text="Every recommendation can show data source, confidence, permission status, and when advisor review is needed." />
-        </Panel>
-      </div>
-
-      <Panel title="Educational, Consent-Aware Recommendations">
-        <div className="insight-page-grid simplified">
-          {simplifiedInsights.map((insight) => (
-            <article className="insight-card" key={insight.title}>
-              <span className="category">{insight.category}</span>
-              <h3>{insight.title}</h3>
-              <p>{insight.body}</p>
-              <div className="source-row">
-                <span>Action: {insight.action}</span>
-                <span>Confidence: {insight.confidence}</span>
-                <span>Source: {insight.source}</span>
-              </div>
-              <button className="secondary-button compact" onClick={() => routeFromAction(insight.category, onNavigate)}>
-                {insight.action}
-              </button>
-            </article>
-          ))}
-        </div>
-      </Panel>
+      <section className="trust-mini-row">
+        <article>
+          <strong>Educational only</strong>
+          <span>No automatic product decisions.</span>
+        </article>
+        <article>
+          <strong>Consent-aware</strong>
+          <span>Personal details stay permission-based.</span>
+        </article>
+        <article>
+          <strong>Advisor-ready</strong>
+          <span>Major decisions route to human review.</span>
+        </article>
+      </section>
     </ModulePage>
   );
 }

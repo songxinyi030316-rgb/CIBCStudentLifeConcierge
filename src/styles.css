@@ -1218,6 +1218,278 @@ button {
   line-height: 1.35;
 }
 
+.engine-focus-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(310px, 0.55fr);
+  gap: 18px;
+  align-items: stretch;
+  border: 1px solid rgba(122, 0, 38, 0.13);
+  border-radius: 24px;
+  padding: 20px;
+  background:
+    linear-gradient(135deg, #fff7f9, #fff),
+    #fff;
+  box-shadow: 0 14px 34px rgba(45, 20, 29, 0.06);
+}
+
+.focus-copy {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+}
+
+.section-kicker {
+  color: var(--maroon);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.focus-copy h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.12;
+}
+
+.focus-copy p {
+  margin: 0;
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.focus-points,
+.context-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.focus-points span,
+.context-chip-row span {
+  border: 1px solid rgba(122, 0, 38, 0.1);
+  border-radius: 999px;
+  padding: 8px 11px;
+  color: var(--maroon);
+  background: rgba(122, 0, 38, 0.055);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.focus-visual {
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.focus-visual img {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+}
+
+.focus-visual div {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: #fff;
+  background: rgba(43, 13, 24, 0.76);
+  backdrop-filter: blur(10px);
+}
+
+.focus-visual strong {
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.focus-visual span {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.friendly-milestone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.friendly-milestone-grid article {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 14px;
+  background: #fff;
+}
+
+.friendly-milestone-grid img {
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  border-radius: 15px;
+  object-fit: cover;
+  box-shadow: 0 12px 24px rgba(45, 20, 29, 0.075);
+}
+
+.friendly-milestone-grid article:first-child {
+  border-color: rgba(122, 0, 38, 0.22);
+  background: #fff8fa;
+}
+
+.friendly-milestone-grid article > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--maroon);
+}
+
+.friendly-milestone-grid article > div span,
+.route-chip-grid span,
+.context-chip-row strong {
+  color: var(--maroon);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.friendly-milestone-grid h3,
+.friendly-milestone-grid p {
+  margin: 0;
+}
+
+.friendly-milestone-grid h3 {
+  font-size: 19px;
+}
+
+.friendly-milestone-grid p {
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.route-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.route-chip-grid button {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 13px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #fff, #fbf8f9);
+  text-align: left;
+}
+
+.route-chip-grid button:hover {
+  border-color: rgba(122, 0, 38, 0.24);
+  transform: translateY(-1px);
+}
+
+.route-chip-grid strong {
+  color: var(--ink);
+}
+
+.simple-journey-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.simple-journey-row::before {
+  content: "";
+  position: absolute;
+  top: 26px;
+  right: 7%;
+  left: 7%;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(122, 0, 38, 0.18), rgba(197, 149, 50, 0.45));
+}
+
+.simple-journey-row article {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px 12px;
+  background: #fff;
+  text-align: center;
+}
+
+.simple-journey-row article.active {
+  border-color: rgba(122, 0, 38, 0.25);
+  background: #fff6f8;
+  box-shadow: 0 12px 28px rgba(122, 0, 38, 0.08);
+}
+
+.simple-journey-row i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--maroon);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.simple-journey-row span {
+  color: var(--maroon);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.simple-journey-row strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.trust-mini-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.trust-mini-row article {
+  border: 1px solid rgba(122, 0, 38, 0.12);
+  border-radius: 18px;
+  padding: 15px;
+  background: #fffaf4;
+}
+
+.trust-mini-row strong {
+  display: block;
+  color: var(--maroon);
+}
+
+.trust-mini-row span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .action-area-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3493,6 +3765,7 @@ button {
   .priority-banner,
   .dashboard-two-column,
   .detector-intro,
+  .engine-focus-card,
   .engine-summary,
   .gic-planner-grid,
   .investment-analysis-grid {
@@ -3504,6 +3777,10 @@ button {
   .priority-moment-grid,
   .engine-signal-grid,
   .milestone-card-grid,
+  .friendly-milestone-grid,
+  .route-chip-grid,
+  .simple-journey-row,
+  .trust-mini-row,
   .action-area-grid,
   .child-journey-timeline,
   .layer-map,
@@ -3576,6 +3853,10 @@ button {
   .priority-moment-grid,
   .engine-signal-grid,
   .milestone-card-grid,
+  .friendly-milestone-grid,
+  .route-chip-grid,
+  .simple-journey-row,
+  .trust-mini-row,
   .action-area-grid,
   .child-journey-timeline,
   .strategy-strip.simplified,
@@ -3614,6 +3895,10 @@ button {
     right: 50%;
     bottom: -9px;
     transform: translateX(50%) rotate(135deg);
+  }
+
+  .simple-journey-row::before {
+    display: none;
   }
 
   .app-shell {
@@ -3731,6 +4016,10 @@ button {
   .priority-moment-grid,
   .engine-signal-grid,
   .milestone-card-grid,
+  .friendly-milestone-grid,
+  .route-chip-grid,
+  .simple-journey-row,
+  .trust-mini-row,
   .action-area-grid,
   .child-journey-timeline,
   .strategy-strip.simplified,
