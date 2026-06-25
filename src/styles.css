@@ -1644,6 +1644,99 @@ button {
   gap: 12px;
 }
 
+.member-suggestion-grid,
+.product-pathway-grid,
+.workflow-rail,
+.goal-evaluator-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.member-suggestion-grid,
+.product-pathway-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.goal-evaluator-grid {
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+  align-items: stretch;
+}
+
+.member-suggestion-card,
+.product-pathway-card,
+.workflow-rail article {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 15px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(45, 20, 29, 0.035);
+}
+
+.member-suggestion-card span,
+.product-pathway-card span,
+.workflow-rail span {
+  display: block;
+  color: var(--maroon);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.member-suggestion-card strong,
+.product-pathway-card strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.member-suggestion-card p,
+.product-pathway-card p,
+.workflow-rail p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.product-pathway-card {
+  display: grid;
+  gap: 10px;
+  background: var(--panel-2);
+}
+
+.product-pathway-card.compact {
+  align-content: start;
+}
+
+.workflow-rail {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  counter-reset: workflow;
+}
+
+.workflow-rail article {
+  position: relative;
+  padding-top: 42px;
+}
+
+.workflow-rail article::before {
+  position: absolute;
+  top: 14px;
+  left: 15px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--maroon);
+  font-size: 12px;
+  font-weight: 900;
+  counter-increment: workflow;
+  content: counter(workflow);
+}
+
 .opportunity-timeline {
   position: relative;
   display: grid;
@@ -2436,7 +2529,11 @@ button {
   .opportunity-grid,
   .module-preview-grid,
   .module-preview-grid.compact-preview,
-  .admin-summary-grid {
+  .admin-summary-grid,
+  .member-suggestion-grid,
+  .product-pathway-grid,
+  .workflow-rail,
+  .goal-evaluator-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2484,7 +2581,11 @@ button {
   .opportunity-grid,
   .member-detail-grid,
   .eligibility-grid,
-  .admin-summary-grid {
+  .admin-summary-grid,
+  .member-suggestion-grid,
+  .product-pathway-grid,
+  .workflow-rail,
+  .goal-evaluator-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2575,6 +2676,10 @@ button {
   .module-preview-grid.compact-preview,
   .planning-card-grid,
   .next-best-grid,
+  .member-suggestion-grid,
+  .product-pathway-grid,
+  .workflow-rail,
+  .goal-evaluator-grid,
   .results-card,
   .comparison-chart,
   .money-grid,

@@ -127,10 +127,10 @@ const familyMembers: FamilyMember[] = [
 
 const navItems: { route: Route; label: string; icon: LucideIcon }[] = [
   { route: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { route: "family", label: "Family", icon: UsersRound },
-  { route: "planning", label: "Planning", icon: Gauge },
-  { route: "investments", label: "Investments", icon: PiggyBank },
+  { route: "planning", label: "Family Status", icon: Gauge },
+  { route: "investments", label: "Goal Evaluator", icon: PiggyBank },
   { route: "ai", label: "AI Coach", icon: Sparkles },
+  { route: "family", label: "Family Admin", icon: UsersRound },
   { route: "settings", label: "Settings", icon: Settings }
 ];
 
@@ -556,7 +556,11 @@ const goalFitForScenario = (scenario: GicScenario) => {
 const taxNoteForAccount = (accountType: string) => {
   if (accountType === "TFSA") return "TFSA growth may be tax-free subject to contribution room.";
   if (accountType === "RRSP") return "RRSP growth may be tax-deferred, with withdrawals taxable under applicable rules.";
+  if (accountType === "RRIF") return "RRIF income rules and minimum withdrawals should be reviewed before maturity planning.";
   if (accountType === "RESP") return "RESP treatment depends on plan rules, grants, and education withdrawals.";
+  if (accountType === "RDSP") return "RDSP eligibility, grants, bonds, and withdrawal rules require specialist review.";
+  if (accountType === "FHSA") return "FHSA use depends on age, residency, first-home eligibility, and contribution room.";
+  if (accountType === "LIF / LRIF") return "Locked-in retirement income accounts have withdrawal limits and provincial rules.";
   return "Interest in non-registered accounts may be taxable and should be reviewed with an advisor.";
 };
 
@@ -616,19 +620,17 @@ function useAppRoute(): [
   const navigate = (nextRoute: Route) => {
     const planningMap: Partial<Record<Route, PlanningSubRoute>> = {
       overview: "overview",
-      goals: "overview",
       education: "education",
       housing: "housing",
-      cashflow: "cashflow",
       subscriptions: "subscriptions",
       caregiving: "caregiving",
-      protection: "protection",
-      legacy: "legacy"
+      protection: "protection"
     };
     const familyMap: Partial<Record<Route, FamilySubRoute>> = {
       accounts: "accounts",
       documents: "documents",
-      permissions: "permissions"
+      permissions: "permissions",
+      legacy: "documents"
     };
 
     if (nextRoute in planningMap) {
@@ -643,6 +645,10 @@ function useAppRoute(): [
     }
     if (nextRoute === "insights") {
       setRoute("ai");
+      return;
+    }
+    if (nextRoute === "goals" || nextRoute === "cashflow") {
+      setRoute("investments");
       return;
     }
     setRoute(nextRoute);
@@ -1184,7 +1190,7 @@ function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
             <p>A household-first view of what is on track, what needs review, and what needs action.</p>
           </div>
           <button className="secondary-button compact" onClick={() => onNavigate("planning")}>
-            Open planning
+            Open family status
           </button>
         </div>
         <ReadinessMatrix />
@@ -1207,13 +1213,13 @@ function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
             ]}
           />
           <PreviewCard
-            title="Household Cash Flow"
-            route="cashflow"
+            title="Goal Capability"
+            route="investments"
             onNavigate={onNavigate}
             stats={[
-              ["Income", "$12,400"],
-              ["Expenses", "$8,540"],
-              ["Safe balance", "$3,860"]
+              ["Cash flow efficiency", "31% capacity"],
+              ["Goal funding readiness", "Moderate"],
+              ["Product pathway", "GIC + fund mix"]
             ]}
           />
           <PreviewCard
@@ -1299,6 +1305,26 @@ function FamilyMembersAdmin() {
           ))}
         </div>
       </Panel>
+      <Panel title="Member-Specific Opportunity Suggestions">
+        <p className="fineprint">
+          These examples are educational prompts based on permissioned transaction patterns. FamilyOS avoids judgmental language and does not expose private transactions without consent.
+        </p>
+        <div className="member-suggestion-grid">
+          {[
+            ["Emma", "Student spending coach", "Dining and food delivery are trending above the mock student benchmark. Suggest a campus meal budget and weekly spending alert."],
+            ["Alex", "Mortgage readiness", "HELOC utilization and mortgage renewal timing suggest reviewing repayment options before renewal season."],
+            ["Jamie", "Shared bills optimization", "Utilities and insurance are assigned to Jamie. FamilyOS can suggest annual policy review and duplicate subscription checks."],
+            ["Grace", "Care budget alert", "Care-related spending is up 18%. Suggest confirming pharmacy, home support, and unusual transaction alerts."],
+            ["Ethan", "Future education planning", "RESP planning can be reviewed before high school to smooth contribution timing."]
+          ].map(([member, title, text]) => (
+            <article className="member-suggestion-card" key={member}>
+              <span>{member}</span>
+              <strong>{title}</strong>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </Panel>
     </>
   );
 }
@@ -1316,11 +1342,9 @@ function PlanningPage({
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "education", label: "Education", icon: GraduationCap },
     { id: "housing", label: "Housing", icon: Home },
-    { id: "cashflow", label: "Cash Flow", icon: CircleDollarSign },
     { id: "subscriptions", label: "Subscriptions", icon: ReceiptText },
     { id: "caregiving", label: "Caregiving", icon: HeartPulse },
-    { id: "protection", label: "Protection", icon: ShieldCheck },
-    { id: "legacy", label: "Legacy", icon: ScrollText }
+    { id: "protection", label: "Protection", icon: ShieldCheck }
   ];
 
   return (
@@ -1332,8 +1356,8 @@ function PlanningPage({
           </div>
           <div>
             <span>Planning Readiness</span>
-            <h2>Major family responsibilities in one planning workspace</h2>
-            <p>Move from opportunity detection into education, housing, cash flow, subscriptions, caregiving, protection, and legacy action plans.</p>
+            <h2>Family Status: daily household responsibilities</h2>
+            <p>Monitor education, housing, subscriptions, caregiving, and protection as one family-status layer before moving into goal evaluation.</p>
           </div>
         </div>
       </section>
@@ -1341,11 +1365,9 @@ function PlanningPage({
       {activeTab === "overview" && <PlanningOverview onNavigate={onNavigate} />}
       {activeTab === "education" && <EducationPlanner />}
       {activeTab === "housing" && <HousingHub />}
-      {activeTab === "cashflow" && <CashFlow />}
       {activeTab === "subscriptions" && <SubscriptionControl />}
       {activeTab === "caregiving" && <CaregivingMode />}
       {activeTab === "protection" && <Protection />}
-      {activeTab === "legacy" && <LegacyMap />}
     </main>
   );
 }
@@ -1354,18 +1376,16 @@ function PlanningOverview({ onNavigate }: { onNavigate: (route: Route) => void }
   const cards = [
     ["Education", "Needs Review", "RESP path may fall short by $7,800.", "Open Education Plan", "education"],
     ["Housing", "On Track", "Mortgage renewal preparation starts in 8 months.", "Open Housing Plan", "housing"],
-    ["Cash Flow", "On Track", "Safe-to-spend for the next 14 days is $1,240.", "Open Cash Flow", "cashflow"],
     ["Subscriptions", "Action Recommended", "Two trials convert to paid plans this week.", "Manage Subscriptions", "subscriptions"],
     ["Caregiving", "Action Recommended", "Grace has an unusual transaction and higher care spend.", "Review Caregiving", "caregiving"],
-    ["Protection", "Needs Review", "Beneficiaries and life coverage need review.", "Review Protection", "protection"],
-    ["Legacy", "Missing Info", "Grace's POA and several estate files can be added.", "Open Legacy Plan", "legacy"]
+    ["Protection", "Needs Review", "Beneficiaries and life coverage need review.", "Review Protection", "protection"]
   ] as const;
 
   return (
     <main className="module-page planning-overview">
       <div className="section-heading">
-        <h2>Planning Overview</h2>
-        <p>Choose the planning area that matches the family opportunity you want to act on.</p>
+        <h2>Family Status Overview</h2>
+        <p>Layer 1 summarizes the household's current responsibilities before Goal Evaluator assesses capability.</p>
       </div>
       <div className="planning-card-grid">
         {cards.map(([title, status, text, cta, route]) => (
@@ -1822,15 +1842,61 @@ function Investments() {
   return (
     <ModulePage
       icon={PiggyBank}
-      kicker="Investments & GIC Planner"
-      title="Investments & GIC Planner"
-      summary="Compare investment options, projected returns, and liquidity trade-offs for your family goals."
-      insight="Based on Emma's university timeline, a 1-2 year non-cashable GIC may fit better than a 5-year locked option."
+      kicker="Family Goal Evaluator"
+      title="Cash flow capability, goals, and investment pathways"
+      summary="Evaluate whether the Chen Family has enough cash-flow efficiency and product alignment to reach education, housing, caregiving, retirement, and legacy goals."
+      insight="Goal recommendations should not default to a locked GIC. FamilyOS compares liquidity needs, time horizon, principal size, and CIBC product pathways before suggesting next steps."
     >
       <div className="advisor-disclaimer">
         <AlertTriangle size={17} />
         <span>These rates are illustrative for prototype purposes only.</span>
       </div>
+
+      <section className="goal-evaluator-grid">
+        <Panel title="Family Goal Capability">
+          <div className="module-grid">
+            {[
+              ["Monthly income", "$12,400"],
+              ["Monthly expenses", "$8,540"],
+              ["Available capacity", "$3,860"],
+              ["Savings rate", "14%"],
+              ["Emergency coverage", "2.1 months"],
+              ["Goal funding readiness", "Moderate"]
+            ].map(([label, value]) => (
+              <MetricTile key={label} label={label} value={value} />
+            ))}
+          </div>
+        </Panel>
+        <Panel title="Goal Readiness Drivers">
+          <ProgressBar label="Cash-flow efficiency" value={69} />
+          <ProgressBar label="Education funding capacity" value={64} />
+          <ProgressBar label="Emergency liquidity" value={52} />
+          <ProgressBar label="Retirement contribution momentum" value={58} />
+          <ProgressBar label="Caregiving reserve durability" value={61} />
+        </Panel>
+      </section>
+
+      <Panel title="Suggested CIBC Product Pathways">
+        <p className="fineprint">
+          Mock pathways for prototype only. Actual product eligibility, rates, risk, and suitability should be confirmed with a CIBC advisor.
+        </p>
+        <div className="product-pathway-grid">
+          {[
+            ["Short-term liquidity", "High-interest savings or cashable GIC", "Emergency reserve and caregiving funds that should not be locked in."],
+            ["Education timeline", "1-2 year non-cashable GIC or RESP ladder", "Emma's known university timeline may fit a short, planned maturity window."],
+            ["Longer-term growth", "Balanced mutual fund / managed portfolio", "For goals beyond 3-5 years where liquidity and market risk can be reviewed."],
+            ["Income-oriented reserve", "Monthly income fund", "For families that want distributions, with advisor review of risk and fees."],
+            ["Tax-efficient growth", "TFSA / RRSP / RESP / FHSA education", "Registered account choice depends on owner, eligibility, contribution room, and goal."]
+          ].map(([title, product, reason]) => (
+            <article className="product-pathway-card" key={title}>
+              <span>{title}</span>
+              <strong>{product}</strong>
+              <p>{reason}</p>
+              <button className="secondary-button compact">Discuss with advisor</button>
+            </article>
+          ))}
+        </div>
+      </Panel>
 
       <section className="gic-planner-grid">
         <Panel title="GIC Scenario Builder">
@@ -1848,7 +1914,7 @@ function Investments() {
             <ScenarioSelect
               label="Account type"
               value={scenario.accountType}
-              options={["Non-registered", "TFSA", "RRSP", "RESP"]}
+              options={["Non-registered", "TFSA", "RRSP", "RRIF", "RESP", "RDSP", "FHSA", "LIF / LRIF"]}
               onChange={(value) => setScenario({ ...scenario, accountType: value })}
             />
             <ScenarioSelect
@@ -1894,6 +1960,22 @@ function Investments() {
         </Panel>
       </section>
 
+      <Panel title="GIC Classification Notes">
+        <div className="product-pathway-grid">
+          {[
+            ["Liquidity", "Cashable, redeemable, non-redeemable, market-linked"],
+            ["Registered accounts", "TFSA, RRSP, RRIF, RESP, RDSP, FHSA, LIF / LRIF"],
+            ["Payout style", "Monthly, annual, compounded, or paid at maturity"],
+            ["Household fit", "Use lock-in only when goal timing and liquidity reserve are clear"]
+          ].map(([title, detail]) => (
+            <article className="product-pathway-card compact" key={title}>
+              <span>{title}</span>
+              <strong>{detail}</strong>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
       <Panel title="Recommended Options for the Chen Family">
         <div className="gic-recommendation-grid">
           {recommendedGicOptions.map((option) => {
@@ -1927,6 +2009,48 @@ function Investments() {
               </article>
             );
           })}
+        </div>
+      </Panel>
+
+      <Panel title="Beyond GIC: Investment Suggestion Mix">
+        <div className="investment-insight-grid">
+          {[
+            {
+              text: "If principal is not large enough to make GIC interest meaningful, consider an advisor-reviewed balanced mutual fund pathway for longer-term goals.",
+              source: "Cash-flow capacity + goal horizon",
+              confidence: "Medium",
+              action: "Compare fund pathways"
+            },
+            {
+              text: "Short-term goals should preserve liquidity. A high-interest savings structure or cashable GIC may fit better than a locked 5-year product.",
+              source: "Emergency reserve + caregiving reserve",
+              confidence: "High",
+              action: "Review liquidity reserve"
+            },
+            {
+              text: "For Emma's education, a planned RESP withdrawal ladder can be paired with short GIC maturities and student banking education.",
+              source: "Verified RESP + education timeline",
+              confidence: "High",
+              action: "Open education pathway"
+            },
+            {
+              text: "For retirement, TFSA/RRSP contribution strategy and a managed portfolio conversation may matter more than one standalone GIC comparison.",
+              source: "Contribution room + retirement goal",
+              confidence: "Medium",
+              action: "Book advisor review"
+            }
+          ].map((item) => (
+            <article className="advisor-insight-card" key={item.text}>
+              <Sparkles size={17} />
+              <p>{item.text}</p>
+              <div>
+                <span>Data source: {item.source}</span>
+                <span>Confidence: {item.confidence}</span>
+                <span>Recommended action: {item.action}</span>
+              </div>
+              <button className="secondary-button compact">View pathway</button>
+            </article>
+          ))}
         </div>
       </Panel>
 
@@ -2032,8 +2156,9 @@ function Investments() {
       <div className="advisor-disclaimer">
         <AlertTriangle size={17} />
         <span>
-          Projected returns are estimates based on illustrative prototype rates. Actual rates, eligibility, tax treatment, and
-          product suitability should be confirmed with a CIBC advisor.
+          Projected returns are estimates based on illustrative prototype rates. RESP may allow joint original subscribers in some family situations,
+          while TFSA, RRSP, FHSA, and RRIF are generally individual registered accounts. Actual rates, eligibility, tax treatment,
+          ownership rules, and product suitability should be confirmed with a CIBC advisor.
         </span>
       </div>
     </ModulePage>
@@ -2187,7 +2312,9 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
     ["In 14 months", "Mortgage renewal preparation window", "Start reviewing documents, HELOC utilization, and renewal scenarios before the pressure window.", "Open Housing Plan", "housing"],
     ["In 18 months", "First-year university funding deadline", "RESP withdrawals, rent support, scholarships, and OSAP planning should be coordinated.", "Review Education Plan", "education"],
     ["At age 65", "RRSP to RRIF education milestone", "AI Coach can remind the family to learn about registered retirement income transitions.", "Open GIC Advisor", "investments"],
-    ["Grace", "Long-term care review recommended", "Care spending is rising and Grace's permissioned care budget may need a family review.", "Review Caregiving", "caregiving"]
+    ["Grace", "Long-term care review recommended", "Care spending is rising and Grace's permissioned care budget may need a family review.", "Review Caregiving", "caregiving"],
+    ["Future event", "New baby RESP opportunity", "If a new child is added to the family profile, AI Coach can route the family to RESP education and advisor booking.", "View family setup", "family"],
+    ["Future event", "First job income event", "A first job can trigger TFSA education, budgeting prompts, and payroll deposit setup guidance.", "Open Goal Evaluator", "investments"]
   ] as const;
 
   const eligibilityEvents = [
@@ -2195,6 +2322,8 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
     ["Child turns 18", "FHSA / credit education"],
     ["First job", "TFSA and budgeting education"],
     ["Home purchase", "Mortgage and insurance review"],
+    ["Marriage", "Joint financial planning"],
+    ["New immigrant", "FHSA eligibility timeline"],
     ["Retirement age", "RRSP/RRIF transition education"],
     ["Aging parent", "Caregiving and POA review"]
   ];
@@ -2216,6 +2345,22 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
       summary="FamilyOS scans life stages, product eligibility, household goals, and verified CIBC data to identify what your family may need to consider next."
       insight="AI Coach provides educational prompts and planning reminders. It does not open accounts, move money, or make legal, tax, insurance, or investment decisions without user consent and advisor review."
     >
+      <Panel title="Opportunity Detection Workflow">
+        <div className="workflow-rail">
+          {[
+            ["Family member age", "Detect upcoming eligibility changes such as Emma turning 18."],
+            ["Account structure", "Check RESP, TFSA, RRSP, mortgage, cards, and permissioned care context."],
+            ["Future eligibility change", "Map life stage to products such as FHSA, RESP, TFSA, RRSP/RRIF, GIC, mortgage, or advisor booking."],
+            ["Trigger insight", "Explain why it matters, what data was used, and where the family should go next."]
+          ].map(([title, text]) => (
+            <article key={title}>
+              <span>{title}</span>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
       <Panel title="Opportunity Timeline">
         <div className="opportunity-timeline">
           {opportunityTimeline.map(([time, title, detail, cta, route]) => (
@@ -2228,6 +2373,22 @@ function AICoachPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
                   {cta}
                 </button>
               </div>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Eligibility Gap Monitor">
+        <div className="product-pathway-grid">
+          {[
+            ["FHSA awareness gap", "Emma turns 18 next year. FamilyOS can educate the family early, but Emma must qualify and act for herself."],
+            ["RESP timing gap", "RESP withdrawal planning should begin before first-year tuition and rent deadlines."],
+            ["RRSP to RRIF gap", "Retirement income education can start before mandatory conversion decisions."],
+            ["Product tool gap", "CIBC has strong individual tools; AI Coach connects them across family life events."]
+          ].map(([title, text]) => (
+            <article className="product-pathway-card compact" key={title}>
+              <span>{title}</span>
+              <strong>{text}</strong>
             </article>
           ))}
         </div>
