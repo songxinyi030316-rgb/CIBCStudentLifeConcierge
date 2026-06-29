@@ -2916,83 +2916,509 @@ function ProductLearningPage({ onNavigate }: { onNavigate: (route: Route) => voi
   );
 }
 
+type LearningProduct = {
+  category: string;
+  name: string;
+  question: string;
+  what: string;
+  goodFor: string;
+  watchOut: string;
+  returns: string;
+  support: string;
+};
+
+const cibcLearningProducts: LearningProduct[] = [
+  {
+    category: "Education",
+    name: "RESP",
+    question: "How does education savings help?",
+    what: "A registered plan designed to help families save for post-secondary education.",
+    goodFor: "Education planning, grant conversations, and parent support planning.",
+    watchOut: "Withdrawal timing, grant treatment, and beneficiary rules need review.",
+    returns: "Contribution rhythm, investment choice, grants, and timing.",
+    support: "RESP review and advisor conversation"
+  },
+  {
+    category: "Banking",
+    name: "Student Banking",
+    question: "When should Emma start banking independently?",
+    what: "Everyday banking support for student life, spending, and account ownership.",
+    goodFor: "Preparing debit, direct deposit, rent, and spending habits.",
+    watchOut: "Privacy and parent visibility should reset as account ownership changes.",
+    returns: "Not an investment product; value comes from habit-building and account readiness.",
+    support: "Student banking setup"
+  },
+  {
+    category: "Banking",
+    name: "Chequing Accounts",
+    question: "Where should everyday household money live?",
+    what: "A day-to-day account for deposits, bill payments, debit purchases, and transfers.",
+    goodFor: "Payroll, shared bills, student spending, and regular family cash flow.",
+    watchOut: "Monthly fees, transaction limits, and overdraft habits should be reviewed.",
+    returns: "Not built for investment growth; value comes from access and payments.",
+    support: "Account selection and cash-flow conversation"
+  },
+  {
+    category: "Banking",
+    name: "Savings Accounts",
+    question: "Where should short-term reserves sit?",
+    what: "A deposit account for emergency savings, short-term goals, and planned spending.",
+    goodFor: "Emergency funds, tuition reserves, care budgets, and near-term goals.",
+    watchOut: "Interest rates may be lower than term products and can change.",
+    returns: "Posted interest rate, balance tier, and how long funds stay saved.",
+    support: "Savings rhythm and emergency reserve review"
+  },
+  {
+    category: "Banking",
+    name: "Youth / Client Under 25 Banking",
+    question: "How can younger family members build money habits?",
+    what: "Banking options and account guidance designed for children, teens, and young adults.",
+    goodFor: "Allowance, first debit habits, student transitions, and financial literacy.",
+    watchOut: "Parental visibility and consent should change as the child matures.",
+    returns: "Not an investment product; value comes from habit-building.",
+    support: "Youth banking and family money habit coaching"
+  },
+  {
+    category: "Banking",
+    name: "Newcomer Banking",
+    question: "What if a family member is new to Canada?",
+    what: "Banking support for newcomers setting up accounts, credit, and everyday payments.",
+    goodFor: "Starting Canadian banking, building credit history, and settling cash flow.",
+    watchOut: "Eligibility, ID requirements, and credit history need confirmation.",
+    returns: "Not an investment product; value comes from setup and access.",
+    support: "New to Canada banking conversation"
+  },
+  {
+    category: "Banking",
+    name: "Seniors Banking",
+    question: "How can banking stay simple for older adults?",
+    what: "Account and service guidance for older adults managing bills, access, and safety.",
+    goodFor: "Simplified bill management, trusted contact conversations, and fraud awareness.",
+    watchOut: "Family visibility must stay consent-based and revocable.",
+    returns: "Not an investment product; value comes from clarity and safety.",
+    support: "Senior banking and caregiver support conversation"
+  },
+  {
+    category: "Banking",
+    name: "US Cross-Border Banking",
+    question: "What if the family has U.S. expenses?",
+    what: "Banking support for families who spend, study, travel, or hold obligations in the U.S.",
+    goodFor: "U.S. tuition, travel, property, shopping, and cross-border cash flow.",
+    watchOut: "Exchange rates, fees, tax context, and account ownership need review.",
+    returns: "Not an investment product; value comes from currency access and convenience.",
+    support: "Cross-border banking review"
+  },
+  {
+    category: "Cards",
+    name: "Credit Cards",
+    question: "Which card type fits a household need?",
+    what: "A payment product that can support everyday purchases, rewards, travel, or credit building.",
+    goodFor: "Household spending, student credit education, travel, and recurring payments.",
+    watchOut: "Interest, fees, limits, and responsible repayment matter.",
+    returns: "Rewards, cash back, insurance benefits, fees, and interest costs.",
+    support: "Card comparison and credit education"
+  },
+  {
+    category: "Cards",
+    name: "Student Credit Cards",
+    question: "When should a student learn credit?",
+    what: "A starter credit product that can help eligible students learn responsible repayment.",
+    goodFor: "Credit education, small recurring bills, and supervised independence.",
+    watchOut: "Missed payments can affect credit history; limits should be modest.",
+    returns: "Not an investment product; value comes from credit-building discipline.",
+    support: "Student credit education"
+  },
+  {
+    category: "Cards",
+    name: "Travel / Rewards Cards",
+    question: "Can family spending support travel goals?",
+    what: "Credit cards that may earn travel points, rewards, or related benefits.",
+    goodFor: "Families who pay balances in full and value travel benefits.",
+    watchOut: "Annual fees, interest costs, and reward redemption rules matter.",
+    returns: "Spending pattern, reward program, fees, and repayment behaviour.",
+    support: "Rewards card comparison"
+  },
+  {
+    category: "Cards",
+    name: "Cash Back Cards",
+    question: "Can recurring household spending earn cash back?",
+    what: "Credit cards that may return a portion of eligible spending as cash back.",
+    goodFor: "Groceries, gas, bills, and predictable family spending categories.",
+    watchOut: "Carrying a balance can outweigh cash-back value.",
+    returns: "Eligible categories, earn rates, caps, fees, and repayment habits.",
+    support: "Cash-back card review"
+  },
+  {
+    category: "Cards",
+    name: "Low Interest / No Fee Cards",
+    question: "What if simplicity matters more than rewards?",
+    what: "Credit card options that may prioritize lower rates or no annual fee.",
+    goodFor: "Simple credit access, emergency backup, or lower-cost borrowing discipline.",
+    watchOut: "Rates, fees, and repayment behaviour still need review.",
+    returns: "Not an investment product; value comes from cost control.",
+    support: "Card fit conversation"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Fixed-Rate Mortgage",
+    question: "When does payment certainty matter?",
+    what: "A mortgage with an interest rate fixed for the selected term.",
+    goodFor: "Households that want predictable payments during a busy family period.",
+    watchOut: "Prepayment rules and renewal timing should be understood.",
+    returns: "Not an investment product; total cost depends on rate, term, amortization, and payments.",
+    support: "Mortgage term and renewal review"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Variable Rate Mortgage",
+    question: "What if rates change after renewal?",
+    what: "A mortgage where the interest rate can move with the rate environment.",
+    goodFor: "Families comfortable reviewing payment and rate uncertainty.",
+    watchOut: "Payments or interest costs may change if rates move.",
+    returns: "Not an investment product; cost depends on prime-rate movements and mortgage terms.",
+    support: "Rate scenario conversation"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Mortgage Renewal",
+    question: "What should we prepare before renewal?",
+    what: "A review point before the current mortgage term ends.",
+    goodFor: "Comparing payment comfort, term options, prepayment plans, and family cash-flow needs.",
+    watchOut: "Waiting until the last minute can limit planning time.",
+    returns: "Not an investment product; outcome depends on rate, term, and repayment choices.",
+    support: "Advisor mortgage renewal meeting"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Home Power Plan / HELOC",
+    question: "Should home equity be used carefully?",
+    what: "A secured borrowing solution that can connect home equity to credit access.",
+    goodFor: "Large planned expenses, renovation reserves, or flexible borrowing needs.",
+    watchOut: "Borrowing against home equity increases debt and requires repayment discipline.",
+    returns: "Not an investment product; cost depends on borrowing rate and repayment plan.",
+    support: "HELOC and debt-plan review"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Personal Loan",
+    question: "When does a fixed loan make sense?",
+    what: "A borrowing product with a structured repayment schedule.",
+    goodFor: "Known expenses where a clear repayment plan is helpful.",
+    watchOut: "Interest cost and affordability should be reviewed before borrowing.",
+    returns: "Not an investment product; cost depends on rate, term, and payment schedule.",
+    support: "Borrowing solution review"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Personal Line of Credit",
+    question: "When does flexible borrowing help?",
+    what: "A reusable borrowing option that may help with flexible or unexpected expenses.",
+    goodFor: "Short-term cash-flow smoothing when repayment is planned.",
+    watchOut: "Flexible access can make debt linger without a repayment plan.",
+    returns: "Not an investment product; cost depends on rate, balance, and repayment behaviour.",
+    support: "Line of credit fit conversation"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Student Line of Credit",
+    question: "What if school costs exceed savings?",
+    what: "Borrowing support designed for eligible education costs.",
+    goodFor: "Tuition, rent, books, and professional program costs when funding gaps remain.",
+    watchOut: "Debt should be planned with repayment after school in mind.",
+    returns: "Not an investment product; cost depends on rate, draw amount, and repayment timing.",
+    support: "Student borrowing and funding review"
+  },
+  {
+    category: "Home & Borrowing",
+    name: "Car Loan",
+    question: "How should vehicle costs fit the household plan?",
+    what: "A loan used to finance a vehicle purchase.",
+    goodFor: "Known transportation needs with a structured payment plan.",
+    watchOut: "Insurance, maintenance, and depreciation affect total cost.",
+    returns: "Not an investment product; cost depends on rate, term, and vehicle price.",
+    support: "Borrowing affordability review"
+  },
+  {
+    category: "Investing",
+    name: "TFSA",
+    question: "Where does flexible tax-efficient saving fit?",
+    what: "A registered account where growth may be tax-free, subject to contribution room.",
+    goodFor: "Eligible adults and medium-term savings.",
+    watchOut: "Contribution room and ownership must be confirmed.",
+    returns: "Product held inside the TFSA, time horizon, and market conditions.",
+    support: "Contribution room and account review"
+  },
+  {
+    category: "Investing",
+    name: "FHSA",
+    question: "What if a family member is saving for a first home?",
+    what: "A registered account for eligible first-home savings.",
+    goodFor: "Young adults preparing for a first home purchase.",
+    watchOut: "Eligibility, contribution room, and withdrawal rules should be confirmed.",
+    returns: "Product held inside the FHSA, time horizon, and tax treatment.",
+    support: "First-home savings conversation"
+  },
+  {
+    category: "Investing",
+    name: "RRSP / RRIF / LIF",
+    question: "How does retirement planning fit the household?",
+    what: "Registered retirement accounts for saving, converting, and drawing retirement income.",
+    goodFor: "Retirement contributions, income planning, and later-life cash-flow conversations.",
+    watchOut: "Tax treatment, withdrawal rules, and timing matter.",
+    returns: "Investment mix, contribution timing, withdrawal timing, and tax treatment.",
+    support: "Retirement planning review"
+  },
+  {
+    category: "Investing",
+    name: "RDSP",
+    question: "What if disability planning is part of the household?",
+    what: "A registered disability savings plan for eligible beneficiaries.",
+    goodFor: "Long-term support planning for a family member with a disability.",
+    watchOut: "Eligibility, grants, bonds, and withdrawal rules need advisor review.",
+    returns: "Contributions, government support, investment mix, and time horizon.",
+    support: "RDSP eligibility and planning discussion"
+  },
+  {
+    category: "Investing",
+    name: "CIBC Investment Account",
+    question: "What if the goal is not registered?",
+    what: "A non-registered investment account for holding investments outside registered plans.",
+    goodFor: "Longer-term goals after registered account choices are reviewed.",
+    watchOut: "Tax reporting and ownership should be understood.",
+    returns: "Investment mix, market performance, taxes, and time horizon.",
+    support: "Non-registered investing discussion"
+  },
+  {
+    category: "GICs",
+    name: "CIBC Flexible GIC",
+    question: "What if we need access to the money?",
+    what: "A cashable fixed-rate GIC designed for guaranteed returns with access flexibility.",
+    goodFor: "Short-term goals and emergency liquidity.",
+    watchOut: "Usually lower return than locked options.",
+    returns: "Interest rates, term length, and cashability.",
+    support: "Short-term savings option review"
+  },
+  {
+    category: "GICs",
+    name: "CIBC Bonus Rate / Non-Redeemable GIC",
+    question: "When does locking in make sense?",
+    what: "A predictable fixed-return option where funds are generally locked until maturity.",
+    goodFor: "Known timelines where money is not needed early.",
+    watchOut: "Less flexibility if tuition, rent, or emergencies arrive sooner.",
+    returns: "Term length, rate environment, and maturity timing.",
+    support: "GIC term comparison"
+  },
+  {
+    category: "GICs",
+    name: "CIBC Variable Rate GIC",
+    question: "What if prime rates change?",
+    what: "A GIC with an interest rate tied to CIBC Prime Rate.",
+    goodFor: "Families who want guaranteed principal with rate sensitivity.",
+    watchOut: "Interest earned can change as the prime-rate environment changes.",
+    returns: "CIBC Prime Rate movements, balance, and term.",
+    support: "Variable-rate GIC review"
+  },
+  {
+    category: "GICs",
+    name: "CIBC EasyBuilder GIC",
+    question: "Could a ladder help avoid one big maturity date?",
+    what: "A laddered GIC approach across multiple terms.",
+    goodFor: "Staggering maturities for predictable access windows.",
+    watchOut: "Some funds may still be locked until their maturity date.",
+    returns: "The rate and timing of each laddered term.",
+    support: "GIC ladder conversation"
+  },
+  {
+    category: "GICs",
+    name: "CIBC Market Linked GIC",
+    question: "Can we keep principal protection with market upside?",
+    what: "A principal-protected product with return linked to market performance if held to maturity.",
+    goodFor: "Longer timelines where upside is useful and uncertainty is understood.",
+    watchOut: "Return is uncertain and product details matter.",
+    returns: "Underlying index performance, term, participation rules, and caps.",
+    support: "Advisor-reviewed product suitability"
+  },
+  {
+    category: "Investing",
+    name: "Mutual Funds",
+    question: "What if the goal is longer-term growth?",
+    what: "Professionally managed diversified investments.",
+    goodFor: "Longer-term goals with tolerance for market movement.",
+    watchOut: "Market value can move up or down and suitability matters.",
+    returns: "Market performance, fund mix, fees, and time horizon.",
+    support: "Risk profile and advisor review"
+  },
+  {
+    category: "Investing",
+    name: "ETFs",
+    question: "What if we want market exposure with trading flexibility?",
+    what: "Exchange-traded funds that provide diversified market exposure and trade on an exchange.",
+    goodFor: "Longer-term investors who understand market movement.",
+    watchOut: "Market price can move during the day and investment fit should be reviewed.",
+    returns: "Market exposure, fees, trading price, and time horizon.",
+    support: "Self-directed or advisor-supported ETF discussion"
+  },
+  {
+    category: "Investing",
+    name: "Portfolio Solutions",
+    question: "Can we use a managed all-in-one option?",
+    what: "Managed portfolio solutions using funds and/or ETFs.",
+    goodFor: "Diversified long-term planning.",
+    watchOut: "Risk profile, fees, and suitability should be reviewed.",
+    returns: "Asset mix, market performance, rebalancing, and time horizon.",
+    support: "Portfolio suitability conversation"
+  },
+  {
+    category: "Investing",
+    name: "Structured Notes / Principal Protected Notes",
+    question: "What if we want structured market exposure?",
+    what: "Structured investments that can link outcomes to markets, sometimes with principal protection features if held to maturity.",
+    goodFor: "Advisor-led conversations for families comparing defined outcome trade-offs.",
+    watchOut: "Terms, liquidity, issuer risk, caps, and suitability are complex.",
+    returns: "Reference asset performance, term, protection features, caps, and fees.",
+    support: "Advisor and product-specialist review"
+  },
+  {
+    category: "Investing",
+    name: "Self-Directed Investing / Investor's Edge",
+    question: "What if someone wants to choose their own investments?",
+    what: "A self-directed investing platform for trading investments such as stocks, ETFs, and GICs.",
+    goodFor: "Experienced investors who want control and research tools.",
+    watchOut: "The investor is responsible for decisions and risk management.",
+    returns: "Chosen investments, trading behaviour, fees, and market performance.",
+    support: "Investor education and platform setup"
+  },
+  {
+    category: "Investing",
+    name: "Canadian Depositary Receipts",
+    question: "Can Canadian investors access global companies differently?",
+    what: "Canadian-listed securities that provide exposure to shares of global companies.",
+    goodFor: "Investors exploring global equity exposure in Canadian dollars.",
+    watchOut: "Market risk, currency structure, and concentration should be understood.",
+    returns: "Underlying share performance, currency mechanics, and market conditions.",
+    support: "Self-directed investing education"
+  },
+  {
+    category: "Investing",
+    name: "Precious Metals",
+    question: "Where do metals fit in a portfolio conversation?",
+    what: "A way to purchase precious metals as part of a broader investing discussion.",
+    goodFor: "Diversification conversations for knowledgeable investors.",
+    watchOut: "Prices can be volatile and storage/liquidity should be understood.",
+    returns: "Metal price movement, spread, fees, and holding period.",
+    support: "Advisor or specialist conversation"
+  },
+  {
+    category: "Insurance",
+    name: "Travel Medical Insurance",
+    question: "How should travel health risks be covered?",
+    what: "Coverage designed to help with eligible medical costs while travelling.",
+    goodFor: "Family trips, student travel, snowbird travel, and cross-border visits.",
+    watchOut: "Coverage limits, exclusions, pre-existing conditions, and trip length matter.",
+    returns: "Not an investment product; value comes from protection.",
+    support: "Travel insurance quote or coverage review"
+  },
+  {
+    category: "Insurance",
+    name: "Trip Cancellation / Interruption Insurance",
+    question: "What if a trip gets cancelled or interrupted?",
+    what: "Coverage that may help with eligible trip cancellation or interruption costs.",
+    goodFor: "Large family trips, school travel, and non-refundable bookings.",
+    watchOut: "Covered reasons, documentation, and timing requirements matter.",
+    returns: "Not an investment product; value comes from risk protection.",
+    support: "Travel coverage comparison"
+  },
+  {
+    category: "Insurance",
+    name: "Comprehensive Travel Insurance",
+    question: "Can travel coverage be bundled?",
+    what: "A broader travel insurance package combining multiple travel-related coverages.",
+    goodFor: "Families wanting a more complete travel protection conversation.",
+    watchOut: "Coverage details, exclusions, and eligibility should be reviewed.",
+    returns: "Not an investment product; value comes from protection.",
+    support: "Travel insurance review"
+  },
+  {
+    category: "Insurance",
+    name: "Creditor Insurance for Mortgages",
+    question: "How would the mortgage be protected?",
+    what: "Insurance related to mortgage obligations if certain insured events occur.",
+    goodFor: "Families reviewing mortgage protection and household resilience.",
+    watchOut: "Coverage, exclusions, cost, and alternatives should be reviewed.",
+    returns: "Not an investment product; value comes from protection.",
+    support: "Protection and mortgage advisor conversation"
+  },
+  {
+    category: "Insurance",
+    name: "Creditor Insurance for Loans / Lines of Credit",
+    question: "How would debt payments be protected?",
+    what: "Insurance related to eligible loan or line-of-credit payments after certain insured events.",
+    goodFor: "Families with debt obligations and income-risk concerns.",
+    watchOut: "Eligibility, coverage limits, exclusions, and cost need review.",
+    returns: "Not an investment product; value comes from protection.",
+    support: "Borrowing and protection review"
+  },
+  {
+    category: "Insurance",
+    name: "CIBC Payment Protector Insurance",
+    question: "What protects credit card payments?",
+    what: "Optional insurance for eligible CIBC credit card payment protection.",
+    goodFor: "Families reviewing card balances and protection needs.",
+    watchOut: "Cost, eligibility, exclusions, and whether coverage fits should be reviewed.",
+    returns: "Not an investment product; value comes from protection.",
+    support: "Credit card protection review"
+  },
+  {
+    category: "Payments & Transfers",
+    name: "Global Money Transfer",
+    question: "How can family support move internationally?",
+    what: "A service to send money internationally from eligible CIBC accounts.",
+    goodFor: "Supporting family abroad, overseas education, or cross-border responsibilities.",
+    watchOut: "Exchange rates, recipient details, limits, and destination rules matter.",
+    returns: "Not an investment product; value comes from transfer access.",
+    support: "International transfer setup"
+  },
+  {
+    category: "Payments & Transfers",
+    name: "Wire Transfer",
+    question: "When is a wire transfer needed?",
+    what: "A transfer method often used for larger or more formal domestic or international payments.",
+    goodFor: "Tuition, property, legal, or international transactions that require wire details.",
+    watchOut: "Fees, timing, accuracy, and fraud checks matter.",
+    returns: "Not an investment product; value comes from secure payment routing.",
+    support: "Wire transfer guidance"
+  },
+  {
+    category: "Payments & Transfers",
+    name: "Mobile Wallet / Ways to Pay",
+    question: "How can everyday family spending be simpler?",
+    what: "Digital payment options for eligible cards and accounts.",
+    goodFor: "Convenient everyday purchases and student payment habits.",
+    watchOut: "Device security, card controls, and spending awareness matter.",
+    returns: "Not an investment product; value comes from convenience.",
+    support: "Digital payment setup"
+  },
+  {
+    category: "Payments & Transfers",
+    name: "Foreign Cash",
+    question: "What if the family needs cash before travel?",
+    what: "Foreign currency cash services for eligible travel needs.",
+    goodFor: "Travel preparation and emergency cash planning.",
+    watchOut: "Exchange rates, availability, and safe carrying limits matter.",
+    returns: "Not an investment product; value comes from travel readiness.",
+    support: "Travel banking preparation"
+  }
+];
+
 function ProductLearningGrid({ compact = false }: { compact?: boolean }) {
-  const [openProduct, setOpenProduct] = useState("RESP");
-  const products = [
-    {
-      name: "RESP",
-      question: "How does education savings help?",
-      what: "A registered plan designed to help families save for post-secondary education.",
-      goodFor: "Education planning and grant conversations.",
-      watchOut: "Withdrawal timing, grant treatment, and beneficiary rules need review.",
-      returns: "Contribution rhythm, investment choice, grants, and timing.",
-      support: "RESP review and advisor conversation"
-    },
-    {
-      name: "Student Banking",
-      question: "When should Emma start banking independently?",
-      what: "Everyday banking support for student life, spending, and account ownership.",
-      goodFor: "Preparing debit, direct deposit, rent, and spending habits.",
-      watchOut: "Privacy and parent visibility should reset as account ownership changes.",
-      returns: "Not an investment product; value comes from habit-building and account readiness.",
-      support: "Student banking setup"
-    },
-    {
-      name: "Cashable GIC",
-      question: "What if we need access to the money?",
-      what: "A lower-return savings option that may offer easier access than locked GICs.",
-      goodFor: "Short-term goals and emergency liquidity.",
-      watchOut: "Usually lower return than locked options.",
-      returns: "Interest rates, term length, and cashability.",
-      support: "Short-term savings option review"
-    },
-    {
-      name: "Non-redeemable GIC",
-      question: "When does locking in make sense?",
-      what: "A predictable fixed-return option where funds are generally locked until maturity.",
-      goodFor: "Known timelines where money is not needed early.",
-      watchOut: "Less flexibility if tuition, rent, or emergencies arrive sooner.",
-      returns: "Term length, rate environment, and maturity timing.",
-      support: "GIC term comparison"
-    },
-    {
-      name: "Market Linked GIC",
-      question: "Can we keep principal protection with market upside?",
-      what: "A principal-protected product with return linked to market performance if held to maturity.",
-      goodFor: "Longer timelines where upside is useful and uncertainty is understood.",
-      watchOut: "Return is uncertain and product details matter.",
-      returns: "Underlying index performance, term, participation rules, and caps.",
-      support: "Advisor-reviewed product suitability"
-    },
-    {
-      name: "TFSA",
-      question: "Where does flexible tax-efficient saving fit?",
-      what: "A registered account where growth may be tax-free, subject to contribution room.",
-      goodFor: "Eligible adults and medium-term savings.",
-      watchOut: "Contribution room and ownership must be confirmed.",
-      returns: "Product held inside the TFSA, time horizon, and market conditions.",
-      support: "Contribution room and account review"
-    },
-    {
-      name: "Mutual Funds",
-      question: "What if the goal is longer-term growth?",
-      what: "Professionally managed diversified investments.",
-      goodFor: "Longer-term goals with tolerance for market movement.",
-      watchOut: "Market value can move up or down and suitability matters.",
-      returns: "Market performance, fund mix, fees, and time horizon.",
-      support: "Risk profile and advisor review"
-    },
-    {
-      name: "Portfolio Solutions",
-      question: "Can we use a managed all-in-one option?",
-      what: "Managed portfolio solutions using funds and/or ETFs.",
-      goodFor: "Diversified long-term planning.",
-      watchOut: "Risk profile, fees, and suitability should be reviewed.",
-      returns: "Asset mix, market performance, rebalancing, and time horizon.",
-      support: "Portfolio suitability conversation"
-    }
-  ];
-  const visibleProducts = compact ? products.slice(0, 6) : products;
+  const [openProduct, setOpenProduct] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const categories = ["All", ...Array.from(new Set(cibcLearningProducts.map((product) => product.category)))];
+  const filteredProducts =
+    selectedCategory === "All"
+      ? cibcLearningProducts
+      : cibcLearningProducts.filter((product) => product.category === selectedCategory);
+  const visibleProducts = compact ? cibcLearningProducts.slice(0, 6) : filteredProducts;
 
   if (compact) {
     return (
@@ -3008,43 +3434,73 @@ function ProductLearningGrid({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="product-accordion">
-      {visibleProducts.map((product) => (
-        <article className={openProduct === product.name ? "open" : ""} key={product.name}>
-          <button onClick={() => setOpenProduct(openProduct === product.name ? "" : product.name)}>
-            <div>
-              <span>{product.name}</span>
-              <strong>{product.question}</strong>
-            </div>
-            <ChevronRight size={18} />
+    <section className="product-library-panel">
+      <div className="product-library-header">
+        <div>
+          <span className="section-kicker">CIBC Product Library</span>
+          <h3>Open only what you want to learn.</h3>
+          <p>
+            FamilyOS keeps the library collapsed by default, then explains one CIBC option at a time in plain language.
+          </p>
+        </div>
+        <strong>{visibleProducts.length} topics</strong>
+      </div>
+      <div className="product-category-filter" aria-label="Product category filter">
+        {categories.map((category) => (
+          <button
+            className={selectedCategory === category ? "active" : ""}
+            key={category}
+            onClick={() => {
+              setSelectedCategory(category);
+              setOpenProduct("");
+            }}
+          >
+            {category}
           </button>
-          {openProduct === product.name && (
-            <div className="product-accordion-body">
+        ))}
+      </div>
+      <div className="product-accordion">
+        {visibleProducts.map((product) => (
+          <article className={openProduct === product.name ? "open" : ""} key={product.name}>
+            <button onClick={() => setOpenProduct(openProduct === product.name ? "" : product.name)}>
               <div>
-                <strong>What is it?</strong>
-                <p>{product.what}</p>
+                <span>{product.name}</span>
+                <strong>{product.question}</strong>
               </div>
-              <div>
-                <strong>Good for</strong>
-                <p>{product.goodFor}</p>
+              <ChevronRight size={18} />
+            </button>
+            {openProduct === product.name && (
+              <div className="product-accordion-body">
+                <div>
+                  <strong>What is it?</strong>
+                  <p>{product.what}</p>
+                </div>
+                <div>
+                  <strong>Good for</strong>
+                  <p>{product.goodFor}</p>
+                </div>
+                <div>
+                  <strong>Watch out for</strong>
+                  <p>{product.watchOut}</p>
+                </div>
+                <div>
+                  <strong>What affects returns</strong>
+                  <p>{product.returns}</p>
+                </div>
+                <div>
+                  <strong>Related CIBC support</strong>
+                  <p>{product.support}</p>
+                </div>
               </div>
-              <div>
-                <strong>Watch out for</strong>
-                <p>{product.watchOut}</p>
-              </div>
-              <div>
-                <strong>What affects returns</strong>
-                <p>{product.returns}</p>
-              </div>
-              <div>
-                <strong>Related CIBC support</strong>
-                <p>{product.support}</p>
-              </div>
-            </div>
-          )}
-        </article>
-      ))}
-    </div>
+            )}
+          </article>
+        ))}
+      </div>
+      <p className="prototype-source-note">
+        Product examples are educational and based on CIBC public product families. FamilyOS prepares questions for an
+        advisor; it does not guarantee suitability or replace advisor review.
+      </p>
+    </section>
   );
 }
 
