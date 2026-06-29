@@ -7874,9 +7874,13 @@ button {
   background: var(--panel-2);
 }
 
-.advisor-summary-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+  .advisor-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-accordion-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
 .question-layout {
   display: grid;
@@ -7892,6 +7896,401 @@ button {
 
 .concierge-onboarding .onboarding-card {
   max-width: 1120px;
+}
+
+.home-priority-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(420px, 1fr);
+  gap: 18px;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: clamp(18px, 2.4vw, 26px);
+  background:
+    radial-gradient(circle at 96% 8%, rgba(185, 134, 44, 0.18), transparent 24%),
+    linear-gradient(135deg, #fff 0%, #fff7f9 100%);
+  box-shadow: var(--shadow);
+}
+
+.home-priority-copy h2 {
+  margin: 8px 0;
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 0.98;
+}
+
+.home-priority-copy p {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.primary-recommendation-card {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(122, 0, 38, 0.14);
+  border-radius: 22px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 42px rgba(55, 28, 38, 0.1);
+}
+
+.primary-recommendation-card span,
+.recommendation-progress strong {
+  color: var(--maroon);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.primary-recommendation-card h3 {
+  margin: 6px 0 4px;
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.08;
+}
+
+.primary-recommendation-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.compact-continuity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.compact-continuity h2,
+.saved-plan-panel h2 {
+  margin: 6px 0;
+}
+
+.secondary-opportunity-list {
+  display: grid;
+  gap: 10px;
+}
+
+.secondary-opportunity-list button {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: var(--ink);
+  background: #fff;
+  text-align: left;
+  transition: 180ms ease;
+}
+
+.secondary-opportunity-list button:hover {
+  transform: translateX(3px);
+  border-color: rgba(122, 0, 38, 0.22);
+  background: #fff7f9;
+}
+
+.secondary-opportunity-list span {
+  color: var(--maroon);
+  font-weight: 950;
+}
+
+.secondary-opportunity-list strong,
+.secondary-opportunity-list small {
+  display: block;
+}
+
+.secondary-opportunity-list small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.advisor-next-step-card {
+  grid-template-columns: minmax(0, 1fr) 260px;
+  padding-block: 22px;
+}
+
+.advisor-next-step-card h2 {
+  font-size: clamp(30px, 3.4vw, 48px);
+}
+
+.secondary-choice-heading {
+  margin-top: -4px;
+}
+
+.secondary-choice-heading h2 {
+  font-size: 22px;
+}
+
+.family-journey-timeline-card,
+.household-timeline-panel,
+.product-learning-conversation {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 22px;
+  background: #fff;
+  box-shadow: 0 16px 44px rgba(55, 28, 38, 0.08);
+}
+
+.family-journey-timeline {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.family-journey-timeline::before {
+  position: absolute;
+  top: 22px;
+  bottom: 22px;
+  left: 24px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--maroon), rgba(185, 134, 44, 0.55), var(--line));
+  content: "";
+}
+
+.family-journey-timeline article {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: #fff;
+}
+
+.family-journey-timeline article.active {
+  border-color: rgba(122, 0, 38, 0.32);
+  background: #fff6f8;
+}
+
+.timeline-marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.timeline-marker span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--maroon);
+  font-weight: 950;
+}
+
+.timeline-content small {
+  color: var(--maroon);
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.timeline-content h3 {
+  margin: 5px 0;
+  font-size: 22px;
+}
+
+.timeline-content p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.household-admin-lower {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.section-heading.with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.member-timeline-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.member-timeline-list article {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: #fff;
+}
+
+.member-timeline-person {
+  display: grid;
+  gap: 6px;
+}
+
+.member-timeline-person span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  color: #fff;
+  background: var(--maroon);
+  font-weight: 950;
+}
+
+.member-timeline-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.member-timeline-steps div {
+  position: relative;
+  flex: 1 0 150px;
+  min-width: 150px;
+}
+
+.member-timeline-steps div::before {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--line);
+  content: "";
+}
+
+.member-timeline-steps div span {
+  position: relative;
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #fff;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.member-timeline-steps div.active span {
+  border-color: rgba(122, 0, 38, 0.25);
+  color: var(--maroon);
+  background: #fff2f5;
+}
+
+.primary-learning-entry {
+  min-height: 220px;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(185, 134, 44, 0.2), transparent 24%),
+    linear-gradient(135deg, #fff 0%, #fff6f8 100%);
+}
+
+.product-learning-conversation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 20px;
+  align-items: center;
+}
+
+.product-learning-conversation h2 {
+  margin: 8px 0;
+  font-size: clamp(28px, 3vw, 42px);
+}
+
+.product-accordion {
+  display: grid;
+  gap: 12px;
+}
+
+.product-accordion article {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  transition: 180ms ease;
+}
+
+.product-accordion article.open {
+  border-color: rgba(122, 0, 38, 0.24);
+  box-shadow: 0 18px 40px rgba(55, 28, 38, 0.08);
+}
+
+.product-accordion article > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  border: 0;
+  padding: 18px 20px;
+  background: transparent;
+  text-align: left;
+}
+
+.product-accordion article.open > button svg {
+  transform: rotate(90deg);
+}
+
+.product-accordion span {
+  display: block;
+  color: var(--maroon);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.product-accordion strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.product-accordion-body {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding: 16px;
+  background: #fbfafb;
+}
+
+.product-accordion-body div {
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+}
+
+.product-accordion-body p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 750;
+}
+
+.compact-learning {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.compact-learning article {
+  gap: 6px;
 }
 
 @media (max-width: 1180px) {
@@ -7928,6 +8327,9 @@ button {
   .concierge-section.two-column,
   .scan-finish-layout,
   .question-layout,
+  .home-priority-card,
+  .advisor-next-step-card,
+  .product-learning-conversation,
   .gic-planner-grid,
   .investment-analysis-grid {
     grid-template-columns: 1fr;
@@ -8081,6 +8483,7 @@ button {
   .advisor-summary-grid,
   .journey-progress,
   .concierge-stepper,
+  .product-accordion-body,
   .what-if-grid {
     grid-template-columns: 1fr;
   }

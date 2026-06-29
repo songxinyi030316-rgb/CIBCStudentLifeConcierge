@@ -2267,7 +2267,7 @@ function renderRoute(
     case "overview":
       return <DashboardPage onNavigate={onNavigate} />;
     case "family":
-      return <MyHouseholdPage activeTab={familySubRoute} onTabChange={setFamilySubRoute} />;
+      return <MyHouseholdPage activeTab={familySubRoute} onTabChange={setFamilySubRoute} onNavigate={onNavigate} />;
     case "planning":
       return <JourneysPage onNavigate={onNavigate} />;
     case "investments":
@@ -2293,77 +2293,76 @@ function DashboardPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
 
   return (
     <main className="concierge-home">
-      <section className="concierge-greeting-card">
-        <div>
-          <span className="section-kicker">AI household financial concierge</span>
+      <section className="home-priority-card">
+        <div className="home-priority-copy">
+          <span className="section-kicker">Today's household scan</span>
           <h2>Good afternoon, Alex.</h2>
-          <p>
-            Your household looks mostly on track today. I found one thing worth planning together, and we can take it
-            one step at a time.
-          </p>
-          <div className="concierge-priority">
-            <span>Today's household priority</span>
-            <h3>Emma starts university in about 10 months.</h3>
-            <p>Would you like to spend 3 minutes preparing tuition, rent, RESP timing, and student banking?</p>
-            <div className="concierge-actions">
-              <button className="primary-button" onClick={() => onNavigate("ai")}>
-                Let's start
-              </button>
-              <button className="secondary-button" onClick={() => onNavigate("planning")}>
-                Show me other household moments
-              </button>
-            </div>
-          </div>
+          <p>I reviewed your household today. Here's what I'd recommend working on.</p>
         </div>
-        <figure className="concierge-small-visual">
-          <img src={educationImage} alt="Parent and student reviewing education planning" />
-          <figcaption>FamilyOS noticed Emma's next big transition.</figcaption>
-        </figure>
+        <div className="primary-recommendation-card">
+          <div>
+            <span>Primary recommendation</span>
+            <h3>Emma starts university in 10 months.</h3>
+            <p>FamilyOS noticed an active RESP, an education goal, and a funding review still to complete.</p>
+          </div>
+          <div className="recommendation-progress">
+            <ProgressBar label="Journey progress" value={35} />
+            <strong>Next step: Review RESP funding</strong>
+          </div>
+          <button className="primary-button" onClick={() => onNavigate("ai")}>
+            Continue Journey
+          </button>
+        </div>
       </section>
 
-      <section className="concierge-section two-column">
-        <Panel title="Continue current journey">
-          <div className="journey-continue-card">
-            <span>Emma University Journey</span>
-            <h3>Step 3: Review available funding</h3>
-            <ProgressBar label="Journey progress" value={48} />
-            <p>You have already reviewed the situation and first-year cost estimate.</p>
-            <button className="primary-button compact" onClick={() => onNavigate("ai")}>
-              Continue journey
-            </button>
-          </div>
-        </Panel>
-        <Panel title="Saved plans">
-          <div className="saved-plan-list">
-            {[
-              ["Education plan", "Draft saved today"],
-              ["Subscription cleanup", "2 trials to review"],
-              ["Care plan", "Grace alert pending"]
-            ].map(([title, detail]) => (
-              <article key={title}>
-                <CheckCircle2 size={17} />
-                <div>
-                  <strong>{title}</strong>
-                  <span>{detail}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </Panel>
+      <section className="concierge-section compact-continuity">
+        <div>
+          <span className="section-kicker">Continue current journey</span>
+          <h2>Emma University Journey</h2>
+          <p>Current stage: Review available funding. Next: learn short-term CIBC options in plain language.</p>
+        </div>
+        <button className="secondary-button" onClick={() => onNavigate("ai")}>
+          Resume
+        </button>
       </section>
 
       <section className="concierge-section">
         <div className="section-heading">
-          <h2>Upcoming household moments</h2>
-          <p>You do not need to plan everything today. FamilyOS will keep these visible when they matter.</p>
+          <h2>Other household opportunities</h2>
+          <p>These are secondary. FamilyOS will bring them forward when they become the next best action.</p>
         </div>
-        <div className="household-moment-strip">
+        <div className="secondary-opportunity-list">
           {upcomingMoments.map(([time, title, detail, route]) => (
             <button key={title} onClick={() => onNavigate(route as Route)}>
               <span>{time}</span>
-              <strong>{title}</strong>
-              <small>{detail}</small>
+              <div>
+                <strong>{title}</strong>
+                <small>{detail}</small>
+              </div>
+              <ChevronRight size={18} />
             </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="concierge-section saved-plan-panel">
+        <div className="section-heading">
+          <h2>Completed and saved plans</h2>
+          <p>Progress you can return to before an advisor conversation.</p>
+        </div>
+        <div className="saved-plan-list">
+          {[
+            ["Education plan", "Draft saved today"],
+            ["Subscription cleanup", "2 trials to review"],
+            ["Care plan", "Grace alert pending"]
+          ].map(([title, detail]) => (
+            <article key={title}>
+              <CheckCircle2 size={17} />
+              <div>
+                <strong>{title}</strong>
+                <span>{detail}</span>
+              </div>
+            </article>
           ))}
         </div>
       </section>
@@ -2384,18 +2383,20 @@ function FamilyAdvisorPage({ onNavigate }: { onNavigate: (route: Route) => void 
 
   return (
     <main className="family-advisor-page">
-      <section className="advisor-welcome-card">
+      <section className="advisor-welcome-card advisor-next-step-card">
         <div>
           <span className="section-kicker">Family Advisor</span>
-          <h2>What would you like to work on today?</h2>
-          <p>
-            FamilyOS helps households understand what is happening, identify what matters next, and take the next step
-            with CIBC.
-          </p>
+          <h2>Let's continue Emma's university journey.</h2>
+          <p>FamilyOS recommends starting here because university is the next major household moment.</p>
+          <button className="primary-button" onClick={() => setSelectedPrompt("Prepare Emma for university")}>Continue recommended journey</button>
         </div>
         <SmallIllustration image={onboardingImage} caption="A guided place to work through household decisions." />
       </section>
 
+      <div className="section-heading secondary-choice-heading">
+        <h2>Need a different focus?</h2>
+        <p>These are available, but FamilyOS will keep Emma's journey as today's primary path.</p>
+      </div>
       <section className="advisor-prompt-grid">
         {prompts.map((prompt) => (
           <button key={prompt} className={selectedPrompt === prompt ? "active" : ""} onClick={() => setSelectedPrompt(prompt)}>
@@ -2554,11 +2555,11 @@ function EmmaUniversityJourney({ onNavigate }: { onNavigate: (route: Route) => v
 
 function JourneysPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const moments = [
-    ["Emma", "University in 10 months", "FamilyOS noticed an active RESP, an education goal, and a rent budget still to complete.", "Start journey", "ai"],
-    ["Ethan", "Money habit learning window", "Age 11 is a useful moment for savings goals, allowance rhythm, and simple spending reflection.", "Create habit plan", "education"],
-    ["Grace", "Caregiving and fraud protection", "Care spending increased and an unusual transaction needs permissioned review.", "Review care plan", "caregiving"],
-    ["Alex + Jamie", "Mortgage renewal preparation", "Renewal is approaching in 14 months, while education and caregiving costs overlap.", "Plan renewal", "housing"],
-    ["Household", "Subscription cleanup opportunity", "Two free trials convert soon and duplicate streaming services may overlap.", "Manage subscriptions", "subscriptions"]
+    ["Now", "Emma University", "Review RESP funding", "35%", "Continue", "ai"],
+    ["4 days", "Subscription trials", "Set cap or cancel before charges begin", "20%", "Review", "subscriptions"],
+    ["This quarter", "Grace Care", "Confirm unusual activity and care permissions", "55%", "Review", "caregiving"],
+    ["14 months", "Mortgage Renewal", "Prepare renewal questions and rate scenarios", "18%", "Plan", "housing"],
+    ["Long term", "Retirement and Legacy", "Review documents and beneficiary readiness", "12%", "Preview", "family"]
   ] as const;
 
   return (
@@ -2574,20 +2575,30 @@ function JourneysPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
         <img className="module-art" src={onboardingImage} alt="Family reviewing household moments" />
       </section>
-      <div className="household-moment-grid">
-        {moments.map(([owner, title, detail, cta, route]) => (
-          <article key={title}>
-            <span>{owner}</span>
-            <h3>{title}</h3>
-            <p>{detail}</p>
-            <div>
-              <small>Related CIBC support</small>
-              <strong>{title.includes("University") ? "RESP, Student Banking, Advisor meeting" : "Existing CIBC tools and advisor prompts"}</strong>
-            </div>
-            <button className="primary-button compact" onClick={() => onNavigate(route as Route)}>{cta}</button>
-          </article>
-        ))}
-      </div>
+      <section className="family-journey-timeline-card">
+        <div className="section-heading">
+          <h2>Your household journey</h2>
+          <p>FamilyOS prioritizes the next moment, then keeps upcoming moments in sequence.</p>
+        </div>
+        <div className="family-journey-timeline">
+          {moments.map(([time, title, nextStep, progress, cta, route], index) => (
+            <article className={index === 0 ? "active" : ""} key={title}>
+              <div className="timeline-marker">
+                <span>{index + 1}</span>
+              </div>
+              <div className="timeline-content">
+                <small>{time}</small>
+                <h3>{title}</h3>
+                <p>Next milestone: {nextStep}</p>
+                <ProgressBar label="Progress" value={Number(progress.replace("%", ""))} />
+              </div>
+              <button className={index === 0 ? "primary-button compact" : "secondary-button compact"} onClick={() => onNavigate(route as Route)}>
+                {cta}
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
@@ -2596,29 +2607,28 @@ function ProductLearningPage({ onNavigate }: { onNavigate: (route: Route) => voi
   const [showStrategyBuilder, setShowStrategyBuilder] = useState(false);
   return (
     <main className="product-learning-page">
-      <section className="module-hero with-image">
-        <div className="module-hero-copy">
-          <div className="module-icon"><PiggyBank size={28} /></div>
-          <div>
-            <span>Product Learning</span>
-            <h2>Understand options before making decisions.</h2>
-            <p>FamilyOS explains trade-offs in plain language, then prepares questions for advisor review.</p>
-          </div>
-        </div>
-        <img className="module-art" src={legacyImage} alt="Financial documents and planning notes arranged neatly" />
-      </section>
-      <ProductLearningGrid />
-      <section className="strategy-builder-entry">
+      <section className="strategy-builder-entry primary-learning-entry">
         <div>
           <span className="section-kicker">Strategy Builder</span>
-          <h2>Ready to compare possible paths?</h2>
-          <p>Explore illustrative scenarios for Emma's education timeline. This is educational and should be reviewed with a CIBC advisor.</p>
+          <h2>Ready to compare financial strategies?</h2>
+          <p>Let's build one together for Emma's education timeline, then prepare questions for advisor review.</p>
         </div>
         <button className="primary-button" onClick={() => setShowStrategyBuilder(!showStrategyBuilder)}>
-          {showStrategyBuilder ? "Hide Strategy Builder" : "Open Strategy Builder"}
+          {showStrategyBuilder ? "Hide Strategy Builder" : "Start Strategy Builder"}
         </button>
       </section>
       {showStrategyBuilder && <GoalAdvisorConversation />}
+
+      <section className="product-learning-conversation">
+        <div>
+          <span className="section-kicker">Product Learning</span>
+          <h2>What would you like to understand today?</h2>
+          <p>Open one topic at a time. FamilyOS explains products in plain language, not as a product catalogue.</p>
+        </div>
+        <SmallIllustration image={legacyImage} caption="Learn only what you need for the next decision." />
+      </section>
+
+      <ProductLearningGrid />
       <div className="advisor-action-row">
         <button className="secondary-button" onClick={() => onNavigate("ai")}>Return to Family Advisor</button>
       </div>
@@ -2627,32 +2637,131 @@ function ProductLearningPage({ onNavigate }: { onNavigate: (route: Route) => voi
 }
 
 function ProductLearningGrid({ compact = false }: { compact?: boolean }) {
+  const [openProduct, setOpenProduct] = useState("RESP");
   const products = [
-    ["RESP", "Education savings account for a child's post-secondary costs.", "Education planning", "Grant rules, withdrawal timing, advisor review"],
-    ["Student banking", "Everyday banking designed for student life.", "Account ownership and spending habits", "Credit education and consent reset"],
-    ["Cashable GIC", "A lower-return savings option that lets you access money more easily.", "Short-term goals and liquidity", "Lower return than locked options"],
-    ["Non-redeemable GIC", "A locked savings option with more predictable return.", "Known timelines", "Funds are locked until maturity"],
-    ["Market Linked GIC", "Principal protection with return linked to market performance.", "Longer timelines and upside education", "Return is uncertain and advisor review matters"],
-    ["TFSA", "A flexible registered account where growth may be tax-free.", "Eligible adults and medium-term goals", "Contribution room must be confirmed"],
-    ["Mutual Funds", "Professionally managed diversified investments.", "Longer-term growth goals", "Market value can move up or down"],
-    ["Portfolio Solutions", "All-in-one managed portfolio using funds or ETFs.", "Diversified long-term planning", "Suitability and risk profile review"]
+    {
+      name: "RESP",
+      question: "How does education savings help?",
+      what: "A registered plan designed to help families save for post-secondary education.",
+      goodFor: "Education planning and grant conversations.",
+      watchOut: "Withdrawal timing, grant treatment, and beneficiary rules need review.",
+      returns: "Contribution rhythm, investment choice, grants, and timing.",
+      support: "RESP review and advisor conversation"
+    },
+    {
+      name: "Student Banking",
+      question: "When should Emma start banking independently?",
+      what: "Everyday banking support for student life, spending, and account ownership.",
+      goodFor: "Preparing debit, direct deposit, rent, and spending habits.",
+      watchOut: "Privacy and parent visibility should reset as account ownership changes.",
+      returns: "Not an investment product; value comes from habit-building and account readiness.",
+      support: "Student banking setup"
+    },
+    {
+      name: "Cashable GIC",
+      question: "What if we need access to the money?",
+      what: "A lower-return savings option that may offer easier access than locked GICs.",
+      goodFor: "Short-term goals and emergency liquidity.",
+      watchOut: "Usually lower return than locked options.",
+      returns: "Interest rates, term length, and cashability.",
+      support: "Short-term savings option review"
+    },
+    {
+      name: "Non-redeemable GIC",
+      question: "When does locking in make sense?",
+      what: "A predictable fixed-return option where funds are generally locked until maturity.",
+      goodFor: "Known timelines where money is not needed early.",
+      watchOut: "Less flexibility if tuition, rent, or emergencies arrive sooner.",
+      returns: "Term length, rate environment, and maturity timing.",
+      support: "GIC term comparison"
+    },
+    {
+      name: "Market Linked GIC",
+      question: "Can we keep principal protection with market upside?",
+      what: "A principal-protected product with return linked to market performance if held to maturity.",
+      goodFor: "Longer timelines where upside is useful and uncertainty is understood.",
+      watchOut: "Return is uncertain and product details matter.",
+      returns: "Underlying index performance, term, participation rules, and caps.",
+      support: "Advisor-reviewed product suitability"
+    },
+    {
+      name: "TFSA",
+      question: "Where does flexible tax-efficient saving fit?",
+      what: "A registered account where growth may be tax-free, subject to contribution room.",
+      goodFor: "Eligible adults and medium-term savings.",
+      watchOut: "Contribution room and ownership must be confirmed.",
+      returns: "Product held inside the TFSA, time horizon, and market conditions.",
+      support: "Contribution room and account review"
+    },
+    {
+      name: "Mutual Funds",
+      question: "What if the goal is longer-term growth?",
+      what: "Professionally managed diversified investments.",
+      goodFor: "Longer-term goals with tolerance for market movement.",
+      watchOut: "Market value can move up or down and suitability matters.",
+      returns: "Market performance, fund mix, fees, and time horizon.",
+      support: "Risk profile and advisor review"
+    },
+    {
+      name: "Portfolio Solutions",
+      question: "Can we use a managed all-in-one option?",
+      what: "Managed portfolio solutions using funds and/or ETFs.",
+      goodFor: "Diversified long-term planning.",
+      watchOut: "Risk profile, fees, and suitability should be reviewed.",
+      returns: "Asset mix, market performance, rebalancing, and time horizon.",
+      support: "Portfolio suitability conversation"
+    }
   ];
   const visibleProducts = compact ? products.slice(0, 6) : products;
+
+  if (compact) {
+    return (
+      <div className="product-learning-grid compact-learning">
+        {visibleProducts.map((product) => (
+          <article key={product.name}>
+            <span>{product.name}</span>
+            <p>{product.what}</p>
+          </article>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="product-learning-grid">
-      {visibleProducts.map(([name, explanation, goodFor, watchOut]) => (
-        <article key={name}>
-          <span>{name}</span>
-          <p>{explanation}</p>
-          <div>
-            <strong>Good for</strong>
-            <small>{goodFor}</small>
-          </div>
-          <div>
-            <strong>Watch out for</strong>
-            <small>{watchOut}</small>
-          </div>
-          <button className="secondary-button compact">Discuss with advisor</button>
+    <div className="product-accordion">
+      {visibleProducts.map((product) => (
+        <article className={openProduct === product.name ? "open" : ""} key={product.name}>
+          <button onClick={() => setOpenProduct(openProduct === product.name ? "" : product.name)}>
+            <div>
+              <span>{product.name}</span>
+              <strong>{product.question}</strong>
+            </div>
+            <ChevronRight size={18} />
+          </button>
+          {openProduct === product.name && (
+            <div className="product-accordion-body">
+              <div>
+                <strong>What is it?</strong>
+                <p>{product.what}</p>
+              </div>
+              <div>
+                <strong>Good for</strong>
+                <p>{product.goodFor}</p>
+              </div>
+              <div>
+                <strong>Watch out for</strong>
+                <p>{product.watchOut}</p>
+              </div>
+              <div>
+                <strong>What affects returns</strong>
+                <p>{product.returns}</p>
+              </div>
+              <div>
+                <strong>Related CIBC support</strong>
+                <p>{product.support}</p>
+              </div>
+            </div>
+          )}
         </article>
       ))}
     </div>
@@ -2703,20 +2812,24 @@ function AdvisorSummaryPage({ onNavigate }: { onNavigate: (route: Route) => void
 
 function MyHouseholdPage({
   activeTab,
-  onTabChange
+  onTabChange,
+  onNavigate
 }: {
   activeTab: FamilySubRoute;
   onTabChange: (subRoute: FamilySubRoute) => void;
+  onNavigate: (route: Route) => void;
 }) {
-  return <FamilyAdminPage activeTab={activeTab} onTabChange={onTabChange} />;
+  return <FamilyAdminPage activeTab={activeTab} onTabChange={onTabChange} onNavigate={onNavigate} />;
 }
 
 function FamilyAdminPage({
   activeTab,
-  onTabChange
+  onTabChange,
+  onNavigate
 }: {
   activeTab: FamilySubRoute;
   onTabChange: (subRoute: FamilySubRoute) => void;
+  onNavigate: (route: Route) => void;
 }) {
   const tabs: { id: FamilySubRoute; label: string; icon: LucideIcon }[] = [
     { id: "members", label: "Members", icon: UsersRound },
@@ -2728,17 +2841,83 @@ function FamilyAdminPage({
   return (
     <ModulePage
       icon={UsersRound}
-      kicker="Family Administration Center"
-      title="Family, ownership, access, and documents"
-      summary="Manage the people, accounts, permissions, and shared documents that make FamilyOS consent-based."
-      insight="FamilyOS does not automatically grant control over another person's account. Access is consent-based, role-based, and revocable."
+      kicker="My Household"
+      title="What is happening across your family"
+      summary="FamilyOS starts with the household journey, then keeps ownership, permissions, and documents available when they matter."
+      insight="Access still stays consent-based. FamilyOS can explain household moments without exposing private transactions or granting account control."
     >
+      <HouseholdTimeline onNavigate={onNavigate} />
+      <section className="household-admin-lower">
+        <div className="section-heading">
+          <h2>Household controls</h2>
+          <p>Permissions, ownership, and documents stay available below the timeline.</p>
+        </div>
       <InternalTabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
       {activeTab === "members" && <FamilyMembersAdmin />}
       {activeTab === "accounts" && <AccountsPage compact />}
       {activeTab === "permissions" && <PermissionsPage compact />}
       {activeTab === "documents" && <DocumentsVault compact />}
+      </section>
     </ModulePage>
+  );
+}
+
+function HouseholdTimeline({ onNavigate }: { onNavigate: (route: Route) => void }) {
+  const householdTracks = [
+    {
+      name: "Emma",
+      age: 17,
+      route: "ai" as Route,
+      steps: ["University", "Student Banking", "Credit Building", "FHSA", "Career"]
+    },
+    {
+      name: "Grace",
+      age: 72,
+      route: "caregiving" as Route,
+      steps: ["Care Planning", "Fraud Protection", "POA", "Estate Review"]
+    },
+    {
+      name: "Alex",
+      age: 42,
+      route: "housing" as Route,
+      steps: ["Mortgage Renewal", "Caregiving Support", "Retirement Review"]
+    },
+    {
+      name: "Ethan",
+      age: 11,
+      route: "education" as Route,
+      steps: ["Money Habits", "Allowance", "First Debit", "First Job"]
+    }
+  ];
+
+  return (
+    <section className="household-timeline-panel">
+      <div className="section-heading with-action">
+        <div>
+          <h2>Household Timeline</h2>
+          <p>See what each family member is moving toward before opening permissions or admin details.</p>
+        </div>
+        <button className="primary-button" onClick={() => onNavigate("ai")}>View Emma Timeline</button>
+      </div>
+      <div className="member-timeline-list">
+        {householdTracks.map((track) => (
+          <article key={track.name}>
+            <div className="member-timeline-person">
+              <strong>{track.name}</strong>
+              <span>{track.age}</span>
+            </div>
+            <div className="member-timeline-steps">
+              {track.steps.map((step, index) => (
+                <div className={index === 0 ? "active" : ""} key={step}>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <button className="secondary-button compact" onClick={() => onNavigate(track.route)}>Continue</button>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
