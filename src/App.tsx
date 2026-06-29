@@ -2999,6 +2999,8 @@ type StrategyName = "Conservative" | "Balanced" | "Growth";
 type AdvisorProductId = "cashable" | "noncashable" | "fund" | "portfolio";
 type ConversationStep = "recommend" | "customize" | "compare" | "scenario" | "action";
 type ConversationProductId = "cashable" | "noncashable" | "resp" | "tfsa" | "fund" | "portfolio";
+type MarketOutlook = "conservative" | "base" | "optimistic" | "custom";
+type RateEnvironment = "similar" | "moderate" | "increase" | "decrease" | "custom";
 
 function Investments() {
   return <GoalAdvisorExperience />;
@@ -3459,6 +3461,10 @@ function GoalAdvisorExperience() {
   const [investmentHorizon, setInvestmentHorizon] = useState(2);
   const [liquidityPreference, setLiquidityPreference] = useState<AdvisorPreference>("Balanced");
   const [riskPreference, setRiskPreference] = useState<AdvisorRisk>("Balanced");
+  const [marketOutlook, setMarketOutlook] = useState<MarketOutlook>("base");
+  const [rateEnvironment, setRateEnvironment] = useState<RateEnvironment>("moderate");
+  const [showAdvancedMarket, setShowAdvancedMarket] = useState(false);
+  const [showAdvancedRate, setShowAdvancedRate] = useState(false);
   const [expectedMarketReturn, setExpectedMarketReturn] = useState(7);
   const [primeRate, setPrimeRate] = useState(3.25);
   const [advisorNotice, setAdvisorNotice] = useState("");
@@ -3629,8 +3635,14 @@ function GoalAdvisorExperience() {
     if (scenario === "delay") setInvestmentHorizon((value) => Math.min(10, value + 1));
     if (scenario === "liquidity") setLiquidityPreference("High");
     if (scenario === "reduce") setInvestmentAmount((value) => Math.max(10000, value - 5000));
-    if (scenario === "market") setExpectedMarketReturn((value) => Math.min(10, Number((value + 1).toFixed(1))));
-    if (scenario === "rates") setPrimeRate((value) => Math.min(6, Number((value + 0.5).toFixed(2))));
+    if (scenario === "market") {
+      setMarketOutlook("optimistic");
+      setExpectedMarketReturn(9);
+    }
+    if (scenario === "rates") {
+      setRateEnvironment("increase");
+      setPrimeRate(4.75);
+    }
   };
 
   return (
@@ -3931,6 +3943,10 @@ function GoalAdvisorConversation() {
   const [investmentHorizon, setInvestmentHorizon] = useState(2);
   const [liquidityPreference, setLiquidityPreference] = useState<AdvisorPreference>("Balanced");
   const [riskPreference, setRiskPreference] = useState<AdvisorRisk>("Balanced");
+  const [marketOutlook, setMarketOutlook] = useState<MarketOutlook>("base");
+  const [rateEnvironment, setRateEnvironment] = useState<RateEnvironment>("moderate");
+  const [showAdvancedMarket, setShowAdvancedMarket] = useState(false);
+  const [showAdvancedRate, setShowAdvancedRate] = useState(false);
   const [expectedMarketReturn, setExpectedMarketReturn] = useState(7);
   const [primeRate, setPrimeRate] = useState(3.25);
   const [actionProgress, setActionProgress] = useState(0);
@@ -3963,6 +3979,33 @@ function GoalAdvisorConversation() {
   const chartHeight = 330;
   const chartPadding = 46;
   const educationTarget = 33000;
+  const marketOutlookOptions: Array<{
+    id: MarketOutlook;
+    label: string;
+    value: number;
+    note: string;
+    recommended?: boolean;
+  }> = [
+    { id: "conservative", label: "Conservative", value: 5, note: "Lower market growth" },
+    { id: "base", label: "Base Case", value: 7, note: "AI recommended", recommended: true },
+    { id: "optimistic", label: "Optimistic", value: 9, note: "Higher market growth" }
+  ];
+  const rateEnvironmentOptions: Array<{
+    id: RateEnvironment;
+    label: string;
+    value: number;
+    note: string;
+    recommended?: boolean;
+  }> = [
+    { id: "similar", label: "Rates stay similar", value: 3.25, note: "Little change" },
+    { id: "moderate", label: "Moderate increase", value: 3.75, note: "AI base case", recommended: true },
+    { id: "increase", label: "Significant increase", value: 4.75, note: "Higher-rate stress test" },
+    { id: "decrease", label: "Significant decrease", value: 2.5, note: "Lower-rate scenario" }
+  ];
+  const marketOutlookLabel =
+    marketOutlookOptions.find((option) => option.id === marketOutlook)?.label ?? `Custom ${expectedMarketReturn.toFixed(1)}%`;
+  const rateEnvironmentLabel =
+    rateEnvironmentOptions.find((option) => option.id === rateEnvironment)?.label ?? `Custom ${primeRate.toFixed(2)}%`;
   const cashableRate = Math.max(2.2, primeRate - 0.15);
   const nonCashableRate = 4.05;
   const balancedRate =
@@ -3981,6 +4024,7 @@ function GoalAdvisorConversation() {
     rate: number;
     band: number;
     fixed: boolean;
+    shape: "stable" | "ladder" | "education" | "market" | "managed";
   }> = [
     {
       id: "cashable",
@@ -3989,7 +4033,8 @@ function GoalAdvisorConversation() {
       color: "#3f7ee8",
       rate: cashableRate,
       band: 0.08,
-      fixed: true
+      fixed: true,
+      shape: "stable"
     },
     {
       id: "noncashable",
@@ -3998,7 +4043,8 @@ function GoalAdvisorConversation() {
       color: "#bc8b2e",
       rate: nonCashableRate,
       band: 0.05,
-      fixed: true
+      fixed: true,
+      shape: "ladder"
     },
     {
       id: "resp",
@@ -4007,7 +4053,8 @@ function GoalAdvisorConversation() {
       color: "#db7aa2",
       rate: expectedMarketReturn + 0.8,
       band: 2.15,
-      fixed: false
+      fixed: false,
+      shape: "education"
     },
     {
       id: "tfsa",
@@ -4016,7 +4063,8 @@ function GoalAdvisorConversation() {
       color: "#2f9f86",
       rate: expectedMarketReturn,
       band: 2,
-      fixed: false
+      fixed: false,
+      shape: "market"
     },
     {
       id: "fund",
@@ -4025,7 +4073,8 @@ function GoalAdvisorConversation() {
       color: "#49a76f",
       rate: expectedMarketReturn + 0.25,
       band: 2.25,
-      fixed: false
+      fixed: false,
+      shape: "market"
     },
     {
       id: "portfolio",
@@ -4034,28 +4083,83 @@ function GoalAdvisorConversation() {
       color: "#870f2d",
       rate: expectedMarketReturn + 0.75,
       band: 2.6,
-      fixed: false
+      fixed: false,
+      shape: "managed"
     }
   ];
 
   const selectedProductSeries = productOptions.filter((product) => activeProducts[product.id]);
+  const comparisonTimeline = [
+    { label: "Today", year: 0 },
+    { label: "6M", year: 0.5 },
+    { label: "1Y", year: 1 },
+    { label: "2Y", year: 2 },
+    { label: "3Y", year: 3 },
+    { label: "4Y", year: 4 }
+  ];
+  const comparisonSeriesYears = Array.from({ length: 17 }, (_, index) => index / 4);
+  const comparisonHorizon = 4;
+  const getProductValue = (product: (typeof productOptions)[number], year: number, rate = product.rate) => {
+    const annualRate = Math.max(0.01, rate) / 100;
+    const marketPulse =
+      investmentAmount *
+      (year / comparisonHorizon) *
+      (Math.sin(year * 4.2) * 0.012 + Math.sin(year * 8.6 + 0.8) * 0.006);
+    if (product.shape === "stable") return investmentAmount * (1 + annualRate * year);
+    if (product.shape === "ladder") {
+      const base = investmentAmount * Math.pow(1 + annualRate, year);
+      const maturityBump = year >= Math.min(2, investmentHorizon) ? investmentAmount * 0.012 : 0;
+      return base + maturityBump;
+    }
+    if (product.shape === "education") {
+      const grantBoost = Math.min(1800, investmentAmount * 0.025 * Math.min(year, 2));
+      const tuitionWindowDip = year > 0.75 && year < 1.5 ? -investmentAmount * 0.006 : 0;
+      return investmentAmount * Math.pow(1 + annualRate, year) + grantBoost + marketPulse * 0.45 + tuitionWindowDip;
+    }
+    if (product.shape === "managed") {
+      const curveLift = 1 + Math.pow(year / comparisonHorizon, 1.45) * annualRate * comparisonHorizon;
+      return investmentAmount * curveLift + marketPulse * 0.85;
+    }
+    const earlyDrag = year < 1 ? -investmentAmount * 0.008 * (1 - year) : 0;
+    return investmentAmount * Math.pow(1 + annualRate, year) + earlyDrag + marketPulse;
+  };
   const maxProjectedValue = Math.max(
     educationTarget * 1.18,
     ...selectedProductSeries.flatMap((product) =>
-      [product.rate + product.band, product.rate].map((rate) =>
-        investmentAmount * Math.pow(1 + Math.max(0.01, rate) / 100, investmentHorizon)
+      [product.rate + product.band, product.rate].flatMap((rate) =>
+        comparisonSeriesYears.map((year) => getProductValue(product, year, rate))
       )
     )
   );
+  const minProjectedValue = Math.min(
+    investmentAmount * 0.92,
+    ...selectedProductSeries.flatMap((product) =>
+      [product.rate - product.band, product.rate].flatMap((rate) =>
+        comparisonSeriesYears.map((year) => getProductValue(product, year, Math.max(0.01, rate)))
+      )
+    )
+  );
+  const yAxisTop = Math.ceil(maxProjectedValue / 5000) * 5000;
+  const yAxisBottom = Math.max(0, Math.floor(minProjectedValue / 5000) * 5000);
   const getPoint = (year: number, value: number) => {
     const x = chartPadding + (year / Math.max(1, investmentHorizon)) * (chartWidth - chartPadding * 2);
     const y = chartHeight - chartPadding - (value / maxProjectedValue) * (chartHeight - chartPadding * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  };
+  const getComparisonPoint = (year: number, value: number) => {
+    const x = chartPadding + (year / comparisonHorizon) * (chartWidth - chartPadding * 2);
+    const y =
+      chartHeight -
+      chartPadding -
+      ((value - yAxisBottom) / Math.max(1, yAxisTop - yAxisBottom)) * (chartHeight - chartPadding * 2);
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   };
   const getSeriesPoints = (rate: number) =>
     Array.from({ length: investmentHorizon + 1 }, (_, year) =>
       getPoint(year, investmentAmount * Math.pow(1 + Math.max(0.01, rate) / 100, year))
     ).join(" ");
+  const getComparisonSeriesPoints = (product: (typeof productOptions)[number], rate = product.rate) =>
+    comparisonSeriesYears.map((year) => getComparisonPoint(year, getProductValue(product, year, rate))).join(" ");
   const getBandPoints = (rate: number, band: number) => {
     const years = Array.from({ length: investmentHorizon + 1 }, (_, year) => year);
     const upper = years.map((year) =>
@@ -4067,7 +4171,21 @@ function GoalAdvisorConversation() {
       .map((year) => getPoint(year, investmentAmount * Math.pow(1 + Math.max(0.01, rate - band) / 100, year)));
     return [...upper, ...lower].join(" ");
   };
+  const getComparisonBandPoints = (product: (typeof productOptions)[number]) => {
+    const upper = comparisonSeriesYears.map((year) =>
+      getComparisonPoint(year, getProductValue(product, year, product.rate + product.band))
+    );
+    const lower = comparisonSeriesYears
+      .slice()
+      .reverse()
+      .map((year) =>
+        getComparisonPoint(year, getProductValue(product, year, Math.max(0.01, product.rate - product.band)))
+      );
+    return [...upper, ...lower].join(" ");
+  };
+  const getComparisonRectY = (value: number) => Number(getComparisonPoint(0, value).split(",")[1]);
   const getProjectedY = (value: number) => Number(getPoint(investmentHorizon, value).split(",")[1]);
+  const getComparisonY = (value: number) => Number(getComparisonPoint(comparisonHorizon, value).split(",")[1]);
 
   const strategyTitle =
     liquidityPreference === "High"
@@ -4209,39 +4327,97 @@ function GoalAdvisorConversation() {
       )
     },
     {
-      title: "What market return should we test?",
-      detail: "Market-linked options use scenario bands so the future does not look falsely certain.",
+      title: "Which market outlook should FamilyOS use?",
+      detail: "Start with an AI baseline. Advanced users can still customize the percentage.",
       control: (
-        <label className="advisor-range-field advisor-single-range">
-          <span>Expected market return</span>
-          <strong>{expectedMarketReturn.toFixed(1)}%</strong>
-          <input
-            type="range"
-            min="3"
-            max="10"
-            step="0.5"
-            value={expectedMarketReturn}
-            onChange={(event) => setExpectedMarketReturn(Number(event.target.value))}
-          />
-        </label>
+        <div className="advisor-preset-control">
+          <span>Market Outlook</span>
+          <div className="advisor-preset-grid">
+            {marketOutlookOptions.map((option) => (
+              <button
+                className={marketOutlook === option.id ? "active" : ""}
+                key={option.id}
+                onClick={() => {
+                  setMarketOutlook(option.id);
+                  setExpectedMarketReturn(option.value);
+                  setShowAdvancedMarket(false);
+                }}
+              >
+                <i>{marketOutlook === option.id ? "●" : "○"}</i>
+                <strong>{option.label}</strong>
+                <small>{option.value}%</small>
+                <em>{option.note}</em>
+              </button>
+            ))}
+          </div>
+          <button className="advanced-assumption-button" onClick={() => setShowAdvancedMarket((value) => !value)}>
+            {showAdvancedMarket ? "Hide Advanced Assumptions" : "Advanced Assumptions"}
+          </button>
+          {showAdvancedMarket && (
+            <label className="advisor-range-field advisor-advanced-range">
+              <span>Custom expected market return</span>
+              <strong>{expectedMarketReturn.toFixed(1)}%</strong>
+              <input
+                type="range"
+                min="3"
+                max="10"
+                step="0.5"
+                value={expectedMarketReturn}
+                onChange={(event) => {
+                  setMarketOutlook("custom");
+                  setExpectedMarketReturn(Number(event.target.value));
+                }}
+              />
+            </label>
+          )}
+        </div>
       )
     },
     {
-      title: "What interest-rate environment should we assume?",
-      detail: "Prime-rate assumptions shift GIC-like and borrowing-sensitive pathways.",
+      title: "Which interest-rate environment should FamilyOS assume?",
+      detail: "Choose a plain-language scenario first. Manual prime-rate controls stay in advanced mode.",
       control: (
-        <label className="advisor-range-field advisor-single-range">
-          <span>Prime rate assumption</span>
-          <strong>{primeRate.toFixed(2)}%</strong>
-          <input
-            type="range"
-            min="2"
-            max="6"
-            step="0.25"
-            value={primeRate}
-            onChange={(event) => setPrimeRate(Number(event.target.value))}
-          />
-        </label>
+        <div className="advisor-preset-control">
+          <span>Interest Rate Environment</span>
+          <div className="advisor-preset-grid rate-grid">
+            {rateEnvironmentOptions.map((option) => (
+              <button
+                className={rateEnvironment === option.id ? "active" : ""}
+                key={option.id}
+                onClick={() => {
+                  setRateEnvironment(option.id);
+                  setPrimeRate(option.value);
+                  setShowAdvancedRate(false);
+                }}
+              >
+                <i>{rateEnvironment === option.id ? "●" : "○"}</i>
+                <strong>{option.label}</strong>
+                <small>{option.value.toFixed(2)}%</small>
+                <em>{option.note}</em>
+              </button>
+            ))}
+          </div>
+          <button className="advanced-assumption-button" onClick={() => setShowAdvancedRate((value) => !value)}>
+            {showAdvancedRate ? "Hide Advanced Assumptions" : "Advanced Assumptions"}
+          </button>
+          {showAdvancedRate && (
+            <label className="advisor-range-field advisor-advanced-range">
+              <span>Custom prime-rate assumption</span>
+              <strong>{primeRate.toFixed(2)}%</strong>
+              <input
+                type="range"
+                min="2"
+                max="6"
+                step="0.25"
+                value={primeRate}
+                onChange={(event) => {
+                  setRateEnvironment("custom");
+                  setPrimeRate(Number(event.target.value));
+                }}
+              />
+            </label>
+          )}
+        </div>
       )
     }
   ];
@@ -4375,6 +4551,8 @@ function GoalAdvisorConversation() {
             <span>Horizon: {investmentHorizon}Y</span>
             <span>Liquidity: {liquidityPreference}</span>
             <span>Risk: {riskPreference}</span>
+            <span>Market: {marketOutlookLabel}</span>
+            <span>Rates: {rateEnvironmentLabel}</span>
           </div>
           <div className="advisor-single-control">{currentControl.control}</div>
           <div className="advisor-live-note">
@@ -4400,33 +4578,27 @@ function GoalAdvisorConversation() {
         <section className="advisor-step-card advisor-compare-stage">
           <div className="advisor-step-header compact">
             <span className="eyebrow">Interactive product comparison</span>
-            <h2>Turn product curves on or off.</h2>
-            <p>Market-linked products show scenario bands. GIC-like products stay tighter because returns are more defined.</p>
-          </div>
-          <div className="product-toggle-grid advisor-product-toggle-grid">
-            {productOptions.map((product) => (
-              <button
-                className={activeProducts[product.id] ? "active" : ""}
-                key={product.id}
-                onClick={() => setActiveProducts({ ...activeProducts, [product.id]: !activeProducts[product.id] })}
-              >
-                <i style={{ background: product.color }} />
-                <strong>{product.name}</strong>
-                <span>{product.rate.toFixed(2)}% {product.fixed ? "fixed" : "scenario band"}</span>
-              </button>
-            ))}
+            <h2>Compare pathways across time.</h2>
+            <p>Use the legend to turn products on or off. Market-linked products show scenario bands; stable products show tighter lines.</p>
           </div>
           <AdvisorComparisonChart
             chartWidth={chartWidth}
             chartHeight={chartHeight}
             chartPadding={chartPadding}
-            horizon={investmentHorizon}
-            maxProjectedValue={maxProjectedValue}
+            timeline={comparisonTimeline}
+            yAxisTop={yAxisTop}
+            yAxisBottom={yAxisBottom}
+            targetBandLow={educationTarget * 0.85}
+            targetBandHigh={educationTarget * 1.05}
             selectedProductSeries={selectedProductSeries}
-            getBandPoints={getBandPoints}
-            getSeriesPoints={getSeriesPoints}
+            allProductSeries={productOptions}
+            activeProducts={activeProducts}
+            setActiveProducts={setActiveProducts}
+            getBandPoints={getComparisonBandPoints}
+            getSeriesPoints={getComparisonSeriesPoints}
+            getRectY={getComparisonRectY}
             getProjectedY={(product) =>
-              getProjectedY(investmentAmount * Math.pow(1 + product.rate / 100, investmentHorizon))
+              getComparisonY(getProductValue(product as (typeof productOptions)[number], comparisonHorizon, product.rate))
             }
           />
           <div className="advisor-live-note">
@@ -4524,11 +4696,52 @@ function GoalAdvisorConversation() {
               );
             })}
           </div>
-          <div className="advisor-action-row">
-            <button className="primary-button" onClick={() => setAdvisorNotice("Strategy saved for this prototype session.")}>Save Strategy</button>
-            <button className="secondary-button" onClick={() => setStep("scenario")}>Compare Another Scenario</button>
-            <button className="secondary-button" onClick={() => setAdvisorNotice("Advisor meeting request prepared for review.")}>Book Advisor</button>
-          </div>
+          {actionProgress >= actionSteps.length && (
+            <section className="advisor-final-summary">
+              <div>
+                <span className="eyebrow">AI Summary</span>
+                <h3>{strategyTitle}</h3>
+              </div>
+              <div className="summary-columns">
+                <article>
+                  <strong>Why this strategy fits</strong>
+                  <ul>
+                    <li>Matches Emma's university timeline without locking all funds.</li>
+                    <li>Uses the existing RESP as the anchor.</li>
+                    <li>Protects emergency cash while closing the education gap.</li>
+                  </ul>
+                </article>
+                <article>
+                  <strong>Potential risks</strong>
+                  <ul>
+                    <li>Tuition or rent may be higher than planned.</li>
+                    <li>Market-linked options can move below the base case.</li>
+                    <li>Advisor review is needed before acting on real products.</li>
+                  </ul>
+                </article>
+                <article>
+                  <strong>Key assumptions used</strong>
+                  <ul>
+                    <li>Market outlook: {marketOutlookLabel}</li>
+                    <li>Prime-rate assumption: {rateEnvironmentLabel}</li>
+                    <li>Timeline: {investmentHorizon} years</li>
+                  </ul>
+                </article>
+              </div>
+              <div className="advisor-action-row">
+                <button className="primary-button" onClick={() => setAdvisorNotice("Planning path marked complete for this prototype.")}>Finish Planning</button>
+                <button className="secondary-button" onClick={() => setAdvisorNotice("Strategy saved for this prototype session.")}>Save Strategy</button>
+                <button className="secondary-button" onClick={() => setAdvisorNotice("Advisor meeting request prepared for review.")}>Book Advisor</button>
+              </div>
+            </section>
+          )}
+          {actionProgress < actionSteps.length && (
+            <div className="advisor-action-row">
+              <button className="primary-button" onClick={() => setAdvisorNotice("Strategy saved for this prototype session.")}>Save Strategy</button>
+              <button className="secondary-button" onClick={() => setStep("scenario")}>Compare Another Scenario</button>
+              <button className="secondary-button" onClick={() => setAdvisorNotice("Advisor meeting request prepared for review.")}>Book Advisor</button>
+            </div>
+          )}
           {advisorNotice && <small className="advisor-toast">{advisorNotice}</small>}
         </section>
       )}
@@ -4581,18 +4794,28 @@ function AdvisorComparisonChart({
   chartWidth,
   chartHeight,
   chartPadding,
-  horizon,
-  maxProjectedValue,
+  timeline,
+  yAxisTop,
+  yAxisBottom,
+  targetBandLow,
+  targetBandHigh,
   selectedProductSeries,
+  allProductSeries,
+  activeProducts,
+  setActiveProducts,
   getBandPoints,
   getSeriesPoints,
+  getRectY,
   getProjectedY
 }: {
   chartWidth: number;
   chartHeight: number;
   chartPadding: number;
-  horizon: number;
-  maxProjectedValue: number;
+  timeline: Array<{ label: string; year: number }>;
+  yAxisTop: number;
+  yAxisBottom: number;
+  targetBandLow: number;
+  targetBandHigh: number;
   selectedProductSeries: Array<{
     id: ConversationProductId;
     name: string;
@@ -4601,30 +4824,107 @@ function AdvisorComparisonChart({
     rate: number;
     band: number;
     fixed: boolean;
+    shape: "stable" | "ladder" | "education" | "market" | "managed";
   }>;
-  getBandPoints: (rate: number, band: number) => string;
-  getSeriesPoints: (rate: number) => string;
-  getProjectedY: (product: { rate: number }) => number;
+  allProductSeries: Array<{
+    id: ConversationProductId;
+    name: string;
+    category: string;
+    color: string;
+    rate: number;
+    band: number;
+    fixed: boolean;
+    shape: "stable" | "ladder" | "education" | "market" | "managed";
+  }>;
+  activeProducts: Record<ConversationProductId, boolean>;
+  setActiveProducts: (products: Record<ConversationProductId, boolean>) => void;
+  getBandPoints: (product: {
+    id: ConversationProductId;
+    name: string;
+    category: string;
+    color: string;
+    rate: number;
+    band: number;
+    fixed: boolean;
+    shape: "stable" | "ladder" | "education" | "market" | "managed";
+  }) => string;
+  getSeriesPoints: (product: {
+    id: ConversationProductId;
+    name: string;
+    category: string;
+    color: string;
+    rate: number;
+    band: number;
+    fixed: boolean;
+    shape: "stable" | "ladder" | "education" | "market" | "managed";
+  }) => string;
+  getRectY: (value: number) => number;
+  getProjectedY: (product: { rate: number; shape: "stable" | "ladder" | "education" | "market" | "managed" }) => number;
 }) {
+  const yTicks = [yAxisTop, Math.round((yAxisTop + yAxisBottom) / 2), yAxisBottom];
+  const axisHeight = chartHeight - chartPadding * 2;
+  const axisWidth = chartWidth - chartPadding * 2;
+  const bandYTop = getRectY(targetBandHigh);
+  const bandYBottom = getRectY(targetBandLow);
+
   return (
     <div className="advisor-curve-card advisor-curve-card-inline">
+      <div className="advisor-chart-overview" aria-hidden="true">
+        <i />
+        <span />
+      </div>
       <svg className="advisor-curve-chart" viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Product comparison projection chart">
         <line x1={chartPadding} y1={chartHeight - chartPadding} x2={chartWidth - chartPadding} y2={chartHeight - chartPadding} />
         <line x1={chartPadding} y1={chartPadding} x2={chartPadding} y2={chartHeight - chartPadding} />
-        <text x={chartPadding} y={chartPadding - 12}>{formatCurrency(Math.round(maxProjectedValue))}</text>
-        <text x={chartPadding} y={chartHeight - 12}>Now</text>
-        <text x={chartWidth - chartPadding - 40} y={chartHeight - 12}>{horizon}Y</text>
+        <text className="axis-title" x={chartPadding} y={chartPadding - 18}>Portfolio Value ($)</text>
+        <rect
+          className="return-comfort-band"
+          x={chartPadding}
+          y={Math.min(bandYTop, bandYBottom)}
+          width={axisWidth}
+          height={Math.abs(bandYBottom - bandYTop)}
+          rx="4"
+        />
+        <text className="band-label" x={chartWidth - chartPadding - 124} y={Math.min(bandYTop, bandYBottom) + 19}>
+          Education target zone
+        </text>
+        {yTicks.map((tick, index) => {
+          const y = chartPadding + (index / Math.max(1, yTicks.length - 1)) * axisHeight;
+          return (
+            <g className="axis-tick" key={tick}>
+              <line x1={chartPadding} y1={y} x2={chartWidth - chartPadding} y2={y} />
+              <text x={10} y={y + 5}>{formatCurrency(tick)}</text>
+            </g>
+          );
+        })}
+        {timeline.map((tick) => {
+          const x = chartPadding + (tick.year / 4) * axisWidth;
+          return (
+            <g className="x-axis-tick" key={tick.label}>
+              <line x1={x} y1={chartPadding} x2={x} y2={chartHeight - chartPadding} />
+              <text x={x - 18} y={chartHeight - 12}>{tick.label}</text>
+            </g>
+          );
+        })}
         {selectedProductSeries.map((product) => (
           <g key={product.id}>
-            {!product.fixed && <polygon className="scenario-band" points={getBandPoints(product.rate, product.band)} style={{ fill: product.color }} />}
-            <polyline className="product-curve" points={getSeriesPoints(product.rate)} style={{ stroke: product.color }} />
+            {!product.fixed && <polygon className="scenario-band" points={getBandPoints(product)} style={{ fill: product.color }} />}
+            <polyline className="product-curve" points={getSeriesPoints(product)} style={{ stroke: product.color }} />
             <circle cx={chartWidth - chartPadding} cy={getProjectedY(product)} r="5" style={{ fill: product.color }} />
           </g>
         ))}
       </svg>
       <div className="curve-legend-row">
-        {selectedProductSeries.map((product) => (
-          <span key={product.id}><i style={{ background: product.color }} />{product.name}</span>
+        {allProductSeries.map((product) => (
+          <button
+            className={activeProducts[product.id] ? "active" : ""}
+            key={product.id}
+            onClick={() => setActiveProducts({ ...activeProducts, [product.id]: !activeProducts[product.id] })}
+          >
+            <i style={{ background: product.color }} />
+            <span>{product.name}</span>
+            <small>{product.fixed ? "Stable" : "Scenario band"}</small>
+          </button>
         ))}
       </div>
     </div>
