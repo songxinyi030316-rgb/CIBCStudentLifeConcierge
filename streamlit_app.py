@@ -5,15 +5,15 @@ import streamlit.components.v1 as components
 
 
 st.set_page_config(
-    page_title="CIBC FamilyOS",
+    page_title="CIBC AI Financial Coach",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
-bundle_path = Path(__file__).parent / "streamlit_build" / "familyos.html"
+bundle_path = Path(__file__).parent / "streamlit_build" / "financial_coach.html"
 
 if not bundle_path.exists():
-    st.error("CIBC FamilyOS bundle is missing. Run `npm run build:streamlit` before launching Streamlit.")
+    st.error("CIBC AI Financial Coach bundle is missing. Run `npm run build:streamlit` before launching Streamlit.")
     st.stop()
 
 st.markdown(

@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
 OUT_DIR = ROOT / "streamlit_build"
-OUT_FILE = OUT_DIR / "familyos.html"
+OUT_FILE = OUT_DIR / "financial_coach.html"
 
 
 def data_url(path: Path) -> str:
