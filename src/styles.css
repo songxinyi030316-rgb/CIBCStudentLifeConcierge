@@ -6007,6 +6007,61 @@ button {
   box-shadow: 0 18px 34px rgba(135, 15, 45, 0.18);
 }
 
+.advisor-recommendation-proof {
+  display: grid;
+  gap: 12px;
+  max-width: 680px;
+  border: 1px solid rgba(135, 15, 45, 0.12);
+  border-radius: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.advisor-recommendation-proof strong {
+  color: var(--maroon);
+  font-size: 15px;
+}
+
+.advisor-recommendation-proof ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.advisor-recommendation-proof li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.advisor-recommendation-proof li svg {
+  color: #126b4d;
+  flex: 0 0 auto;
+}
+
+.advisor-recommendation-proof div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.advisor-recommendation-proof div span,
+.ai-coach-proof-row span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: var(--muted);
+  background: white;
+  font-size: 12px;
+  font-weight: 950;
+}
+
 .advisor-first-visual {
   display: grid;
   gap: 14px;
@@ -6312,6 +6367,91 @@ button {
   padding: 16px;
   color: var(--maroon);
   background: #fff8fa;
+}
+
+.ai-coach-panel {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  max-width: 980px;
+  border: 1px solid rgba(135, 15, 45, 0.14);
+  border-radius: 22px;
+  padding: 17px;
+  color: var(--maroon);
+  background:
+    radial-gradient(circle at 94% 12%, rgba(191, 155, 82, 0.12), transparent 26%),
+    #fff8fa;
+}
+
+.ai-coach-panel.compact {
+  max-width: none;
+  min-height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.ai-coach-panel > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.ai-coach-panel h3,
+.ai-coach-panel p {
+  margin: 0;
+}
+
+.ai-coach-panel h3 {
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 24px;
+}
+
+.ai-coach-panel p {
+  margin-top: 6px;
+  max-width: 840px;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 850;
+  line-height: 1.5;
+}
+
+.ai-coach-thinking-list,
+.ai-coach-proof-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ai-coach-thinking-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(18, 128, 89, 0.14);
+  border-radius: 999px;
+  padding: 8px 10px;
+  color: #126b4d;
+  background: #f2fbf7;
+  font-size: 12px;
+  font-weight: 950;
+  animation: fadeUp 240ms ease both;
+}
+
+.ai-coach-thinking-list span:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.ai-coach-thinking-list span:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.ai-coach-thinking-list span:nth-child(4) {
+  animation-delay: 240ms;
+}
+
+.ai-coach-thinking-list span:nth-child(5) {
+  animation-delay: 320ms;
 }
 
 .advisor-live-note p {
@@ -7474,7 +7614,290 @@ button {
 .product-learning-page,
 .advisor-summary-page {
   display: grid;
-  gap: 20px;
+  gap: 16px;
+}
+
+.compact-page-header,
+.journey-task-header,
+.advisor-ai-start-card,
+.recommended-learning-path {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 18px 22px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(55, 28, 38, 0.07);
+}
+
+.compact-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.compact-page-header h2,
+.journey-task-header h2 {
+  margin: 6px 0;
+  font-size: clamp(24px, 2.3vw, 34px);
+  line-height: 1.08;
+}
+
+.compact-page-header p,
+.journey-task-header p,
+.recommended-learning-path p {
+  margin: 0;
+  max-width: 820px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.education-path-comparison {
+  display: grid;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 98% 4%, rgba(191, 155, 82, 0.12), transparent 20%),
+    #fff;
+  box-shadow: 0 16px 44px rgba(55, 28, 38, 0.07);
+}
+
+.education-comparison-table {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.education-comparison-table article {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(135, 15, 45, 0.12);
+  border-radius: 20px;
+  padding: 16px;
+  background: rgba(255, 248, 250, 0.52);
+}
+
+.education-comparison-table article > i {
+  width: 34px;
+  height: 5px;
+  border-radius: 999px;
+}
+
+.education-comparison-table strong {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.education-comparison-table dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.education-comparison-table dl div {
+  border-radius: 13px;
+  padding: 9px;
+  background: white;
+}
+
+.education-comparison-table dt,
+.education-comparison-table dd {
+  margin: 0;
+}
+
+.education-comparison-table dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.education-comparison-table dd {
+  margin-top: 3px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.education-comparison-table p,
+.education-comparison-table small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.education-comparison-table small {
+  color: var(--maroon);
+}
+
+.education-comparison-chart {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 16px;
+  background: #fff;
+}
+
+.education-comparison-chart svg {
+  width: 100%;
+  min-height: 300px;
+  overflow: visible;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgba(135, 15, 45, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(135, 15, 45, 0.035) 1px, transparent 1px),
+    #fff;
+  background-size: 20% 100%, 100% 33.333%;
+}
+
+.education-comparison-chart line {
+  stroke: #e7dde1;
+  stroke-width: 2;
+}
+
+.education-comparison-chart .product-curve {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.education-comparison-chart .scenario-band {
+  opacity: 0.12;
+}
+
+.education-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.education-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 10px;
+  color: var(--muted);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.education-chart-legend i {
+  width: 22px;
+  height: 4px;
+  border-radius: 999px;
+}
+
+.education-chart-legend strong {
+  color: var(--ink);
+}
+
+.advisor-ai-start-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(360px, 1fr) auto;
+  gap: 16px;
+  align-items: stretch;
+  background:
+    radial-gradient(circle at 94% 8%, rgba(185, 134, 44, 0.14), transparent 28%),
+    linear-gradient(135deg, #fff 0%, #fff8fa 100%);
+}
+
+.ai-message-card,
+.today-recommendation-card,
+.selected-guidance-note {
+  border: 1px solid rgba(122, 0, 38, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.ai-message-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  color: var(--maroon);
+  font-weight: 900;
+}
+
+.ai-message-card p {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.today-recommendation-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.38fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+}
+
+.today-recommendation-card span {
+  color: var(--maroon);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.today-recommendation-card h3 {
+  margin: 5px 0;
+  font-size: 22px;
+}
+
+.today-recommendation-card p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.show-more-recommendations {
+  align-self: center;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.show-more-recommendations svg {
+  transition: transform 0.2s ease;
+}
+
+.show-more-recommendations:hover svg {
+  transform: translateX(3px);
+}
+
+.secondary-recommendation-grid {
+  animation: fadeSlideIn 0.24s ease both;
+}
+
+.selected-guidance-note {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  color: var(--maroon);
+  font-weight: 850;
+  background: #fff7f9;
+}
+
+.journey-task-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.36fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.journey-task-progress {
+  display: grid;
+  gap: 10px;
 }
 
 .concierge-greeting-card,
@@ -8196,14 +8619,19 @@ button {
 }
 
 .primary-learning-entry {
-  min-height: 220px;
+  min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.34fr);
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.32fr);
   align-items: center;
-  gap: clamp(24px, 4vw, 56px);
+  gap: 22px;
+  padding: 20px 22px;
   background:
     radial-gradient(circle at 88% 28%, rgba(185, 134, 44, 0.26), transparent 25%),
     linear-gradient(135deg, #fff 0%, #fff6f8 100%);
+}
+
+.primary-learning-entry h2 {
+  font-size: clamp(24px, 2.3vw, 34px);
 }
 
 .strategy-builder-cta-panel {
@@ -8348,6 +8776,26 @@ button {
   grid-template-columns: minmax(0, 1fr) 260px;
   gap: 20px;
   align-items: center;
+}
+
+.recommended-learning-path {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 18px;
+  align-items: center;
+}
+
+.recommended-learning-path h3 {
+  margin: 6px 0;
+  font-size: 22px;
+}
+
+.recommended-learning-path .small-illustration img {
+  height: 110px;
+}
+
+.recommended-learning-path .small-illustration figcaption {
+  padding: 10px 12px;
 }
 
 .product-learning-conversation h2 {

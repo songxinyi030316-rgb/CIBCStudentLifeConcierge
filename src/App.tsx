@@ -2596,34 +2596,60 @@ const advisorJourneyMocks: Record<AdvisorPrompt, AdvisorJourneyMock> = {
 
 function FamilyAdvisorPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const [selectedPrompt, setSelectedPrompt] = useState<AdvisorPrompt>("Prepare Emma for university");
+  const [showOtherRecommendations, setShowOtherRecommendations] = useState(false);
   const selectedJourney = advisorJourneyMocks[selectedPrompt];
 
   return (
     <main className="family-advisor-page">
-      <section className="advisor-welcome-card advisor-next-step-card">
+      <section className="compact-page-header">
         <div>
           <span className="section-kicker">Family Advisor</span>
-          <h2>{selectedJourney.heroTitle}</h2>
-          <p>{selectedJourney.heroCopy}</p>
-          <button className="primary-button" onClick={() => selectedPrompt === "Prepare Emma for university" ? setSelectedPrompt("Prepare Emma for university") : onNavigate(selectedJourney.route)}>
-            {selectedJourney.primaryLabel}
-          </button>
+          <h2>FamilyOS is guiding the household.</h2>
+          <p>One recommended starting point, with other household moments kept secondary until you need them.</p>
         </div>
-        <SmallIllustration image={selectedJourney.image} caption={selectedJourney.caption} />
       </section>
 
-      <div className="section-heading secondary-choice-heading">
-        <h2>Need a different focus?</h2>
-        <p>Pick a household moment and FamilyOS will update the guided path below.</p>
-      </div>
-      <section className="advisor-prompt-grid">
-        {advisorPrompts.map((prompt) => (
-          <button key={prompt} className={selectedPrompt === prompt ? "active" : ""} onClick={() => setSelectedPrompt(prompt)}>
-            <Sparkles size={18} />
-            <span>{prompt}</span>
+      <section className="advisor-ai-start-card">
+        <div className="ai-message-card">
+          <Sparkles size={20} />
+          <p>I reviewed your household. Here's where I'd recommend starting today.</p>
+        </div>
+        <article className="today-recommendation-card">
+          <div>
+            <span>Today's recommendation</span>
+            <h3>Emma University Preparation</h3>
+            <p>10 months remaining. Estimated effort: 3 minutes.</p>
+          </div>
+          <ProgressBar label="Journey progress" value={35} />
+          <button className="primary-button compact" onClick={() => setSelectedPrompt("Prepare Emma for university")}>
+            Continue
           </button>
-        ))}
+        </article>
+        <button className="ghost-button show-more-recommendations" onClick={() => setShowOtherRecommendations(!showOtherRecommendations)}>
+          {showOtherRecommendations ? "Hide other recommendations" : "Show other recommendations"}
+          <ChevronRight size={17} />
+        </button>
       </section>
+
+      {showOtherRecommendations && (
+        <section className="advisor-prompt-grid secondary-recommendation-grid">
+          {advisorPrompts
+            .filter((prompt) => prompt !== "Prepare Emma for university")
+            .map((prompt) => (
+              <button key={prompt} className={selectedPrompt === prompt ? "active" : ""} onClick={() => setSelectedPrompt(prompt)}>
+                <Sparkles size={18} />
+                <span>{prompt}</span>
+              </button>
+            ))}
+        </section>
+      )}
+
+      {selectedPrompt !== "Prepare Emma for university" && (
+        <div className="selected-guidance-note">
+          <Sparkles size={17} />
+          <span>FamilyOS updated the guided path below for: {selectedPrompt}.</span>
+        </div>
+      )}
 
       {selectedPrompt === "Prepare Emma for university" ? (
         <EmmaUniversityJourney onNavigate={onNavigate} />
@@ -2634,18 +2660,51 @@ function FamilyAdvisorPage({ onNavigate }: { onNavigate: (route: Route) => void 
   );
 }
 
+function JourneyTaskHeader({
+  kicker,
+  title,
+  step,
+  progress,
+  actionLabel,
+  onAction
+}: {
+  kicker: string;
+  title: string;
+  step: string;
+  progress: number;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <section className="journey-task-header">
+      <div>
+        <span className="section-kicker">{kicker}</span>
+        <h2>{title}</h2>
+        <p>{step}</p>
+      </div>
+      <div className="journey-task-progress">
+        <ProgressBar label="Progress" value={progress} />
+        {actionLabel && onAction && (
+          <button className="primary-button compact" onClick={onAction}>
+            {actionLabel}
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function MockFamilyJourney({ journey, onNavigate }: { journey: AdvisorJourneyMock; onNavigate: (route: Route) => void }) {
   return (
     <section className="guided-family-journey">
-      <div className="journey-intro">
-        <div>
-          <span className="section-kicker">{journey.kicker}</span>
-          <h2>{journey.title}</h2>
-          <p>{journey.lead}</p>
-          <ProgressBar label="Journey progress" value={journey.progress} />
-        </div>
-        <SmallIllustration image={journey.image} caption={journey.caption} />
-      </div>
+      <JourneyTaskHeader
+        kicker={journey.kicker}
+        title={journey.title}
+        step={journey.lead}
+        progress={journey.progress}
+        actionLabel="Continue"
+        onAction={() => onNavigate(journey.route)}
+      />
 
       <article className="journey-step-card">
         <div className="section-heading with-action">
@@ -2724,14 +2783,12 @@ function EmmaUniversityJourney({ onNavigate }: { onNavigate: (route: Route) => v
 
   return (
     <section className="emma-journey">
-      <div className="journey-intro">
-        <div>
-          <span className="section-kicker">Emma University Journey</span>
-          <h2>Emma starts university in about 10 months.</h2>
-          <p>Let's make this easier by walking through one step at a time.</p>
-        </div>
-        <SmallIllustration image={educationImage} caption="Education planning becomes easier when it is broken into small steps." />
-      </div>
+      <JourneyTaskHeader
+        kicker="Emma University Journey"
+        title="Emma University Journey"
+        step={`Step ${journeyStep + 1} of ${steps.length}: ${steps[journeyStep]}`}
+        progress={Math.round(((journeyStep + 1) / steps.length) * 100)}
+      />
 
       <div className="journey-progress">
         {steps.map((stepLabel, index) => (
@@ -2839,16 +2896,12 @@ function JourneysPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
 
   return (
     <main className="module-page journey-page">
-      <section className="module-hero with-image">
-        <div className="module-hero-copy">
-          <div className="module-icon"><Sparkles size={28} /></div>
-          <div>
-            <span>Household Moments</span>
-            <h2>FamilyOS noticed these moments in your household.</h2>
-            <p>Life stages are not always age-based. FamilyOS uses age, goals, accounts, events, and permissions as signals.</p>
-          </div>
+      <section className="compact-page-header">
+        <div>
+          <span className="section-kicker">Household Moments</span>
+          <h2>FamilyOS noticed these moments in your household.</h2>
+          <p>Life stages are not always age-based. FamilyOS uses age, goals, accounts, events, and permissions as signals.</p>
         </div>
-        <img className="module-art" src={onboardingImage} alt="Family reviewing household moments" />
       </section>
       <section className="family-journey-timeline-card">
         <div className="section-heading">
@@ -2882,6 +2935,14 @@ function ProductLearningPage({ onNavigate }: { onNavigate: (route: Route) => voi
   const [showStrategyBuilder, setShowStrategyBuilder] = useState(false);
   return (
     <main className="product-learning-page">
+      <section className="compact-page-header learning-page-start">
+        <div>
+          <span className="section-kicker">Product Learning</span>
+          <h2>What would you like to understand today?</h2>
+          <p>FamilyOS explains only what supports the next household decision.</p>
+        </div>
+      </section>
+
       <section className="strategy-builder-entry primary-learning-entry">
         <div>
           <span className="section-kicker">Strategy Builder</span>
@@ -2897,22 +2958,161 @@ function ProductLearningPage({ onNavigate }: { onNavigate: (route: Route) => voi
           <small>Compare RESP, GIC, and investment paths in about 3 minutes.</small>
         </div>
       </section>
+
+      <EducationPathComparison onStartBuilder={() => setShowStrategyBuilder(true)} />
       {showStrategyBuilder && <GoalAdvisorConversation />}
 
-      <section className="product-learning-conversation">
+      <section className="recommended-learning-path">
         <div>
-          <span className="section-kicker">Product Learning</span>
-          <h2>What would you like to understand today?</h2>
-          <p>Open one topic at a time. FamilyOS explains products in plain language, not as a product catalogue.</p>
+          <span className="section-kicker">Recommended learning path</span>
+          <h3>For Emma University Journey</h3>
+          <p>Start with RESP, Student Banking, Cashable GIC, and Non-Redeemable GIC before exploring advanced products.</p>
         </div>
         <SmallIllustration image={legacyImage} caption="Learn only what you need for the next decision." />
       </section>
 
-      <ProductLearningGrid />
+      <ProductLearningGrid onCompare={() => setShowStrategyBuilder(true)} />
       <div className="advisor-action-row">
         <button className="secondary-button" onClick={() => onNavigate("ai")}>Return to Family Advisor</button>
       </div>
     </main>
+  );
+}
+
+function EducationPathComparison({ onStartBuilder }: { onStartBuilder: () => void }) {
+  const options = [
+    {
+      name: "Cashable GIC",
+      returnLabel: "Low-Medium",
+      liquidity: "High",
+      risk: "Low",
+      fit: "Medium",
+      why: "Flexible if tuition or rent timing changes.",
+      advisor: "Optional",
+      color: "#4d8af0",
+      values: [25000, 25380, 25770, 26570, 27395, 28245]
+    },
+    {
+      name: "Non-cashable GIC",
+      returnLabel: "Medium",
+      liquidity: "Low",
+      risk: "Low",
+      fit: "High",
+      why: "Useful if the family can match maturity to school timing.",
+      advisor: "Recommended",
+      color: "#b88a2f",
+      values: [25000, 25510, 26035, 28190, 30520, 33040]
+    },
+    {
+      name: "Market-linked GIC",
+      returnLabel: "Variable",
+      liquidity: "Low",
+      risk: "Low-Medium",
+      fit: "Medium",
+      why: "Principal protection with upside, but returns are uncertain.",
+      advisor: "Recommended",
+      color: "#d87aa0",
+      values: [25000, 25230, 25880, 27600, 30250, 34200]
+    },
+    {
+      name: "Balanced Fund / Portfolio",
+      returnLabel: "Higher potential",
+      liquidity: "Medium",
+      risk: "Medium",
+      fit: "Medium",
+      why: "More upside, but market movement matters for a near-term goal.",
+      advisor: "Recommended",
+      color: "#870f2d",
+      values: [25000, 24880, 26420, 29150, 32340, 36680]
+    }
+  ];
+  const labels = ["Now", "6M", "1Y", "2Y", "3Y", "4Y"];
+  const chartWidth = 760;
+  const chartHeight = 300;
+  const padding = 44;
+  const maxValue = 39000;
+  const minValue = 24000;
+  const pointFor = (index: number, value: number) => {
+    const x = padding + (index / (labels.length - 1)) * (chartWidth - padding * 2);
+    const y = chartHeight - padding - ((value - minValue) / (maxValue - minValue)) * (chartHeight - padding * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  };
+
+  return (
+    <section className="education-path-comparison">
+      <div className="section-heading">
+        <div>
+          <span className="section-kicker">Compare possible paths</span>
+          <h3>Compare possible paths for Emma's education plan</h3>
+          <p>FamilyOS compares return, liquidity, risk, and timing before suggesting what to review with an advisor.</p>
+        </div>
+        <button className="primary-button compact" onClick={onStartBuilder}>
+          Open Strategy Builder
+        </button>
+      </div>
+      <div className="education-comparison-table">
+        {options.map((option) => (
+          <article key={option.name}>
+            <i style={{ background: option.color }} />
+            <strong>{option.name}</strong>
+            <dl>
+              <div><dt>Return</dt><dd>{option.returnLabel}</dd></div>
+              <div><dt>Liquidity</dt><dd>{option.liquidity}</dd></div>
+              <div><dt>Risk</dt><dd>{option.risk}</dd></div>
+              <div><dt>Fits Emma</dt><dd>{option.fit}</dd></div>
+            </dl>
+            <p>{option.why}</p>
+            <small>Advisor review: {option.advisor}</small>
+          </article>
+        ))}
+      </div>
+      <div className="education-comparison-chart">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label="Illustrative product comparison chart">
+          <line x1={padding} y1={chartHeight - padding} x2={chartWidth - padding} y2={chartHeight - padding} />
+          <line x1={padding} y1={padding} x2={padding} y2={chartHeight - padding} />
+          <text className="axis-title" x={padding} y={padding - 17}>Projected value (CAD)</text>
+          {[25000, 30000, 35000].map((tick) => {
+            const y = chartHeight - padding - ((tick - minValue) / (maxValue - minValue)) * (chartHeight - padding * 2);
+            return (
+              <g className="axis-tick" key={tick}>
+                <line x1={padding} y1={y} x2={chartWidth - padding} y2={y} />
+                <text x={7} y={y + 5}>{formatCurrency(tick)}</text>
+              </g>
+            );
+          })}
+          {labels.map((label, index) => {
+            const x = padding + (index / (labels.length - 1)) * (chartWidth - padding * 2);
+            return (
+              <g className="x-axis-tick" key={label}>
+                <line x1={x} y1={padding} x2={x} y2={chartHeight - padding} />
+                <text x={x - 14} y={chartHeight - 13}>{label}</text>
+              </g>
+            );
+          })}
+          {options.slice(2).map((option) => {
+            const upper = option.values.map((value, index) => pointFor(index, value * 1.04));
+            const lower = option.values.slice().reverse().map((value, reverseIndex) => pointFor(labels.length - 1 - reverseIndex, Math.max(25000, value * 0.96)));
+            return <polygon className="scenario-band" key={`${option.name}-band`} points={[...upper, ...lower].join(" ")} style={{ fill: option.color }} />;
+          })}
+          {options.map((option) => (
+            <polyline
+              className="product-curve"
+              key={option.name}
+              points={option.values.map((value, index) => pointFor(index, value)).join(" ")}
+              style={{ stroke: option.color }}
+            />
+          ))}
+        </svg>
+        <div className="education-chart-legend">
+          {options.map((option) => (
+            <span key={option.name}><i style={{ background: option.color }} />{option.name}<strong>{formatCurrency(option.values[option.values.length - 1])}</strong></span>
+          ))}
+        </div>
+        <p className="prototype-source-note">
+          Projected values are illustrative only. Actual rates, eligibility, tax treatment, market performance, and suitability should be reviewed with a CIBC advisor.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -3410,7 +3610,7 @@ const cibcLearningProducts: LearningProduct[] = [
   }
 ];
 
-function ProductLearningGrid({ compact = false }: { compact?: boolean }) {
+function ProductLearningGrid({ compact = false, onCompare }: { compact?: boolean; onCompare?: () => void }) {
   const [openProduct, setOpenProduct] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const categories = ["All", ...Array.from(new Set(cibcLearningProducts.map((product) => product.category)))];
@@ -3491,6 +3691,11 @@ function ProductLearningGrid({ compact = false }: { compact?: boolean }) {
                   <strong>Related CIBC support</strong>
                   <p>{product.support}</p>
                 </div>
+                {onCompare && (
+                  <button className="secondary-button compact" onClick={onCompare}>
+                    Compare this option
+                  </button>
+                )}
               </div>
             )}
           </article>
@@ -3507,13 +3712,12 @@ function ProductLearningGrid({ compact = false }: { compact?: boolean }) {
 function AdvisorSummaryPage({ onNavigate }: { onNavigate: (route: Route) => void }) {
   return (
     <main className="advisor-summary-page">
-      <section className="advisor-ready-card">
+      <section className="compact-page-header">
         <div>
           <span className="section-kicker">Advisor Summary</span>
-          <h2>Emma University Preparation</h2>
-          <p>This summary helps the Chen family arrive at an advisor conversation more prepared.</p>
+          <h2>Advisor Summary: Emma University Preparation</h2>
+          <p>FamilyOS prepared a concise summary for the next advisor conversation.</p>
         </div>
-        <SmallIllustration image={educationImage} caption="A clearer plan means a better conversation." />
       </section>
       <div className="advisor-summary-grid">
         <Panel title="Household">
@@ -5190,6 +5394,8 @@ function GoalAdvisorConversation() {
   const [primeRate, setPrimeRate] = useState(3.25);
   const [actionProgress, setActionProgress] = useState(0);
   const [advisorNotice, setAdvisorNotice] = useState("");
+  const [coachThinking, setCoachThinking] = useState(false);
+  const [showAdvisorSummary, setShowAdvisorSummary] = useState(false);
   const [activeProducts, setActiveProducts] = useState<Record<ConversationProductId, boolean>>({
     bonusGic: true,
     flexibleGic: true,
@@ -5216,6 +5422,13 @@ function GoalAdvisorConversation() {
       window.clearTimeout(timeoutId);
     };
   }, []);
+
+  useEffect(() => {
+    if (step === "recommend") return;
+    setCoachThinking(true);
+    const timeoutId = window.setTimeout(() => setCoachThinking(false), 950);
+    return () => window.clearTimeout(timeoutId);
+  }, [investmentAmount, investmentHorizon, liquidityPreference, riskPreference, expectedMarketReturn, primeRate, step]);
 
   const chartWidth = 760;
   const chartHeight = 330;
@@ -5797,6 +6010,21 @@ function GoalAdvisorConversation() {
                 <Sparkles size={19} />
                 <strong>Recommended: Balanced Education Strategy</strong>
               </div>
+              <div className="advisor-recommendation-proof">
+                <strong>FamilyOS recommends: Balanced Education Strategy</strong>
+                <ul>
+                  <li><CheckCircle2 size={15} />Emma starts university in 10 months</li>
+                  <li><CheckCircle2 size={15} />RESP balance is available</li>
+                  <li><CheckCircle2 size={15} />Emergency reserve should remain protected</li>
+                  <li><CheckCircle2 size={15} />Liquidity preference is balanced</li>
+                  <li><CheckCircle2 size={15} />Advisor review is recommended</li>
+                </ul>
+                <div>
+                  <span>Confidence: High</span>
+                  <span>Data: Verified CIBC + household goal</span>
+                  <span>Advisor review: Recommended</span>
+                </div>
+              </div>
               <button className="primary-button advisor-main-cta" onClick={() => setStep("customize")}>
                 Customize Recommendation
               </button>
@@ -5865,10 +6093,7 @@ function GoalAdvisorConversation() {
             <span>Rates: {rateEnvironmentLabel}</span>
           </div>
           <div className="advisor-single-control">{currentControl.control}</div>
-          <div className="advisor-live-note">
-            <Sparkles size={20} />
-            <p>{liveReason}</p>
-          </div>
+          <AICoachPanel thinking={coachThinking} title={strategyTitle} message={liveReason} />
           <div className="advisor-step-actions">
             <small>Question {controlStep + 1} of {controls.length}</small>
             <button
@@ -5911,10 +6136,7 @@ function GoalAdvisorConversation() {
               getComparisonY(getProductValue(product as (typeof productOptions)[number], comparisonHorizon, product.rate))
             }
           />
-          <div className="advisor-live-note">
-            <Sparkles size={20} />
-            <p>{liveReason}</p>
-          </div>
+          <AICoachPanel thinking={coachThinking} title={strategyTitle} message={liveReason} />
           <div className="advisor-step-actions">
             <button className="secondary-button" onClick={() => setStep("customize")}>Adjust assumptions</button>
             <button className="primary-button" onClick={() => setStep("scenario")}>Explore What If</button>
@@ -5946,12 +6168,7 @@ function GoalAdvisorConversation() {
           </div>
           <div className="advisor-scenario-result">
             <div className="advisor-summary-card">
-              <Sparkles size={22} />
-              <div>
-                <span className="eyebrow">Live AI reasoning</span>
-                <h3>{strategyTitle}</h3>
-                <p>{liveReason}</p>
-              </div>
+              <AICoachPanel thinking={coachThinking} title={strategyTitle} message={liveReason} compact />
             </div>
             <div className="visual-comparison-card">
               <span className="eyebrow">Education goal</span>
@@ -6006,35 +6223,38 @@ function GoalAdvisorConversation() {
               );
             })}
           </div>
-          {actionProgress >= actionSteps.length && (
+          {showAdvisorSummary && (
             <section className="advisor-final-summary">
               <div>
-                <span className="eyebrow">AI Summary</span>
-                <h3>{strategyTitle}</h3>
+                <span className="eyebrow">AI Advisor Summary</span>
+                <h3>Here’s the plan FamilyOS prepared for your advisor conversation.</h3>
               </div>
               <div className="summary-columns">
                 <article>
-                  <strong>Why this strategy fits</strong>
+                  <strong>Household context</strong>
                   <ul>
-                    <li>Matches Emma's university timeline without locking all funds.</li>
-                    <li>Uses the existing RESP as the anchor.</li>
-                    <li>Protects emergency cash while closing the education gap.</li>
+                    <li>Emma starts university in 10 months.</li>
+                    <li>RESP balance: $32,000.</li>
+                    <li>Funding gap: $7,800.</li>
+                    <li>Family prefers balanced liquidity and risk.</li>
                   </ul>
                 </article>
                 <article>
-                  <strong>Potential risks</strong>
+                  <strong>Recommended strategy</strong>
                   <ul>
-                    <li>Tuition or rent may be higher than planned.</li>
-                    <li>Market-linked options can move below the base case.</li>
-                    <li>Advisor review is needed before acting on real products.</li>
+                    <li>Review RESP withdrawal timing.</li>
+                    <li>Compare short-term education funding options.</li>
+                    <li>Prepare student banking before move-in.</li>
+                    <li>Book an advisor meeting before product decisions.</li>
                   </ul>
                 </article>
                 <article>
-                  <strong>Key assumptions used</strong>
+                  <strong>Questions for advisor</strong>
                   <ul>
-                    <li>Market outlook: {marketOutlookLabel}</li>
-                    <li>Prime-rate assumption: {rateEnvironmentLabel}</li>
-                    <li>Timeline: {investmentHorizon} years</li>
+                    <li>When should RESP withdrawals begin?</li>
+                    <li>Which GIC or savings option fits the timeline?</li>
+                    <li>How much liquidity should stay outside locked products?</li>
+                    <li>Should Emma open student banking before university?</li>
                   </ul>
                 </article>
               </div>
@@ -6045,9 +6265,18 @@ function GoalAdvisorConversation() {
               </div>
             </section>
           )}
-          {actionProgress < actionSteps.length && (
+          {!showAdvisorSummary && (
             <div className="advisor-action-row">
-              <button className="primary-button" onClick={() => setAdvisorNotice("Strategy saved for this prototype session.")}>Save Strategy</button>
+              <button
+                className="primary-button"
+                onClick={() => {
+                  setActionProgress(actionSteps.length);
+                  setShowAdvisorSummary(true);
+                  setAdvisorNotice("");
+                }}
+              >
+                Looks Good - Build AI Summary
+              </button>
               <button className="secondary-button" onClick={() => setStep("scenario")}>Compare Another Scenario</button>
               <button className="secondary-button" onClick={() => setAdvisorNotice("Advisor meeting request prepared for review.")}>Book Advisor</button>
             </div>
@@ -6064,6 +6293,46 @@ function GoalAdvisorConversation() {
         </span>
       </div>
     </main>
+  );
+}
+
+function AICoachPanel({
+  thinking,
+  title,
+  message,
+  compact = false
+}: {
+  thinking: boolean;
+  title: string;
+  message: string;
+  compact?: boolean;
+}) {
+  const steps = ["Household timeline", "RESP balance", "Liquidity needs", "Product suitability", "Advisor review"];
+
+  return (
+    <div className={`ai-coach-panel ${compact ? "compact" : ""} ${thinking ? "thinking" : ""}`}>
+      <Sparkles size={compact ? 19 : 22} />
+      <div>
+        <span className="eyebrow">{thinking ? "FamilyOS is reviewing..." : "AI Coach"}</span>
+        {thinking ? (
+          <div className="ai-coach-thinking-list">
+            {steps.map((step) => (
+              <span key={step}><CheckCircle2 size={14} />{step}</span>
+            ))}
+          </div>
+        ) : (
+          <>
+            <h3>{title}</h3>
+            <p>{message}</p>
+            <div className="ai-coach-proof-row">
+              <span>Confidence: High</span>
+              <span>Data used: Verified CIBC + household goal</span>
+              <span>Advisor review: Recommended</span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
