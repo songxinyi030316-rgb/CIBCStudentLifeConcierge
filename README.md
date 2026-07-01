@@ -1,19 +1,22 @@
-# CIBC AI Financial Coach
+# CIBC Student Life Financial Coach
 
-Prototype for a CIBC-connected AI Financial Coach that helps everyday banking customers build decision confidence before speaking with an advisor.
+Prototype for a CIBC-connected Student Life Financial Coach that helps first-year students in Canada prepare for university financially, step by step.
 
 ## Experience
 
-The prototype follows this flow:
+The prototype follows a first-semester readiness journey:
 
-1. Sign in with CIBC Online Banking
-2. AI account scan
-3. Goal chat
-4. Strategy comparison
-5. What-if playground
-6. Advisor-ready summary and draft advisor email
+1. Student start / sign in
+2. AI student profile scan
+3. Student life setup chat
+4. Tuition and funding plan
+5. Housing and transportation plan
+6. Insurance and safety check
+7. Banking and credit setup
+8. Monthly budget simulator
+9. First-semester money plan summary
 
-The experience is educational and illustrative only. Product suitability, rates, eligibility, tax treatment, and investment risk should be reviewed with a CIBC advisor.
+The experience is educational and illustrative only. It uses mock CIBC-style student resource cards and should not be treated as financial advice.
 
 ## Run Locally
 

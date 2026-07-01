@@ -1,248 +1,204 @@
 import {
+  ArrowLeft,
   ArrowRight,
+  BookOpen,
+  BriefcaseBusiness,
+  Building2,
   CalendarDays,
+  Car,
   Check,
-  ChevronDown,
-  ClipboardCheck,
-  Download,
+  ChevronRight,
+  CircleDollarSign,
+  Coffee,
+  CreditCard,
+  GraduationCap,
   Home,
-  Mail,
-  RefreshCcw,
+  KeyRound,
+  Landmark,
+  Laptop,
+  Map,
+  PiggyBank,
+  ReceiptText,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
+  Text,
+  Train,
   WalletCards
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ElementType, type ReactNode, useMemo, useState } from "react";
+import buddiesImage from "../assets/generated/student-life-buddies.png";
+import heroImage from "../assets/generated/student-life-coach-hero.png";
 
-type Step = "signIn" | "scan" | "goal" | "priority" | "compare" | "playground" | "ready";
-type Goal = "idle-cash" | "home" | "education" | "retirement" | "safety" | "growth";
-type Priority = "access" | "safety" | "growth" | "tax" | "unsure";
-type WhatIf = "sooner" | "longer" | "growth" | "safety" | "home";
+type StepId = "start" | "scan" | "chat" | "tuition" | "housing" | "insurance" | "banking" | "budget" | "summary";
+type Concern = "Paying tuition" | "Finding rent money" | "OSAP" | "Building credit" | "Managing monthly spending" | "Working part-time" | "I'm not sure";
+type Living = "Residence" | "Renting off-campus" | "Living at home";
+type Transport = "Transit" | "Car" | "Ride share" | "Walking/biking";
 
-type CoachState = {
-  goal: Goal;
-  amount: number;
-  timelineMonths: number;
-  priority: Priority;
-  whatIf: WhatIf | null;
-};
-
-type Strategy = {
-  id: string;
+type Profile = {
   name: string;
-  rating: number;
-  bestBecause: string;
-  whyNot: string;
-  accounts: string[];
-  products: string[];
-  risk: number;
-  returnPotential: number;
-  liquidity: number;
-  values: number[];
+  university: string;
+  program: string;
+  year: string;
+  international: boolean;
+  living: Living;
+  transport: Transport;
+  tuition: number;
+  books: number;
+  rent: number;
+  utilities: number;
+  groceries: number;
+  phone: number;
+  entertainment: number;
+  carCosts: number;
+  osapStatus: "Not started" | "Applied" | "Approved";
+  osapTotal: number;
+  savings: number;
+  familySupport: number;
+  partTimeIncome: number;
+  emergencyBuffer: number;
+  hasCibcAccount: boolean;
+  hasCreditCard: boolean;
+  concern: Concern;
+  utilitiesIncluded: boolean;
+  needsGuarantor: boolean;
+  needsDeposit: boolean;
+  furnitureBudget: number;
+  tenantInsurance: boolean;
 };
 
-type Resource = {
+type ResourceCard = {
   title: string;
+  category: string;
   description: string;
-  href: string;
+  icon: ElementType;
 };
 
-const examples = [
-  "Use this money to buy a home.",
-  "Build emergency savings.",
-  "Start investing.",
-  "Save for education.",
-  "Prepare for retirement.",
-  "I'm not sure yet."
+const steps: { id: StepId; label: string }[] = [
+  { id: "start", label: "Start" },
+  { id: "scan", label: "Profile" },
+  { id: "chat", label: "Setup" },
+  { id: "tuition", label: "Funding" },
+  { id: "housing", label: "Living" },
+  { id: "insurance", label: "Safety" },
+  { id: "banking", label: "Banking" },
+  { id: "budget", label: "Budget" },
+  { id: "summary", label: "Ready" }
 ];
 
-const initialState: CoachState = {
-  goal: "idle-cash",
-  amount: 20000,
-  timelineMonths: 18,
-  priority: "unsure",
-  whatIf: null
+const timelineStages = [
+  { label: "Today", detail: "Scan profile", step: 1, icon: Sparkles },
+  { label: "Before July", detail: "Funding picture", step: 3, icon: ReceiptText },
+  { label: "Before August", detail: "Banking setup", step: 6, icon: WalletCards },
+  { label: "Move-in", detail: "Deposit and keys", step: 4, icon: KeyRound },
+  { label: "Tuition deadline", detail: "OSAP and gap", step: 3, icon: CalendarDays },
+  { label: "First week", detail: "Alerts and safety", step: 5, icon: ShieldCheck },
+  { label: "First month", detail: "Budget test", step: 7, icon: Coffee }
+];
+
+const initialProfile: Profile = {
+  name: "Maya",
+  university: "Western University",
+  program: "Business",
+  year: "First year",
+  international: false,
+  living: "Renting off-campus",
+  transport: "Transit",
+  tuition: 9800,
+  books: 1100,
+  rent: 1125,
+  utilities: 95,
+  groceries: 420,
+  phone: 70,
+  entertainment: 210,
+  carCosts: 0,
+  osapStatus: "Approved",
+  osapTotal: 5200,
+  savings: 2800,
+  familySupport: 2500,
+  partTimeIncome: 640,
+  emergencyBuffer: 250,
+  hasCibcAccount: false,
+  hasCreditCard: false,
+  concern: "Managing monthly spending",
+  utilitiesIncluded: false,
+  needsGuarantor: true,
+  needsDeposit: true,
+  furnitureBudget: 650,
+  tenantInsurance: true
 };
 
-const goalLabels: Record<Goal, string> = {
-  "idle-cash": "First investment",
-  home: "First home",
-  education: "Education",
-  retirement: "Retirement",
-  safety: "Safety-first",
-  growth: "Growth"
+const concernOptions: Concern[] = [
+  "Paying tuition",
+  "Finding rent money",
+  "OSAP",
+  "Building credit",
+  "Managing monthly spending",
+  "Working part-time",
+  "I'm not sure"
+];
+
+const cibcResources: Record<string, ResourceCard> = {
+  studentBanking: {
+    title: "CIBC Smart for Students",
+    category: "No-monthly-fee student banking",
+    description: "A student chequing setup for everyday payments, deposits, and school-year cash flow.",
+    icon: Landmark
+  },
+  bundle: {
+    title: "CIBC Best Student Life Bundle",
+    category: "Student banking bundle",
+    description: "Review chequing, savings, credit, and everyday banking needs together.",
+    icon: WalletCards
+  },
+  creditCard: {
+    title: "Student Credit Cards",
+    category: "Credit building",
+    description: "Use it to build credit history, not to spend beyond your budget.",
+    icon: CreditCard
+  },
+  lineOfCredit: {
+    title: "Student Line of Credit",
+    category: "Funding discussion option",
+    description: "Worth discussing if timing, tuition, or living costs create a funding gap.",
+    icon: CircleDollarSign
+  },
+  professionalEdge: {
+    title: "Professional Edge Student Program",
+    category: "Professional program support",
+    description: "A resource to review if your path leads into a professional degree.",
+    icon: BriefcaseBusiness
+  },
+  internationalAccount: {
+    title: "International Student Bank Account",
+    category: "Arrival banking",
+    description: "Start Canadian banking setup before and during your move to campus.",
+    icon: Building2
+  },
+  gic: {
+    title: "International Student GIC Program",
+    category: "Study permit planning",
+    description: "A mock CIBC resource card for students who need a GIC pathway before arrival.",
+    icon: PiggyBank
+  },
+  creditGuide: {
+    title: "Credit Score Guide",
+    category: "Credit education",
+    description: "Learn how payment history, limits, and utilization affect a student credit profile.",
+    icon: BookOpen
+  },
+  tips: {
+    title: "Student Banking Tips",
+    category: "Money habits",
+    description: "Short tips for tuition deadlines, fraud awareness, alerts, and everyday spending.",
+    icon: Sparkles
+  },
+  advisor: {
+    title: "Book a CIBC Student Banking Appointment",
+    category: "Advisor / banking centre",
+    description: "Bring your plan, funding questions, and product shortlist to a guided conversation.",
+    icon: CalendarDays
+  }
 };
-
-const priorityLabels: Record<Priority, string> = {
-  access: "Access",
-  safety: "Safety",
-  growth: "Growth",
-  tax: "Account fit",
-  unsure: "Not sure yet"
-};
-
-function inferGoal(text: string): CoachState {
-  const lower = text.toLowerCase();
-  const amountMatch = lower.match(/\$?\s?([0-9][0-9,]{3,})/);
-  const amount = amountMatch ? Number(amountMatch[1].replace(/,/g, "")) : 20000;
-
-  let goal: Goal = "idle-cash";
-  if (lower.includes("home") || lower.includes("down payment") || lower.includes("house")) goal = "home";
-  if (lower.includes("daughter") || lower.includes("child") || lower.includes("university") || lower.includes("education")) goal = "education";
-  if (lower.includes("retirement") || lower.includes("retire")) goal = "retirement";
-  if (lower.includes("safe") || lower.includes("soon") || lower.includes("emergency") || lower.includes("losing money")) goal = "safety";
-  if (lower.includes("growth") || lower.includes("wealth")) goal = "growth";
-
-  let timelineMonths = 18;
-  if (lower.includes("soon") || lower.includes("year")) timelineMonths = 12;
-  if (lower.includes("2 years")) timelineMonths = 24;
-  if (lower.includes("retirement") || lower.includes("long")) timelineMonths = 84;
-
-  let priority: Priority = "unsure";
-  if (lower.includes("safe") || lower.includes("emergency") || lower.includes("losing")) priority = "safety";
-  if (lower.includes("soon") || lower.includes("chequing")) priority = "access";
-  if (lower.includes("growth") || lower.includes("retirement")) priority = "growth";
-  if (lower.includes("home") || lower.includes("education")) priority = "tax";
-
-  return { goal, amount, timelineMonths, priority, whatIf: null };
-}
-
-function buildStrategies(state: CoachState): Strategy[] {
-  const isSoon = state.timelineMonths <= 12 || state.whatIf === "sooner";
-  const isLong = state.timelineMonths >= 60 || state.whatIf === "longer";
-  const access = state.priority === "access";
-  const safety = state.priority === "safety" || state.whatIf === "safety";
-  const growth = state.priority === "growth" || state.whatIf === "growth" || isLong;
-  const home = state.goal === "home" || state.whatIf === "home";
-  const education = state.goal === "education";
-  const retirement = state.goal === "retirement";
-  const base = state.amount;
-
-  const strategyList: Strategy[] = [
-    {
-      id: "flexible",
-      name: home ? "Flexible Home Savings Strategy" : "Flexible First Step Strategy",
-      rating: isSoon || access || safety ? 5 : 4,
-      bestBecause: isSoon ? "Because you may need the money soon, access matters more than return." : "It keeps the first move simple while preserving access.",
-      whyNot: "It may not maximize long-term growth.",
-      accounts: home ? ["FHSA", "TFSA"] : ["TFSA", "Savings"],
-      products: ["High-interest savings", "Cashable GIC"],
-      risk: 14,
-      returnPotential: 28,
-      liquidity: 94,
-      values: [base, base * 1.008, base * 1.016, base * 1.024, base * 1.033]
-    },
-    {
-      id: "fixed",
-      name: home ? "Down Payment GIC Strategy" : "Fixed Return Strategy",
-      rating: isSoon || access ? 3 : safety ? 4 : 5,
-      bestBecause: "It can provide a clearer fixed-return conversation if you can lock some money.",
-      whyNot: isSoon ? "It is not first because locked access may conflict with a short timeline." : "It is not first if flexibility matters more than the fixed rate.",
-      accounts: home ? ["FHSA", "TFSA"] : ["TFSA", "Non-registered"],
-      products: ["Cashable GIC", "Non-redeemable GIC"],
-      risk: 18,
-      returnPotential: 42,
-      liquidity: isSoon ? 46 : 62,
-      values: [base, base * 1.011, base * 1.023, base * 1.035, base * 1.048]
-    },
-    {
-      id: "account",
-      name: education ? "RESP Education Strategy" : retirement ? "RRSP / TFSA Retirement Strategy" : home ? "FHSA + TFSA Strategy" : "Registered Account Strategy",
-      rating: education || retirement || home || state.priority === "tax" ? 5 : 4,
-      bestBecause: "The account can matter as much as the product.",
-      whyNot: "It needs advisor review for eligibility, contribution room, and withdrawal rules.",
-      accounts: education ? ["RESP", "TFSA"] : retirement ? ["RRSP", "TFSA"] : home ? ["FHSA", "TFSA"] : ["TFSA", "Non-registered"],
-      products: education || retirement ? ["Managed portfolios", "Mutual funds"] : ["Cashable GIC", "High-interest savings"],
-      risk: education || retirement ? 42 : 24,
-      returnPotential: education || retirement ? 62 : 36,
-      liquidity: education || retirement ? 46 : 70,
-      values: [base, base * 1.006, base * 1.025, base * 1.051, base * 1.082]
-    },
-    {
-      id: "growth",
-      name: "Longer-Term Growth Strategy",
-      rating: growth ? 5 : isSoon || safety ? 2 : 3,
-      bestBecause: "A longer timeline makes market growth more relevant.",
-      whyNot: isSoon || safety ? "It is not first because market movement may not fit your timeline or comfort level." : "It needs a clear risk conversation before moving ahead.",
-      accounts: retirement ? ["RRSP", "TFSA"] : ["TFSA", "Non-registered"],
-      products: ["Mutual funds", "ETFs", "Portfolio solutions"],
-      risk: 66,
-      returnPotential: 78,
-      liquidity: 48,
-      values: [base, base * 0.99, base * 1.035, base * 1.02, base * 1.115]
-    }
-  ];
-
-  return strategyList
-    .sort((a, b) => b.rating - a.rating || b.liquidity - a.liquidity)
-    .map((strategy, index) => ({ ...strategy, rating: Math.max(1, strategy.rating - Math.min(index, 1)) }));
-}
-
-function resourcesFor(state: CoachState, step: Step): Resource[] {
-  if (step === "scan") {
-    return [
-      { title: "Investment Learning Hub", description: "Plain-language investing basics from CIBC.", href: "#" },
-      { title: "TFSA Guide", description: "Understand how a TFSA may support eligible savings goals.", href: "#" },
-      { title: "Book an Advisor", description: "Prepare for a suitability conversation with CIBC.", href: "#" }
-    ];
-  }
-
-  if (state.goal === "home" || state.whatIf === "home") {
-    return [
-      { title: "FHSA Guide", description: "Learn how an FHSA may support a first home goal.", href: "#" },
-      { title: "Mortgage Learning Centre", description: "Explore down payment and mortgage basics.", href: "#" },
-      { title: "First Home Buyer Resources", description: "See tools for planning a home purchase.", href: "#" }
-    ];
-  }
-
-  if (state.goal === "education") {
-    return [
-      { title: "RESP Guide", description: "Learn how education savings accounts work.", href: "#" },
-      { title: "Education Savings Centre", description: "Plan for tuition timing and contributions.", href: "#" },
-      { title: "Government Grant Information", description: "Review education grant considerations.", href: "#" }
-    ];
-  }
-
-  if (state.goal === "retirement") {
-    return [
-      { title: "RRSP Guide", description: "Understand retirement account basics.", href: "#" },
-      { title: "Retirement Planning Guide", description: "Explore long-term planning topics.", href: "#" },
-      { title: "Retirement Calculator", description: "Try retirement planning assumptions.", href: "#" }
-    ];
-  }
-
-  if (state.priority === "growth" || state.whatIf === "growth") {
-    return [
-      { title: "Mutual Fund Basics", description: "Learn how professionally managed funds work.", href: "#" },
-      { title: "ETF Basics", description: "Review ETF concepts before an advisor conversation.", href: "#" },
-      { title: "Investment Products Overview", description: "Compare broad CIBC investment categories.", href: "#" }
-    ];
-  }
-
-  return [
-    { title: "GIC Learning Centre", description: "Understand cashable and fixed-term GIC trade-offs.", href: "#" },
-    { title: "Current GIC Rates", description: "Review current posted rates before speaking with CIBC.", href: "#" },
-    { title: "CIBC Smart Planner", description: "Explore simple planning tools for next steps.", href: "#" }
-  ];
-}
-
-function eliminatedCount(step: Step) {
-  if (step === "signIn") return { considered: 0, remaining: 0 };
-  if (step === "scan" || step === "goal") return { considered: 18, remaining: 18 };
-  if (step === "priority") return { considered: 18, remaining: 8 };
-  if (step === "compare" || step === "playground") return { considered: 18, remaining: 3 };
-  return { considered: 18, remaining: 1 };
-}
-
-function reactionFor(step: Step, state: CoachState, top: Strategy) {
-  if (step === "scan") return "I reviewed the mock profile and found one decision worth exploring.";
-  if (step === "goal") return "I noticed available cash and no linked investment product. I only need to understand the goal.";
-  if (step === "priority") return `Great, I understand. I found a ${goalLabels[state.goal].toLowerCase()} goal and narrowed 18 possibilities to 8.`;
-  if (step === "compare") return "Interesting. That changes what I compare first.";
-  if (step === "playground") return `I've narrowed it down. ${top.name} is currently ahead.`;
-  return "You're advisor ready. You can explain the why, not just the option.";
-}
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-CA", {
@@ -252,631 +208,982 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-function App() {
-  const [step, setStep] = useState<Step>("signIn");
-  const [message, setMessage] = useState("I have $20,000 available and want to understand what this money should do.");
-  const [state, setState] = useState<CoachState>(initialState);
-  const [openWhy, setOpenWhy] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [showScanDetails, setShowScanDetails] = useState(false);
-
-  const strategies = useMemo(() => buildStrategies(state), [state]);
-  const top = strategies[0];
-  const progress = eliminatedCount(step);
-
-  const analyze = (text = message) => {
-    setMessage(text);
-    setState(inferGoal(text));
-    setStep("priority");
-  };
-
-  const choosePriority = (priority: Priority) => {
-    setState((current) => ({ ...current, priority }));
-    setStep("compare");
-  };
-
-  const applyWhatIf = (whatIf: WhatIf) => {
-    setState((current) => ({
-      ...current,
-      whatIf,
-      goal: whatIf === "home" ? "home" : current.goal,
-      priority: whatIf === "growth" ? "growth" : whatIf === "safety" ? "safety" : whatIf === "sooner" ? "access" : current.priority,
-      timelineMonths: whatIf === "sooner" ? 10 : whatIf === "longer" ? 72 : current.timelineMonths
-    }));
-  };
-
-  if (step === "signIn") {
-    return (
-      <div className="app-shell sign-in-shell">
-        <SignInPage onSignIn={() => setStep("scan")} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="app-shell">
-      <header className="top-nav">
-        <button className="brand-mark" onClick={() => setStep("scan")} type="button">
-          <span className="brand-symbol">C</span>
-          <span>
-            <strong>CIBC AI Financial Coach</strong>
-            <small>Connected educational guidance</small>
-          </span>
-        </button>
-        <nav aria-label="Prototype navigation">
-          {[
-            ["scan", "Scan"],
-            ["goal", "Goal"],
-            ["priority", "Matters most"],
-            ["compare", "Compare"],
-            ["playground", "Experiment"],
-            ["ready", "Ready"]
-          ].map(([id, label], index) => (
-            <button className={step === id ? "nav-pill active" : "nav-pill"} key={id} onClick={() => setStep(id as Step)} type="button">
-              <span>{index + 1}</span>
-              {label}
-            </button>
-          ))}
-        </nav>
-      </header>
-
-      {step === "scan" ? (
-        <main className="scan-flow page-enter">
-          <ScanPage
-            showDetails={showScanDetails}
-            onShowDetails={() => setShowScanDetails((value) => !value)}
-            onStart={() => setStep("goal")}
-            resources={resourcesFor(state, step)}
-          />
-        </main>
-      ) : (
-        <main className="coach-flow page-enter">
-          <CoachRail reaction={reactionFor(step, state, top)} progress={progress} step={step} />
-
-          {step === "goal" && (
-            <section className="decision-card intake-card">
-              <ScreenHeader eyebrow="Question 2" title="What do you want this money to help you achieve?" subtitle="I already know the account context. Let's focus on the decision, not paperwork." />
-              <div className="coach-note">
-                <Sparkles size={18} />
-                <span>I noticed $20,000 available and no current investment product linked to this account.</span>
-              </div>
-              <div className="example-stack">
-                {examples.map((example) => (
-                  <button key={example} onClick={() => analyze(example)} type="button">
-                    {example}
-                  </button>
-                ))}
-              </div>
-              <label className="chat-composer">
-                <span>Or type naturally</span>
-                <textarea value={message} onChange={(event) => setMessage(event.target.value)} />
-              </label>
-              <button className="primary-button" onClick={() => analyze()} type="button">
-                Use this goal
-                <ArrowRight size={18} />
-              </button>
-              <LearnMore resources={resourcesFor(state, step)} />
-            </section>
-          )}
-
-          {step === "priority" && (
-            <section className="decision-card">
-              <ScreenHeader eyebrow="Question 3" title="What matters most right now?" subtitle="One answer is enough. I’ll use it to eliminate poor fits." />
-              <SignalPill label="Goal detected" value={goalLabels[state.goal]} />
-              <div className="coach-note">
-                <Check size={18} />
-                <span>{state.timelineMonths <= 12 ? "Because your money may be needed within a year, access matters more than return." : "Got it. I’ll use that goal to narrow the options."}</span>
-              </div>
-              <div className="priority-grid">
-                {([
-                  ["access", "I may need the money soon", WalletCards],
-                  ["safety", "I care most about safety", ShieldCheck],
-                  ["growth", "I want more growth", TrendingUp],
-                  ["tax", "I want the right account type", Home],
-                  ["unsure", "I'm not sure yet", Sparkles]
-                ] as const).map(([id, label, Icon]) => (
-                  <button key={id} onClick={() => choosePriority(id)} type="button">
-                    <Icon size={22} />
-                    <strong>{label}</strong>
-                  </button>
-                ))}
-              </div>
-              <LearnMore resources={resourcesFor(state, step)} />
-            </section>
-          )}
-
-          {step === "compare" && (
-            <section className="decision-card compare-card">
-              <ScreenHeader eyebrow="Question 4" title="Let’s compare only what still fits." subtitle="We’ve narrowed everything down to three strategies worth discussing." />
-              <StrategyCards openWhy={openWhy} setOpenWhy={setOpenWhy} strategies={strategies.slice(0, 3)} />
-              <VisualSuite state={state} strategies={strategies.slice(0, 3)} />
-              <LearnMore resources={resourcesFor(state, step)} />
-              <button className="primary-button" onClick={() => setStep("playground")} type="button">
-                Try a what-if
-                <RefreshCcw size={18} />
-              </button>
-            </section>
-          )}
-
-          {step === "playground" && (
-            <section className="decision-card playground-card">
-              <ScreenHeader eyebrow="Question 5" title="Let’s experiment." subtitle="Tap a what-if. I’ll update the ranking and explain what changed." />
-              <div className="whatif-grid">
-                {([
-                  ["sooner", "I need the money sooner"],
-                  ["longer", "I can wait longer"],
-                  ["growth", "I care more about growth"],
-                  ["safety", "I care more about safety"],
-                  ["home", "I'm buying a house instead"]
-                ] as const).map(([id, label]) => (
-                  <button className={state.whatIf === id ? "active" : ""} key={id} onClick={() => applyWhatIf(id)} type="button">
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <div className="coach-note live">
-                <Sparkles size={18} />
-                <span>{playgroundReaction(state, strategies[0])}</span>
-              </div>
-              <StrategyCards openWhy={openWhy} setOpenWhy={setOpenWhy} strategies={strategies.slice(0, 3)} />
-              <VisualSuite state={state} strategies={strategies.slice(0, 3)} compact />
-              <LearnMore resources={resourcesFor(state, step)} />
-              <button className="primary-button" onClick={() => setStep("ready")} type="button">
-                Prepare my advisor summary
-                <ClipboardCheck size={18} />
-              </button>
-            </section>
-          )}
-
-          {step === "ready" && (
-            <AdvisorReady
-              copied={copied}
-              onCopy={() => setCopied(true)}
-              onRestart={() => setStep("signIn")}
-              onSimulate={() => setStep("playground")}
-              state={state}
-              strategies={strategies}
-            />
-          )}
-        </main>
-      )}
-    </div>
-  );
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
 }
 
-function SignInPage({ onSignIn }: { onSignIn: () => void }) {
+function calculateBudget(profile: Profile) {
+  const rent = profile.living === "Living at home" ? 0 : profile.rent;
+  const utilities = profile.utilitiesIncluded || profile.living === "Living at home" ? 0 : profile.utilities;
+  const transport =
+    profile.transport === "Car" ? profile.carCosts : profile.transport === "Ride share" ? 160 : profile.transport === "Transit" ? 128 : 20;
+  const expenses = rent + utilities + profile.groceries + transport + profile.phone + profile.entertainment + profile.emergencyBuffer;
+  const osapMonthly = profile.osapStatus === "Approved" ? Math.round(profile.osapTotal / 8) : profile.osapStatus === "Applied" ? Math.round(profile.osapTotal / 10) : 0;
+  const income = profile.partTimeIncome + profile.familySupport / 8 + osapMonthly;
+  const surplus = Math.round(income - expenses);
+  const readiness = surplus >= 150 ? "green" : surplus >= -150 ? "yellow" : "red";
+  return { rent, utilities, transport, expenses, osapMonthly, income, surplus, readiness };
+}
+
+function budgetLabel(value: number) {
+  return value >= 0 ? `${formatCurrency(value)} surplus` : `${formatCurrency(Math.abs(value))} shortfall`;
+}
+
+function scenarioImpact(before: number, after: number) {
+  const worsened = after < before;
+  const improved = after > before;
+  if (worsened) return `Your monthly position moves from ${budgetLabel(before)} to ${budgetLabel(after)}.`;
+  if (improved) return `Your monthly position improves from ${budgetLabel(before)} to ${budgetLabel(after)}.`;
+  return `Your monthly position stays near ${budgetLabel(after)}.`;
+}
+
+function App() {
+  const [stepIndex, setStepIndex] = useState(0);
+  const [profile, setProfile] = useState<Profile>(initialProfile);
+  const [scenarioNote, setScenarioNote] = useState("Your base plan is ready to test.");
+  const step = steps[stepIndex].id;
+
+  const updateProfile = (updates: Partial<Profile>) => {
+    setProfile((current) => ({ ...current, ...updates }));
+  };
+
+  const funding = useMemo(() => {
+    const tuitionNeed = profile.tuition + profile.books;
+    const upfrontHousing =
+      profile.living === "Renting off-campus" ? profile.rent + (profile.needsDeposit ? profile.rent : 0) + profile.furnitureBudget : 0;
+    const need = tuitionNeed + upfrontHousing;
+    const osap = profile.osapStatus === "Approved" ? profile.osapTotal : profile.osapStatus === "Applied" ? profile.osapTotal * 0.65 : 0;
+    const available = osap + profile.savings + profile.familySupport;
+    return { tuitionNeed, upfrontHousing, need, osap, available, gap: Math.max(0, need - available) };
+  }, [profile]);
+
+  const budget = useMemo(() => calculateBudget(profile), [profile]);
+
+  const next = () => setStepIndex((current) => Math.min(current + 1, steps.length - 1));
+  const back = () => setStepIndex((current) => Math.max(current - 1, 0));
+
+  const applyScenario = (scenario: string) => {
+    const before = budget;
+    let nextProfile = profile;
+    let lead = "";
+    if (scenario === "work") {
+      nextProfile = { ...profile, partTimeIncome: 880 };
+      lead = "Working 8 hrs/week helps, as long as it does not crowd out class time.";
+    }
+    if (scenario === "rent") {
+      nextProfile = { ...profile, rent: profile.rent + 150 };
+      lead = "Rent is fixed once the lease is signed, so test increases before committing.";
+    }
+    if (scenario === "car") {
+      nextProfile = { ...profile, transport: "Car", carCosts: 520 };
+      lead = "A car increases your monthly cost by about $520. Transit may be safer for first semester.";
+    }
+    if (scenario === "home") {
+      nextProfile = { ...profile, living: "Living at home", rent: 0, utilities: 0, transport: "Transit", carCosts: 0 };
+      lead = "Living at home frees up cash for tuition, books, and an emergency buffer.";
+    }
+    if (scenario === "osap") {
+      nextProfile = { ...profile, osapStatus: "Not started" };
+      lead = "If OSAP is delayed, your first-month cash gap can jump before aid arrives.";
+    }
+    if (scenario === "books") {
+      nextProfile = { ...profile, books: profile.books + 450, entertainment: Math.max(0, profile.entertainment - 40) };
+      lead = "Textbooks often arrive early. Plan them before the first credit card bill.";
+    }
+    const after = calculateBudget(nextProfile);
+    setProfile(nextProfile);
+    setScenarioNote(`${lead} ${scenarioImpact(before.surplus, after.surplus)}`);
+  };
+
   return (
-    <main className="sign-in-page page-enter">
-      <section className="sign-in-brand">
-        <div className="brand-lockup">
-          <span className="brand-symbol">C</span>
-          <span>
-            <strong>CIBC AI Financial Coach</strong>
-            <small>See how a financial strategy is built.</small>
-          </span>
-        </div>
-        <CoachAvatar mood="spark" />
-        <h1>Sign in with CIBC Online Banking</h1>
-        <p>Connect your permissioned banking context so the coach can start from what CIBC already knows.</p>
-      </section>
-      <section className="sign-in-card">
-        <label>
-          <span>Card number or username</span>
-          <input autoComplete="username" defaultValue="alex.chen" />
-        </label>
-        <label>
-          <span>Password</span>
-          <input autoComplete="current-password" defaultValue="••••••••" type="password" />
-        </label>
-        <button className="primary-button" onClick={onSignIn} type="button">
-          Sign in
-          <ArrowRight size={18} />
-        </button>
-        <p>Your information is used to personalize educational guidance. Final product suitability should be reviewed with a CIBC advisor.</p>
-      </section>
+    <main className="app-shell">
+      {step !== "start" && (
+        <header className="topbar">
+          <button className="brand-button" onClick={() => setStepIndex(0)}>
+            <span className="brand-mark">CIBC</span>
+            <span>
+              <strong>Student Life Financial Coach</strong>
+              <small>From confusion to first-semester readiness</small>
+            </span>
+          </button>
+          <ReadinessTimeline stepIndex={stepIndex} />
+        </header>
+      )}
+
+      {step === "start" && <StartScreen profile={profile} updateProfile={updateProfile} next={next} />}
+      {step === "scan" && <ScanScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
+      {step === "chat" && <ChatScreen profile={profile} updateProfile={updateProfile} next={next} back={back} fundingGap={funding.gap} />}
+      {step === "tuition" && <TuitionScreen profile={profile} updateProfile={updateProfile} next={next} back={back} funding={funding} />}
+      {step === "housing" && <HousingScreen profile={profile} updateProfile={updateProfile} next={next} back={back} budget={budget} />}
+      {step === "insurance" && <InsuranceScreen profile={profile} next={next} back={back} />}
+      {step === "banking" && <BankingScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
+      {step === "budget" && (
+        <BudgetScreen
+          profile={profile}
+          updateProfile={updateProfile}
+          next={next}
+          back={back}
+          budget={budget}
+          scenarioNote={scenarioNote}
+          applyScenario={applyScenario}
+        />
+      )}
+      {step === "summary" && <SummaryScreen profile={profile} back={back} setStepIndex={setStepIndex} funding={funding} budget={budget} />}
     </main>
   );
 }
 
-function ScanPage({
-  onShowDetails,
-  onStart,
-  resources,
-  showDetails
-}: {
-  onShowDetails: () => void;
-  onStart: () => void;
-  resources: Resource[];
-  showDetails: boolean;
-}) {
+function ReadinessTimeline({ stepIndex }: { stepIndex: number }) {
+  const activeStep = steps[stepIndex];
   return (
-    <section className="decision-card scan-card">
-      <div className="scan-hero">
-        <CoachAvatar mood="spark" />
-        <div>
-          <ScreenHeader eyebrow="AI account scan" title="Welcome back, Alex. I reviewed your CIBC profile." subtitle="This saves you from answering questions CIBC already has context for." />
-          <div className="coach-note">
-            <Check size={18} />
-            <span>I will not ask about information CIBC already knows. I only need to understand what you want this money to do.</span>
+    <div className="readiness-timeline" aria-label="First Semester Readiness Timeline">
+      <div className="progress-meta">
+        <span>First Semester Readiness Timeline</span>
+        <strong>{Math.round((stepIndex / (steps.length - 1)) * 100)}%</strong>
+      </div>
+      <div className="progress-track">
+        <span style={{ width: `${(stepIndex / (steps.length - 1)) * 100}%` }} />
+      </div>
+      <div className="timeline-steps">
+        {timelineStages.map((stage) => {
+          const Icon = stage.icon;
+          const isDone = stepIndex >= stage.step;
+          const isActive = activeStep.id !== "summary" && stepIndex === stage.step;
+          return (
+            <div key={stage.label} className={`${isDone ? "done" : ""} ${isActive ? "current" : ""}`}>
+              <span>{isDone ? <Check size={13} /> : <Icon size={13} />}</span>
+              <strong>{stage.label}</strong>
+              <small>{stage.detail}</small>
+            </div>
+          );
+        })}
+      </div>
+      <div className="current-journey">
+        {timelineStages
+          .filter((stage) => stage.step <= stepIndex)
+          .slice(-1)
+          .map((stage) => (
+            <span key={stage.label}>Now preparing: {stage.label}</span>
+          ))}
+        {stepIndex === 0 && <span>Start with today’s plan</span>}
+      </div>
+    </div>
+  );
+}
+
+function MiniJourney({ stepIndex }: { stepIndex: number }) {
+  return (
+    <div className="mini-journey" aria-hidden="true">
+      {timelineStages.map((stage) => (
+        <span key={stage.label} className={stepIndex >= stage.step ? "done" : ""} />
+      ))}
+    </div>
+  );
+}
+
+function TransitionNote({ text }: { text: string }) {
+  return (
+    <div className="transition-note">
+      <Sparkles size={18} />
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function RevealCards({ cards }: { cards: { title: string; text: string; icon: ElementType }[] }) {
+  const [openCard, setOpenCard] = useState(0);
+  return (
+    <div className="reveal-grid">
+      {cards.map((card, index) => {
+        const Icon = card.icon;
+        const open = openCard === index;
+        return (
+          <button key={card.title} className={open ? "reveal-card open" : "reveal-card"} onClick={() => setOpenCard(open ? -1 : index)}>
+            <Icon size={22} />
+            <strong>{card.title}</strong>
+            <p>{open ? card.text : "Tap to see why this matters."}</p>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function JourneySnapshot({ profile, fundingGap, budgetSurplus }: { profile: Profile; fundingGap: number; budgetSurplus: number }) {
+  const items: [string, string, ElementType][] = [
+    ["Tuition deadline", fundingGap > 0 ? "Needs a conversation" : "Covered on paper", ReceiptText],
+    ["Move-in", profile.needsDeposit ? "Deposit pending" : "Deposit checked", KeyRound],
+    ["Before August", profile.hasCibcAccount ? "Banking started" : "Student account next", WalletCards],
+    ["First month", budgetLabel(budgetSurplus), Coffee]
+  ];
+  return (
+    <div className="journey-snapshot">
+      {items.map(([label, value, icon]) => {
+        const Icon = icon as ElementType;
+        return (
+          <div key={String(label)}>
+            <Icon size={18} />
+            <span>{label}</span>
+            <strong>{value}</strong>
           </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function buddyForStep(stepIndex = 0) {
+  if (stepIndex <= 3) return "tuition";
+  if (stepIndex <= 5) return "movein";
+  return "budget";
+}
+
+function SupportBuddy({ variant = "tuition", compact = false }: { variant?: string; compact?: boolean }) {
+  return (
+    <span className={`support-buddy ${variant} ${compact ? "compact" : ""}`}>
+      <img src={buddiesImage} alt="" />
+    </span>
+  );
+}
+
+function CharacterBand() {
+  return (
+    <div className="character-band">
+      <img src={buddiesImage} alt="Friendly student guide characters with tuition, move-in, and everyday spending items" />
+      <div>
+        <span>Your student-life guides</span>
+        <strong>Tuition, move-in, banking, and first-month spending, one step at a time.</strong>
+      </div>
+    </div>
+  );
+}
+
+function StartScreen({ profile, updateProfile, next }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void }) {
+  return (
+    <section className="start-screen page">
+      <div className="start-copy">
+        <div className="cibc-lockup">
+          <span>CIBC</span>
+          <strong>Student Life Financial Coach</strong>
+        </div>
+        <h1>Start university with a clear money plan.</h1>
+        <p>CIBC Student Life Financial Coach helps you plan tuition, housing, banking, credit, and everyday spending before the semester starts.</p>
+        <div className="start-actions">
+          <button className="primary-button" onClick={next}>
+            Start my student plan <ArrowRight size={18} />
+          </button>
+          <button
+            className={`secondary-button ${profile.international ? "selected" : ""}`}
+            onClick={() => {
+              updateProfile({ international: true, osapStatus: "Not started", osapTotal: 0, familySupport: 4200 });
+              next();
+            }}
+          >
+            I&apos;m an international student
+          </button>
+        </div>
+        <div className="promise-strip">
+          <span><GraduationCap size={17} /> Tuition</span>
+          <span><KeyRound size={17} /> Rent</span>
+          <span><Train size={17} /> Transit</span>
+          <span><CreditCard size={17} /> Credit</span>
+        </div>
+        <div className="start-map" aria-label="First semester readiness preview">
+          {timelineStages.map((stage) => {
+            const Icon = stage.icon;
+            return (
+              <div key={stage.label}>
+                <Icon size={16} />
+                <span>{stage.label}</span>
+              </div>
+            );
+          })}
+        </div>
+        <CharacterBand />
+      </div>
+      <div className="hero-panel">
+        <img src={heroImage} alt="Student desk with laptop, transit card, notebook, coffee, dorm key, tuition bill, and a friendly AI orb" />
+        <div className="floating-card tuition-card">
+          <ReceiptText size={19} />
+          <span>Tuition deadline</span>
+          <strong>Plan before September</strong>
+        </div>
+        <div className="floating-card coffee-card">
+          <Coffee size={19} />
+          <span>Everyday spend</span>
+          <strong>Know the monthly number</strong>
         </div>
       </div>
-      <div className="scan-grid">
-        {[
-          "Checking everyday banking",
-          "Reviewing savings balance",
-          "Looking for registered account opportunities",
-          "Checking existing investment relationship",
-          "Preparing one decision to explore"
-        ].map((item, index) => (
-          <div className="scan-step" key={item} style={{ animationDelay: `${index * 160}ms` }}>
-            <Check size={17} />
-            <span>{item}</span>
-          </div>
-        ))}
-      </div>
-      <div className="detected-card">
-        <div>
-          <span>Detected opportunity</span>
-          <strong>You may be ready to explore your first investment step.</strong>
-          <p>I found available cash, unused registered-account opportunity, and no advisor conversation prepared yet.</p>
+    </section>
+  );
+}
+
+function ScanScreen({ profile, updateProfile, next, back }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void }) {
+  const scanItems = [
+    ["University", profile.university],
+    ["Program", profile.program],
+    ["Year", profile.year],
+    ["Living", profile.living],
+    ["Expected tuition", formatCurrency(profile.tuition)],
+    ["Expected rent", formatCurrency(profile.rent)],
+    ["OSAP", profile.international ? "Not applicable" : profile.osapStatus],
+    ["CIBC account", profile.hasCibcAccount ? "Already has one" : "Not yet"],
+    ["Credit card", profile.hasCreditCard ? "Yes" : "No"],
+    ["Part-time job", "Considering"]
+  ];
+
+  return (
+    <FlowScreen
+      eyebrow="AI Student Profile Scan"
+      title={`Welcome, ${profile.name}. I’ll help you prepare for your first semester.`}
+      coach="I won’t ask everything at once. We’ll build your student money plan step by step."
+      transition="Since tuition and monthly spending are connected, let’s pick the first thing to calm down."
+      nextLabel="Set my first priority"
+      next={next}
+      back={back}
+      timelineIndex={1}
+    >
+      <div className="scan-layout">
+        <div className="orb-card">
+          <div className="ai-orb" />
+          <Sparkles size={22} />
+          <strong>Profile scan complete</strong>
+          <p>Known context plus a few editable assumptions are enough to start.</p>
         </div>
-        <button className="secondary-button" onClick={onShowDetails} type="button">
-          {showDetails ? "Hide what I found" : "Show me what you found"}
-          <ChevronDown size={16} />
-        </button>
-      </div>
-      {showDetails && (
-        <div className="known-context">
-          {[
-            "Everyday Chequing Account",
-            "$20,000 sitting in chequing / savings",
-            "TFSA available or not used",
-            "No current investment products",
-            "No advisor conversation prepared yet"
-          ].map((item) => (
-            <div key={item}>
-              <Check size={16} />
-              {item}
+        <div className="context-grid">
+          {scanItems.map(([label, value]) => (
+            <div className="context-tile" key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
             </div>
           ))}
         </div>
-      )}
-      <LearnMore resources={resources} />
-      <div className="scan-actions">
-        <button className="primary-button" onClick={onStart} type="button">
-          Start with my goal
-          <ArrowRight size={18} />
+      </div>
+      <JourneySnapshot profile={profile} fundingGap={profile.tuition + profile.books - profile.savings - profile.familySupport} budgetSurplus={calculateBudget(profile).surplus} />
+      <div className="choice-row">
+        <button className={!profile.international ? "choice active" : "choice"} onClick={() => updateProfile({ international: false, osapTotal: 5200 })}>
+          Domestic student
         </button>
-        <button className="text-button" onClick={onShowDetails} type="button">
-          Show me what you found
+        <button className={profile.international ? "choice active" : "choice"} onClick={() => updateProfile({ international: true, osapTotal: 0, familySupport: 4200 })}>
+          International student
         </button>
       </div>
-    </section>
+    </FlowScreen>
   );
 }
 
-function playgroundReaction(state: CoachState, top: Strategy) {
-  if (state.whatIf === "sooner") return `Interesting. Liquidity is more important now, so ${top.name} moves ahead.`;
-  if (state.whatIf === "longer") return `Nice catch. A longer timeline makes growth and account fit more relevant.`;
-  if (state.whatIf === "growth") return "That changes things. I’m allowing more market movement in the comparison.";
-  if (state.whatIf === "safety") return "I’ll prioritize capital preservation over higher return.";
-  if (state.whatIf === "home") return "Now the account conversation shifts toward FHSA and TFSA.";
-  return "Try a scenario to see the strategy change.";
-}
-
-function CoachRail({ progress, reaction, step }: { progress: { considered: number; remaining: number }; reaction: string; step: Step }) {
-  return (
-    <aside className="coach-rail">
-      <CoachAvatar mood={step === "playground" ? "spark" : "calm"} />
-      <div className="coach-bubble">
-        <span>AI Coach</span>
-        <p>{reaction}</p>
-      </div>
-      <div className="narrowing-meter">
-        <span>Considered</span>
-        <strong>{progress.considered}</strong>
-        <i />
-        <span>Still relevant</span>
-        <strong>{progress.remaining}</strong>
-      </div>
-    </aside>
-  );
-}
-
-function ScreenHeader({ eyebrow, subtitle, title }: { eyebrow: string; subtitle: string; title: string }) {
-  return (
-    <header className="screen-header">
-      <span>{eyebrow}</span>
-      <h1>{title}</h1>
-      <p>{subtitle}</p>
-    </header>
-  );
-}
-
-function SignalPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="signal-pill">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
-function StrategyCards({
-  openWhy,
-  setOpenWhy,
-  strategies
-}: {
-  openWhy: string | null;
-  setOpenWhy: (id: string | null) => void;
-  strategies: Strategy[];
-}) {
-  return (
-    <div className="strategy-grid">
-      {strategies.map((strategy, index) => (
-        <article className={index === 0 ? "strategy-card active" : "strategy-card"} key={strategy.id}>
-          <div className="rank">#{index + 1}</div>
-          <h2>{strategy.name}</h2>
-          <Stars count={strategy.rating} />
-          <p>{index === 0 ? strategy.bestBecause : strategy.whyNot}</p>
-          <div className="mix-line">
-            <span>{strategy.accounts.slice(0, 2).join(" + ")}</span>
-            <ArrowRight size={16} />
-            <span>{strategy.products.slice(0, 2).join(" + ")}</span>
-          </div>
-          <button className="why-button" onClick={() => setOpenWhy(openWhy === strategy.id ? null : strategy.id)} type="button">
-            Why {index === 0 ? "ranked #1" : "not #1"}?
-            <ChevronDown size={16} />
-          </button>
-          {openWhy === strategy.id && (
-            <div className="why-panel">
-              {index === 0 ? strategy.bestBecause : strategy.whyNot}
-            </div>
-          )}
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function Stars({ count }: { count: number }) {
-  return <div className="stars">{"★".repeat(count)}{"☆".repeat(5 - count)}</div>;
-}
-
-function VisualSuite({ compact, state, strategies }: { compact?: boolean; state: CoachState; strategies: Strategy[] }) {
-  return (
-    <div className={compact ? "visual-suite compact" : "visual-suite"}>
-      <LineVisual amount={state.amount} strategies={strategies} />
-      <RiskMap strategies={strategies} />
-      <Meters strategies={strategies} />
-    </div>
-  );
-}
-
-function LineVisual({ amount, strategies }: { amount: number; strategies: Strategy[] }) {
-  const width = 760;
-  const height = 340;
-  const plot = { left: 76, right: 600, top: 48, bottom: 258 };
-  const min = Math.min(...strategies.flatMap((s) => s.values)) * 0.99;
-  const max = Math.max(...strategies.flatMap((s) => s.values)) * 1.01;
-  const x = (i: number) => plot.left + i * ((plot.right - plot.left) / 4);
-  const y = (v: number) => plot.top + ((max - v) / (max - min)) * (plot.bottom - plot.top);
-  const colors = ["#8f0034", "#b88935", "#49686f"];
-  return (
-    <figure className="chart-card line-card">
-      <figcaption>
-        <strong>Projected path</strong>
-        <span>Illustrative only</span>
-      </figcaption>
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Projected strategy paths">
-        {[0, 1, 2, 3].map((line) => {
-          const lineY = plot.top + line * ((plot.bottom - plot.top) / 3);
-          return <line className="grid-line" key={line} x1={plot.left} x2={plot.right} y1={lineY} y2={lineY} />;
-        })}
-        {strategies.map((strategy, si) => {
-          const d = strategy.values.map((value, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(value)}`).join(" ");
-          return (
-            <g className={si === 0 ? "series active" : "series"} key={strategy.id}>
-              <path d={d} fill="none" stroke={colors[si]} />
-              <circle cx={x(4)} cy={y(strategy.values[4])} r={si === 0 ? 7 : 6} fill={colors[si]} />
-              <text fill={colors[si]} x={plot.right + 20} y={y(strategy.values[4]) + 5}>{formatCurrency(strategy.values[4])}</text>
-            </g>
-          );
-        })}
-        <text className="axis-label x-axis" x={plot.left} y="318">Now</text>
-        <text className="axis-label x-axis" x={plot.left + (plot.right - plot.left) / 2} y="318">12M</text>
-        <text className="axis-label x-axis" x={plot.right} y="318">24M</text>
-        <text className="axis-label" x={plot.left - 10} y={plot.bottom + 4}>{formatCurrency(amount)}</text>
-      </svg>
-    </figure>
-  );
-}
-
-function RiskMap({ strategies }: { strategies: Strategy[] }) {
-  const shortName = (name: string) => name
-    .replace(" Strategy", "")
-    .replace("First Step", "First step")
-    .replace("Registered Account", "Registered")
-    .replace("Longer-Term Growth", "Growth");
+function ChatScreen({ profile, updateProfile, next, back, fundingGap }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void; fundingGap: number }) {
+  const understood = [
+    ["Main concern", profile.concern],
+    ["Funding gap", fundingGap > 0 ? formatCurrency(fundingGap) : "No clear gap yet"],
+    ["Housing need", profile.living],
+    ["Transportation need", profile.transport],
+    ["Credit readiness", profile.hasCreditCard ? "Has credit card" : "Needs careful setup"],
+    ["Banking needs", profile.hasCibcAccount ? "Review alerts" : "Open student account"],
+    ["Risk area", fundingGap > 0 ? "Payment timing" : "Monthly consistency"]
+  ];
 
   return (
-    <figure className="chart-card risk-card">
-      <figcaption>
-        <strong>Risk vs return</strong>
-        <span>Fit, not promises</span>
-      </figcaption>
-      <svg viewBox="0 0 760 340" role="img" aria-label="Risk return map">
-        <line className="grid-line" x1="86" x2="668" y1="276" y2="276" />
-        <line className="grid-line" x1="86" x2="86" y1="54" y2="276" />
-        <text className="axis-label x-axis" x="584" y="318">Higher return potential</text>
-        <text className="axis-label" x="72" y="62">Higher movement</text>
-        <text className="map-note" x="104" y="314">Lower movement</text>
-        {strategies.map((strategy, index) => {
-          const cx = 100 + strategy.returnPotential * 6.5;
-          const cy = 274 - strategy.risk * 3.05;
-          const labelOffsets = [
-            { dx: 26, dy: 6 },
-            { dx: 24, dy: -26 },
-            { dx: 24, dy: 34 }
-          ];
-          const { dx, dy } = labelOffsets[index] ?? labelOffsets[0];
-          const labelX = Math.min(cx + dx, 612);
-          const labelY = Math.max(70, Math.min(cy + dy, 262));
-          return (
-            <g className={index === 0 ? "point active" : "point"} key={strategy.id}>
-              <circle cx={cx} cy={cy} r={index === 0 ? 20 : 15} />
-              <line className="point-guide" x1={cx + 18} x2={labelX - 6} y1={cy} y2={labelY - 5} />
-              <text x={labelX} y={labelY}>{shortName(strategy.name)}</text>
-            </g>
-          );
-        })}
-      </svg>
-    </figure>
-  );
-}
-
-function Meters({ strategies }: { strategies: Strategy[] }) {
-  return (
-    <div className="meter-card">
-      <strong>Liquidity and confidence</strong>
-      {strategies.map((strategy, index) => (
-        <div className={index === 0 ? "meter-row active" : "meter-row"} key={strategy.id}>
-          <span>{strategy.name}</span>
-          <div><i style={{ width: `${strategy.liquidity}%` }} /></div>
-          <b>{strategy.rating * 20}%</b>
+    <FlowScreen
+      eyebrow="Student Life Setup Chat"
+      title="What are you most worried about before school starts?"
+      coach="Pick one worry. I’ll use it to decide which part of the plan to build first."
+      transition="Since tuition is the deadline that can block registration, let’s solve that first."
+      nextLabel="Build my first-semester plan"
+      next={next}
+      back={back}
+      timelineIndex={2}
+    >
+      <div className="chat-panel">
+        <div className="chat-bubble ai">What are you most worried about before school starts?</div>
+        <div className="option-grid">
+          {concernOptions.map((option) => (
+            <button key={option} className={profile.concern === option ? "option active" : "option"} onClick={() => updateProfile({ concern: option })}>
+              {option}
+            </button>
+          ))}
         </div>
-      ))}
-    </div>
+        <div className="understood-card">
+          <span className="section-kicker">Here’s what I understood</span>
+          <div className="understood-grid">
+            {understood.map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </FlowScreen>
   );
 }
 
-function LearnMore({ resources }: { resources: Resource[] }) {
+function TuitionScreen({ profile, updateProfile, next, back, funding }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void; funding: { tuitionNeed: number; upfrontHousing: number; need: number; osap: number; available: number; gap: number } }) {
+  const max = Math.max(funding.need, 1);
   return (
-    <aside className="learn-more" aria-label="Learn more from CIBC">
-      <div>
-        <span>Learn more from CIBC</span>
-        <p>I've selected resources that match this step.</p>
+    <FlowScreen
+      eyebrow="Tuition + Funding Plan"
+      title="How will the first semester get paid on time?"
+      coach={funding.gap > 0 ? "You may want to discuss a student line of credit or payment timing with CIBC." : "Your current inputs cover the estimated school-start need. Now confirm timing."}
+      transition="Great. Tuition is clearer now. Your next biggest fixed cost is housing."
+      nextLabel="Plan housing and transportation"
+      next={next}
+      back={back}
+      timelineIndex={3}
+    >
+      <div className="two-column">
+        <div className="planner-card">
+          <Slider label="Expected tuition" value={profile.tuition} min={4000} max={28000} step={250} onChange={(tuition) => updateProfile({ tuition })} />
+          <Slider label="Books and supplies" value={profile.books} min={300} max={2500} step={50} onChange={(books) => updateProfile({ books })} />
+          <div className="status-row">
+            {(["Not started", "Applied", "Approved"] as const).map((status) => (
+              <button key={status} className={profile.osapStatus === status ? "choice active" : "choice"} onClick={() => updateProfile({ osapStatus: status })} disabled={profile.international}>
+                {profile.international && status !== "Not started" ? "N/A" : status}
+              </button>
+            ))}
+          </div>
+          <Slider label="Scholarships / savings ready" value={profile.savings} min={0} max={12000} step={250} onChange={(savings) => updateProfile({ savings })} />
+          <Slider label="Family support" value={profile.familySupport} min={0} max={16000} step={250} onChange={(familySupport) => updateProfile({ familySupport })} />
+          <div className="deadline-line">
+            <CalendarDays size={18} />
+            <span>Payment deadline timeline: deposit now, tuition in late summer, books before classes.</span>
+          </div>
+          <div className="scenario-grid funding-actions">
+            <button onClick={() => updateProfile({ osapStatus: "Approved", osapTotal: Math.max(profile.osapTotal, 5200) })} disabled={profile.international}>OSAP approved</button>
+            <button onClick={() => updateProfile({ savings: profile.savings + 1000 })}>Scholarship +$1,000</button>
+            <button onClick={() => updateProfile({ familySupport: profile.familySupport + 500 })}>Family support +$500</button>
+            <button onClick={() => updateProfile({ books: profile.books + 450 })}>Books cost more</button>
+            <button onClick={() => updateProfile({ needsDeposit: true })}>Deposit due earlier</button>
+          </div>
+          <RevealCards
+            cards={[
+              { title: "Approval timing", text: "Aid may be approved after a school deposit is due. Keep a first-payment backup plan.", icon: CalendarDays },
+              { title: "Deposit deadlines", text: "Housing deposits can arrive before OSAP money lands, so they belong in the tuition plan.", icon: KeyRound },
+              { title: "First-month cash gap", text: "Books, transit, and rent can all hit before routine income starts.", icon: Coffee }
+            ]}
+          />
+        </div>
+        <div className="stack-card">
+          <span className="section-kicker">Funding stack</span>
+          <StackLine label="Tuition + books" value={funding.tuitionNeed} max={max} tone="need" />
+          <StackLine label="Residence or rent impact" value={funding.upfrontHousing} max={max} tone="need-soft" />
+          <StackLine label="Minus OSAP" value={funding.osap} max={max} tone="credit" />
+          <StackLine label="Minus savings" value={profile.savings} max={max} tone="credit" />
+          <StackLine label="Minus family support" value={profile.familySupport} max={max} tone="credit" />
+          <div className={`gap-result ${funding.gap > 0 ? "warn" : "ok"}`}>
+            <span>Equals funding gap</span>
+            <strong>{formatCurrency(funding.gap)}</strong>
+          </div>
+        </div>
       </div>
-      <div className="resource-grid">
-        {resources.slice(0, 3).map((resource) => (
-          <a href={resource.href} key={resource.title}>
-            <strong>{resource.title}</strong>
-            <small>{resource.description}</small>
-          </a>
+      <ResourceGrid resources={[cibcResources.lineOfCredit, cibcResources.professionalEdge, cibcResources.tips, cibcResources.advisor]} />
+    </FlowScreen>
+  );
+}
+
+function HousingScreen({ profile, updateProfile, next, back, budget }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void; budget: { rent: number; utilities: number; transport: number; expenses: number; readiness: string } }) {
+  const livingOptions: Living[] = ["Residence", "Renting off-campus", "Living at home"];
+  const transportOptions: { id: Transport; icon: ElementType }[] = [
+    { id: "Transit", icon: Train },
+    { id: "Car", icon: Car },
+    { id: "Ride share", icon: Map },
+    { id: "Walking/biking", icon: Home }
+  ];
+
+  return (
+    <FlowScreen
+      eyebrow="Housing + Transportation Plan"
+      title="Where will you live, and how will you get around?"
+      coach="Rent is your largest fixed cost. I’ll check if your monthly cash flow can support it."
+      transition="Before move-in, let’s check deposits, tenant insurance, and transportation."
+      nextLabel="Run a safety check"
+      next={next}
+      back={back}
+      timelineIndex={4}
+    >
+      <div className="two-column">
+        <div className="planner-card">
+          <div className="choice-row compact">
+            {livingOptions.map((option) => (
+              <button key={option} className={profile.living === option ? "choice active" : "choice"} onClick={() => updateProfile({ living: option })}>
+                {option}
+              </button>
+            ))}
+          </div>
+          {profile.living === "Renting off-campus" && (
+            <>
+              <Slider label="Monthly rent" value={profile.rent} min={650} max={2200} step={25} onChange={(rent) => updateProfile({ rent })} />
+              <Slider label="Furniture budget" value={profile.furnitureBudget} min={0} max={1600} step={50} onChange={(furnitureBudget) => updateProfile({ furnitureBudget })} />
+              <Toggle label="Utilities included?" checked={profile.utilitiesIncluded} onChange={(utilitiesIncluded) => updateProfile({ utilitiesIncluded })} />
+              <Toggle label="Need guarantor?" checked={profile.needsGuarantor} onChange={(needsGuarantor) => updateProfile({ needsGuarantor })} />
+              <Toggle label="First/last month deposit?" checked={profile.needsDeposit} onChange={(needsDeposit) => updateProfile({ needsDeposit })} />
+              <Toggle label="Tenant insurance needed?" checked={profile.tenantInsurance} onChange={(tenantInsurance) => updateProfile({ tenantInsurance })} />
+            </>
+          )}
+          <div className="transport-grid">
+            {transportOptions.map(({ id, icon: Icon }) => (
+              <button key={id} className={profile.transport === id ? "transport active" : "transport"} onClick={() => updateProfile({ transport: id, carCosts: id === "Car" ? 520 : 0 })}>
+                <Icon size={19} />
+                {id}
+              </button>
+            ))}
+          </div>
+          {profile.transport === "Car" && <Slider label="Car payment, gas, parking, insurance" value={profile.carCosts} min={250} max={1000} step={25} onChange={(carCosts) => updateProfile({ carCosts })} />}
+          <RevealCards
+            cards={[
+              { title: "Utilities", text: "Students often budget rent but forget hydro, water, or heat if they are not included.", icon: Home },
+              { title: "Furniture", text: "A desk, bed basics, cookware, and small move-in items can add up quickly.", icon: Laptop },
+              { title: "Internet", text: "If internet is separate, treat it like rent: fixed, recurring, and hard to skip.", icon: Text }
+            ]}
+          />
+        </div>
+        <div className="movein-panel">
+          <MoveInChecklist profile={profile} budget={budget} />
+          <BreakdownCard
+            title="Monthly living cost"
+            items={[
+              ["Rent", budget.rent],
+              ["Utilities", budget.utilities],
+              ["Groceries", profile.groceries],
+              ["Transit / car", budget.transport],
+              ["Phone", profile.phone],
+              ["Subscriptions", profile.entertainment],
+              ["Emergency buffer", profile.emergencyBuffer]
+            ]}
+            total={budget.expenses}
+          />
+        </div>
+      </div>
+    </FlowScreen>
+  );
+}
+
+function InsuranceScreen({ profile, next, back }: { profile: Profile; next: () => void; back: () => void }) {
+  const checklist = [
+    ["Tenant insurance", profile.living === "Renting off-campus" ? "Review before signing" : "Check if needed"],
+    ["Car insurance", profile.transport === "Car" ? "Include in monthly costs" : "Not in current plan"],
+    ["Phone / laptop protection", "Know replacement cost"],
+    ["Emergency fund", `${formatCurrency(profile.emergencyBuffer)} monthly target`],
+    ["Fraud / scam awareness", "Watch tuition and rent payment requests"],
+    ["Credit card alerts", "Turn on payment and spending alerts"]
+  ];
+
+  return (
+    <FlowScreen
+      eyebrow="Insurance + Safety Check"
+      title="What should be protected before the semester starts?"
+      coach="This is a light safety pass: protect essentials, add alerts, and avoid first-year surprises."
+      transition="Good. Now that move-in risks are visible, let’s set up the banking habits that protect the plan."
+      nextLabel="Set up banking and credit"
+      next={next}
+      back={back}
+      timelineIndex={5}
+    >
+      <div className="safety-grid">
+        {checklist.map(([label, value]) => (
+          <div className="safety-item" key={label}>
+            <ShieldCheck size={20} />
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
         ))}
       </div>
-    </aside>
+      <RevealCards
+        cards={[
+          { title: "Spending alerts", text: "Alerts help a student catch overspending before rent or tuition money gets touched.", icon: CreditCard },
+          { title: "Online banking security", text: "First year brings new landlords, clubs, roommates, and payment links. Verify before sending money.", icon: ShieldCheck },
+          { title: "Credit card controls", text: "Set payment reminders and keep the card for planned purchases, not emergency guessing.", icon: CalendarDays }
+        ]}
+      />
+      <ResourceGrid resources={[cibcResources.tips, cibcResources.creditGuide, cibcResources.creditCard]} />
+    </FlowScreen>
   );
 }
 
-function AdvisorReady({
-  copied,
-  onCopy,
-  onRestart,
-  onSimulate,
-  state,
-  strategies
-}: {
-  copied: boolean;
-  onCopy: () => void;
-  onRestart: () => void;
-  onSimulate: () => void;
-  state: CoachState;
-  strategies: Strategy[];
-}) {
-  const top = strategies[0];
-  const email = [
-    "Hello,",
-    "",
-    "I used the CIBC AI Financial Coach to prepare for our conversation.",
-    "",
-    `Goal: ${goalLabels[state.goal]}`,
-    `Amount: ${formatCurrency(state.amount)}`,
-    `Priority: ${priorityLabels[state.priority]}`,
-    `Strategy I would like to discuss: ${top.name}`,
-    "",
-    `Why it seems to fit: ${top.bestBecause}`,
-    "",
-    "Questions:",
-    "- Which account type should I use first?",
-    "- How much should stay accessible?",
-    "- What should I avoid given my timeline?",
-    "",
-    "Please review suitability, eligibility, rates, tax treatment, and investment risk."
-  ].join("\n");
+function BankingScreen({ profile, updateProfile, next, back }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void }) {
+  const resources = [
+    cibcResources.studentBanking,
+    cibcResources.bundle,
+    cibcResources.creditCard,
+    cibcResources.creditGuide,
+    ...(profile.international ? [cibcResources.internationalAccount, cibcResources.gic] : []),
+    cibcResources.lineOfCredit
+  ];
+  const setup = [
+    ["Student chequing account", profile.hasCibcAccount ? "Started" : "Needs setup"],
+    ["Savings pocket for tuition / rent", "Create before payments begin"],
+    ["Student credit card for credit building", profile.hasCreditCard ? "Review limits" : "Consider carefully"],
+    ["Alerts and budget controls", "Turn on right away"],
+    ["Emergency buffer", formatCurrency(profile.emergencyBuffer)],
+    ["Optional line of credit discussion", "Only if funding gap or timing issue remains"]
+  ];
 
   return (
-    <section className="decision-card ready-card">
-      <ScreenHeader eyebrow="Question 6" title="Now you’re ready." subtitle="You can explain why the strategy fits before your appointment." />
-      <div className="readiness-card">
-        <span>Advisor Readiness</span>
-        <strong>100%</strong>
-        <div className="readiness-meter"><i style={{ width: "100%" }} /></div>
-      </div>
-      <div className="summary-strip">
-        <SignalPill label="Goal" value={goalLabels[state.goal]} />
-        <SignalPill label="Top strategy" value={top.name} />
-        <SignalPill label="Why" value={top.bestBecause} />
-      </div>
-      <div className="email-draft-card">
-        <div className="email-draft-header">
-          <strong>Draft email to your CIBC advisor</strong>
-          <Mail size={22} />
+    <FlowScreen
+      eyebrow="Banking + Credit Setup"
+      title="What banking setup will support the first semester?"
+      coach="Use a student credit card to build credit history, not to spend beyond your budget."
+      transition="Now let’s test whether the monthly plan survives real student-life surprises."
+      nextLabel="Open monthly simulator"
+      next={next}
+      back={back}
+      timelineIndex={6}
+    >
+      <div className="two-column">
+        <div className="setup-list">
+          {setup.map(([label, value], index) => (
+            <div className="setup-item" key={label}>
+              <span>{index + 1}</span>
+              <div>
+                <strong>{label}</strong>
+                <small>{value}</small>
+              </div>
+            </div>
+          ))}
+          <div className="choice-row compact">
+            <button className={profile.hasCibcAccount ? "choice active" : "choice"} onClick={() => updateProfile({ hasCibcAccount: true })}>
+              I have CIBC
+            </button>
+            <button className={profile.hasCreditCard ? "choice active" : "choice"} onClick={() => updateProfile({ hasCreditCard: !profile.hasCreditCard })}>
+              Student credit card
+            </button>
+          </div>
+          <RevealCards
+            cards={[
+              { title: "Pay on time", text: "Payment history matters most. Set an alert before the first statement arrives.", icon: CalendarDays },
+              { title: "Keep utilization low", text: "A small planned balance is better than using most of the limit.", icon: CreditCard },
+              { title: "Not extra income", text: "Credit can build history, but it should never hide a monthly shortfall.", icon: WalletCards }
+            ]}
+          />
         </div>
-        <pre>{email}</pre>
-        <div className="email-actions">
-          <button className="primary-button" onClick={onCopy} type="button">
-            {copied ? "Draft copied" : "Copy draft"}
-            <Check size={18} />
-          </button>
-          <a className="secondary-button" href={`mailto:?subject=${encodeURIComponent("Prepared for my CIBC advisor conversation")}&body=${encodeURIComponent(email)}`}>
-            Open email
-            <Mail size={18} />
-          </a>
+        <ResourceGrid resources={resources} compact />
+      </div>
+    </FlowScreen>
+  );
+}
+
+function BudgetScreen({ profile, updateProfile, next, back, budget, scenarioNote, applyScenario }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void; budget: { rent: number; utilities: number; transport: number; expenses: number; income: number; osapMonthly: number; surplus: number; readiness: string }; scenarioNote: string; applyScenario: (scenario: string) => void }) {
+  const scenarios = [
+    ["work", "I work 8 hrs/week"],
+    ["rent", "Rent increases by $150"],
+    ["car", "I buy a car"],
+    ["home", "I live at home"],
+    ["osap", "OSAP is delayed"],
+    ["books", "Textbooks cost more than expected"]
+  ];
+
+  return (
+    <FlowScreen
+      eyebrow="Monthly Budget Simulator"
+      title="Can the monthly plan survive a real student-life surprise?"
+      coach={scenarioNote}
+      transition="You’ve tested the first month. Let’s turn this into a readiness plan you can bring to CIBC."
+      nextLabel="See readiness summary"
+      next={next}
+      back={back}
+      timelineIndex={7}
+    >
+      <div className="simulator-layout">
+        <div className="planner-card">
+          <Slider label="Monthly rent" value={profile.rent} min={0} max={2200} step={25} onChange={(rent) => updateProfile({ rent, living: rent === 0 ? "Living at home" : profile.living })} />
+          <Slider label="Groceries" value={profile.groceries} min={200} max={800} step={25} onChange={(groceries) => updateProfile({ groceries })} />
+          <Slider label="Transit / car" value={budget.transport} min={0} max={1000} step={20} onChange={(transportCost) => updateProfile({ transport: transportCost > 240 ? "Car" : profile.transport, carCosts: transportCost })} />
+          <Slider label="Phone" value={profile.phone} min={35} max={140} step={5} onChange={(phone) => updateProfile({ phone })} />
+          <Slider label="Entertainment" value={profile.entertainment} min={0} max={500} step={25} onChange={(entertainment) => updateProfile({ entertainment })} />
+          <Slider label="Part-time income" value={profile.partTimeIncome} min={0} max={1600} step={40} onChange={(partTimeIncome) => updateProfile({ partTimeIncome })} />
+          <Slider label="Family support monthly equivalent" value={Math.round(profile.familySupport / 8)} min={0} max={1600} step={25} onChange={(monthly) => updateProfile({ familySupport: monthly * 8 })} />
+          <Slider label="OSAP monthly equivalent" value={budget.osapMonthly} min={0} max={1200} step={25} onChange={(monthly) => updateProfile({ osapStatus: monthly > 0 ? "Approved" : "Not started", osapTotal: monthly * 8 })} />
+          <Slider label="Emergency buffer target" value={profile.emergencyBuffer} min={0} max={650} step={25} onChange={(emergencyBuffer) => updateProfile({ emergencyBuffer })} />
+        </div>
+        <div className="budget-results">
+          <div className={`readiness ${budget.readiness}`}>
+            <span>Monthly readiness</span>
+            <strong>{budgetLabel(budget.surplus)}</strong>
+          </div>
+          <Waterfall budget={budget} profile={profile} />
+          <div className="scenario-grid">
+            {scenarios.map(([id, label]) => (
+              <button key={id} onClick={() => applyScenario(id)}>
+                <Sparkles size={16} />
+                {label}
+              </button>
+            ))}
+          </div>
+          <SemesterTimeline readiness={budget.readiness} />
         </div>
       </div>
-      <LearnMore resources={resourcesFor(state, "ready")} />
-      <div className="summary-actions">
-        <button className="primary-button" type="button">
-          Book a CIBC advisor
-          <CalendarDays size={18} />
+    </FlowScreen>
+  );
+}
+
+function SummaryScreen({ profile, back, setStepIndex, funding, budget }: { profile: Profile; back: () => void; setStepIndex: (index: number) => void; funding: { gap: number; tuitionNeed: number; osap: number }; budget: { surplus: number; expenses: number; readiness: string } }) {
+  const badges = [
+    ["Tuition", funding.gap > 0 ? "Needs funding conversation" : "Payment path looks clear", funding.gap > 0 ? "red" : "green"],
+    ["Housing", profile.needsDeposit || profile.tenantInsurance ? "Deposit and insurance pending" : "Move-in basics checked", profile.needsDeposit || profile.tenantInsurance ? "yellow" : "green"],
+    ["Banking", profile.hasCibcAccount ? "Student account started" : "Student account not set up", profile.hasCibcAccount ? "green" : "red"],
+    ["Budget", budget.surplus < 0 ? "Monthly shortfall detected" : "Monthly buffer detected", budget.readiness]
+  ];
+  const planSections = [
+    {
+      title: "What is ready",
+      items: [
+        `${profile.university} ${profile.year.toLowerCase()} context is mapped`,
+        `${profile.living} housing scenario is priced`,
+        `${profile.transport} transportation is included in monthly costs`
+      ]
+    },
+    {
+      title: "What still needs attention",
+      items: [
+        funding.gap > 0 ? `${formatCurrency(funding.gap)} funding gap before deadline` : "Confirm payment dates with the school",
+        profile.hasCibcAccount ? "Turn on student banking alerts" : "Open a no-monthly-fee student account",
+        profile.hasCreditCard ? "Keep credit use planned and paid on time" : "Review student credit card fit carefully"
+      ]
+    },
+    {
+      title: "Key risks before move-in",
+      items: [
+        profile.needsDeposit ? "First/last month deposit may arrive before regular cash flow" : "Deposit timing looks reviewed",
+        profile.tenantInsurance ? "Tenant insurance still needs confirmation" : "Tenant insurance is not currently flagged",
+        budget.surplus < 0 ? "First-month spending is higher than expected income" : "First-month buffer can absorb small surprises"
+      ]
+    },
+    {
+      title: "Questions to ask CIBC",
+      items: [
+        "Which student account setup fits tuition and rent payments?",
+        "How should alerts be configured before September?",
+        funding.gap > 0 ? "Is a student line of credit worth discussing for timing only?" : "How should extra savings be separated for tuition and rent?"
+      ]
+    }
+  ];
+
+  return (
+    <FlowScreen
+      eyebrow="Student Readiness Summary"
+      title="Your First-Semester Money Plan"
+      coach="CIBC helps students move from financial confusion to first-semester readiness."
+      nextLabel="Compare another scenario"
+      next={() => setStepIndex(7)}
+      back={back}
+      timelineIndex={8}
+    >
+      <div className="summary-layout">
+        <div className={`summary-hero ${budget.readiness}`}>
+          <SupportBuddy variant="budget" />
+          <GraduationCap size={30} />
+          <span>{profile.name} at {profile.university}</span>
+          <strong>{budget.readiness === "green" ? "Ready with buffer" : budget.readiness === "yellow" ? "Almost ready" : "Needs a funding conversation"}</strong>
+          <p>{budget.surplus >= 0 ? "Your plan has room for everyday changes." : "Your plan needs an adjustment before move-in."}</p>
+          <div className="next-action">
+            <span>Next best action</span>
+            <strong>{funding.gap > 0 ? "Book a CIBC student banking appointment" : "Open student account and turn on alerts"}</strong>
+          </div>
+        </div>
+        <div className="readiness-plan">
+          <div className="badge-grid">
+            {badges.map(([label, value, tone]) => (
+              <div key={label} className={`readiness-badge ${tone}`}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+          {planSections.map((section) => (
+            <div key={section.title} className="plan-section">
+              <strong>{section.title}</strong>
+              {section.items.map((item) => (
+                <p key={item}><Check size={15} /> {item}</p>
+              ))}
+            </div>
+          ))}
+          <div className="plan-section resources">
+            <strong>CIBC resources to review</strong>
+            <p><ChevronRight size={15} /> {profile.international ? "International Student Account and International Student GIC Program" : "CIBC Smart for Students and Best Student Life Bundle"}</p>
+            <p><ChevronRight size={15} /> Student Credit Cards and Credit Score Guide</p>
+            <p><ChevronRight size={15} /> Advisor / banking centre appointment</p>
+          </div>
+        </div>
+      </div>
+      <div className="cta-row">
+        <button className="primary-button"><CalendarDays size={18} /> Book CIBC student banking appointment</button>
+        <button className="secondary-button"><Check size={18} /> Save plan</button>
+        <button className="secondary-button"><Landmark size={18} /> Open student account</button>
+        <button className="secondary-button"><CreditCard size={18} /> Review student credit card options</button>
+      </div>
+    </FlowScreen>
+  );
+}
+
+function MoveInChecklist({ profile, budget }: { profile: Profile; budget: { rent: number; utilities: number; transport: number; expenses: number; readiness: string } }) {
+  const items: [string, string, boolean, ElementType][] = [
+    ["Rent", formatCurrency(budget.rent), true, Home],
+    ["First/last deposit", profile.needsDeposit ? formatCurrency(profile.rent) : "Not flagged", !profile.needsDeposit, KeyRound],
+    ["Utilities", profile.utilitiesIncluded ? "Included" : formatCurrency(profile.utilities), profile.utilitiesIncluded, ReceiptText],
+    ["Furniture", formatCurrency(profile.furnitureBudget), profile.furnitureBudget <= 600, Laptop],
+    ["Tenant insurance", profile.tenantInsurance ? "Pending" : "Not flagged", !profile.tenantInsurance, ShieldCheck],
+    ["Transit / car", profile.transport, true, Train]
+  ];
+  return (
+    <div className="movein-checklist">
+      <span className="section-kicker">Move-in readiness check</span>
+      <div className="movein-grid">
+        {items.map(([label, value, done, icon]) => {
+          const Icon = icon as ElementType;
+          return (
+            <div key={String(label)} className={done ? "done" : ""}>
+              <Icon size={18} />
+              <div>
+                <strong>{label}</strong>
+                <small>{value}</small>
+              </div>
+              <Check size={16} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FlowScreen({ eyebrow, title, coach, children, nextLabel, next, back, transition, timelineIndex }: { eyebrow: string; title: string; coach: string; children: ReactNode; nextLabel: string; next: () => void; back: () => void; transition?: string; timelineIndex?: number }) {
+  return (
+    <section className="flow-screen page">
+      <div className="flow-heading">
+        {typeof timelineIndex === "number" && <MiniJourney stepIndex={timelineIndex} />}
+        <span className="eyebrow">{eyebrow}</span>
+        <h1>{title}</h1>
+        <div className="coach-note">
+          <SupportBuddy variant={buddyForStep(timelineIndex)} compact />
+          <p>{coach}</p>
+        </div>
+      </div>
+      <div className="flow-content">{children}</div>
+      {transition && <TransitionNote text={transition} />}
+      <div className="flow-actions">
+        <button className="ghost-button" onClick={back}>
+          <ArrowLeft size={18} /> Back
         </button>
-        <button className="secondary-button" type="button">
-          Save summary
-          <Download size={18} />
-        </button>
-        <button className="secondary-button" onClick={onSimulate} type="button">
-          Compare another scenario
-          <RefreshCcw size={18} />
-        </button>
-        <button className="text-button" onClick={onRestart} type="button">
-          Restart
+        <button className="primary-button" onClick={next}>
+          {nextLabel} <ArrowRight size={18} />
         </button>
       </div>
-      <p className="disclaimer">Information is educational and illustrative. Product suitability, rates, eligibility, tax treatment, and investment risk should be reviewed with a CIBC advisor.</p>
     </section>
   );
 }
 
-function CoachAvatar({ mood = "calm" }: { mood?: "calm" | "spark" }) {
+function Slider({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void }) {
   return (
-    <div className={`coach-avatar ai-orb ${mood}`} aria-label="CIBC AI assistant mark" role="img">
-      <span className="orb-halo halo-one" />
-      <span className="orb-halo halo-two" />
-      <span className="orb-ring ring-one" />
-      <span className="orb-ring ring-two" />
-      <span className="orb-core">
-        <span className="orb-glow" />
-        <span className="orb-sheen" />
-        <span className="orb-symbol">
-          <Sparkles size={28} strokeWidth={2.2} />
-        </span>
-        <span className="orb-chip">CIBC</span>
+    <label className="slider-row">
+      <span>
+        <strong>{label}</strong>
+        <em>{formatCurrency(value)}</em>
       </span>
-      <span className="orb-dot dot-one" />
-      <span className="orb-dot dot-two" />
-      <span className="orb-dot dot-three" />
+      <input type="range" min={min} max={max} step={step} value={clamp(value, min, max)} onChange={(event) => onChange(Number(event.target.value))} />
+    </label>
+  );
+}
+
+function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <button className={checked ? "toggle active" : "toggle"} onClick={() => onChange(!checked)}>
+      <span>{label}</span>
+      <i>{checked ? "Yes" : "No"}</i>
+    </button>
+  );
+}
+
+function StackLine({ label, value, max, tone }: { label: string; value: number; max: number; tone: string }) {
+  return (
+    <div className={`stack-line ${tone}`}>
+      <div>
+        <span>{label}</span>
+        <strong>{formatCurrency(value)}</strong>
+      </div>
+      <i><b style={{ width: `${Math.max(4, (value / max) * 100)}%` }} /></i>
+    </div>
+  );
+}
+
+function ResourceGrid({ resources, compact = false }: { resources: ResourceCard[]; compact?: boolean }) {
+  return (
+    <div className={compact ? "resource-grid compact" : "resource-grid"}>
+      {resources.map((resource) => {
+        const Icon = resource.icon;
+        return (
+          <a href="#" className="resource-card" key={resource.title} onClick={(event) => event.preventDefault()}>
+            <Icon size={22} />
+            <span>{resource.category}</span>
+            <strong>{resource.title}</strong>
+            <p>{resource.description}</p>
+            <small>Mock CIBC resource <ChevronRight size={14} /></small>
+          </a>
+        );
+      })}
+    </div>
+  );
+}
+
+function BreakdownCard({ title, items, total }: { title: string; items: [string, number][]; total: number }) {
+  const max = Math.max(...items.map((item) => item[1]), 1);
+  return (
+    <div className="breakdown-card">
+      <span className="section-kicker">{title}</span>
+      {items.map(([label, value]) => (
+        <div className="breakdown-line" key={label}>
+          <span>{label}</span>
+          <i><b style={{ width: `${Math.max(5, (value / max) * 100)}%` }} /></i>
+          <strong>{formatCurrency(value)}</strong>
+        </div>
+      ))}
+      <div className="total-row">
+        <span>Total monthly cost</span>
+        <strong>{formatCurrency(total)}</strong>
+      </div>
+    </div>
+  );
+}
+
+function Waterfall({ budget, profile }: { budget: { rent: number; utilities: number; transport: number; expenses: number; income: number; osapMonthly: number; surplus: number }; profile: Profile }) {
+  const max = Math.max(budget.income, budget.expenses, 1);
+  const bars: [string, number, string][] = [
+    ["Income", budget.income, "positive"],
+    ["Rent", budget.rent, "negative"],
+    ["Groceries", profile.groceries, "negative"],
+    ["Transit / car", budget.transport, "negative"],
+    ["Phone", profile.phone, "negative"],
+    ["Life", profile.entertainment, "negative"],
+    ["Buffer", profile.emergencyBuffer, "buffer"]
+  ];
+  return (
+    <div className="waterfall-card">
+      <div className="waterfall-top">
+        <span>Cash flow waterfall</span>
+        <strong>{formatCurrency(budget.income)} in / {formatCurrency(budget.expenses)} out</strong>
+      </div>
+      <div className="waterfall-bars">
+        {bars.map(([label, value, tone]) => (
+          <div className={`waterfall-bar ${tone}`} key={label}>
+            <i style={{ height: `${Math.max(12, (value / max) * 100)}%` }} />
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SemesterTimeline({ readiness }: { readiness: string }) {
+  const points = ["Deposit", "Tuition", "Books", "Move-in", "First month", "Midterm"];
+  return (
+    <div className="timeline">
+      {points.map((point, index) => (
+        <div key={point} className={index < (readiness === "green" ? 6 : readiness === "yellow" ? 4 : 3) ? "done" : ""}>
+          <span />
+          <strong>{point}</strong>
+        </div>
+      ))}
     </div>
   );
 }
