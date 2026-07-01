@@ -16,7 +16,7 @@ The prototype follows a first-semester readiness journey:
 8. Monthly budget simulator
 9. First-semester money plan summary
 
-The experience is educational and illustrative only. It uses mock CIBC-style student resource cards and should not be treated as financial advice.
+The experience is educational and illustrative only. Resource cards link to official CIBC pages, but the prototype does not provide financial advice.
 
 ## Run Locally
 

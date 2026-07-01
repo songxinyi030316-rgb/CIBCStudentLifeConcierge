@@ -70,7 +70,26 @@ type ResourceCard = {
   title: string;
   category: string;
   description: string;
+  url: string;
   icon: ElementType;
+};
+
+const cibcLinks = {
+  studentHub: "https://www.cibc.com/en/student/student-hub.html",
+  studentBanking: "https://www.cibc.com/en/student/bank-accounts.html",
+  studentBankingProducts: "https://www.cibc.com/en/student/banking-products.html",
+  bundle: "https://www.cibc.com/en/student/credit-card-bank-accounts-bundle.html",
+  creditCards: "https://www.cibc.com/en/student/credit-cards.html",
+  creditGuide: "https://www.cibc.com/en/student/student-life/scoring-high-with-credit.html",
+  creditBasics: "https://www.cibc.com/en/student/student-life/credit-card-101.html",
+  educationLineOfCredit: "https://www.cibc.com/en/student/student-lines-of-credit/education-line-of-credit.html",
+  professionalEdge: "https://www.cibc.com/en/student/student-lines-of-credit/professional-students.html",
+  internationalStudents: "https://www.cibc.com/en/student/student-hub/international-students.html",
+  internationalGic: "https://www.cibc.com/en/special-offers/international-student-gic.html",
+  budgeting: "https://www.cibc.com/en/student/student-life/getting-smart-about-budgets.html",
+  studentBudgetCalculator: "https://www.cibc.com/en/personal-banking/smart-advice/tools-calculators/student-budget-calculator.html",
+  alerts: "https://www.cibc.com/en/personal-banking/ways-to-bank/how-to/set-alerts.html",
+  appointment: "https://www.cibc.com/en/personal-banking/ways-to-bank/how-to/appointment-booking.html"
 };
 
 const steps: { id: StepId; label: string }[] = [
@@ -142,61 +161,85 @@ const cibcResources: Record<string, ResourceCard> = {
     title: "CIBC Smart for Students",
     category: "No-monthly-fee student banking",
     description: "A student chequing setup for everyday payments, deposits, and school-year cash flow.",
+    url: cibcLinks.studentBanking,
     icon: Landmark
   },
   bundle: {
     title: "CIBC Best Student Life Bundle",
     category: "Student banking bundle",
     description: "Review chequing, savings, credit, and everyday banking needs together.",
+    url: cibcLinks.bundle,
     icon: WalletCards
   },
   creditCard: {
     title: "Student Credit Cards",
     category: "Credit building",
     description: "Use it to build credit history, not to spend beyond your budget.",
+    url: cibcLinks.creditCards,
     icon: CreditCard
   },
   lineOfCredit: {
-    title: "Student Line of Credit",
+    title: "CIBC Education Line of Credit",
     category: "Funding discussion option",
     description: "Worth discussing if timing, tuition, or living costs create a funding gap.",
+    url: cibcLinks.educationLineOfCredit,
     icon: CircleDollarSign
   },
   professionalEdge: {
     title: "Professional Edge Student Program",
     category: "Professional program support",
     description: "A resource to review if your path leads into a professional degree.",
+    url: cibcLinks.professionalEdge,
     icon: BriefcaseBusiness
   },
   internationalAccount: {
     title: "International Student Bank Account",
     category: "Arrival banking",
     description: "Start Canadian banking setup before and during your move to campus.",
+    url: cibcLinks.internationalStudents,
     icon: Building2
   },
   gic: {
     title: "International Student GIC Program",
     category: "Study permit planning",
-    description: "A mock CIBC resource card for students who need a GIC pathway before arrival.",
+    description: "Review the CIBC GIC pathway for eligible international students before arrival.",
+    url: cibcLinks.internationalGic,
     icon: PiggyBank
   },
   creditGuide: {
     title: "Credit Score Guide",
     category: "Credit education",
     description: "Learn how payment history, limits, and utilization affect a student credit profile.",
+    url: cibcLinks.creditGuide,
     icon: BookOpen
   },
   tips: {
-    title: "Student Banking Tips",
+    title: "Student Budgeting Tips",
     category: "Money habits",
     description: "Short tips for tuition deadlines, fraud awareness, alerts, and everyday spending.",
+    url: cibcLinks.budgeting,
     icon: Sparkles
   },
   advisor: {
     title: "Book a CIBC Student Banking Appointment",
     category: "Advisor / banking centre",
     description: "Bring your plan, funding questions, and product shortlist to a guided conversation.",
+    url: cibcLinks.appointment,
     icon: CalendarDays
+  },
+  alerts: {
+    title: "CIBC Account Alerts",
+    category: "Safety controls",
+    description: "Set up transaction, profile, credit card, and fraud alerts through CIBC digital banking.",
+    url: cibcLinks.alerts,
+    icon: ShieldCheck
+  },
+  budgetCalculator: {
+    title: "Student Budget Calculator",
+    category: "Student planning tool",
+    description: "Use CIBC's student budget calculator to estimate school costs, funding, and results.",
+    url: cibcLinks.studentBudgetCalculator,
+    icon: ReceiptText
   }
 };
 
@@ -677,7 +720,7 @@ function TuitionScreen({ profile, updateProfile, next, back, funding }: { profil
           </div>
         </div>
       </div>
-      <ResourceGrid resources={[cibcResources.lineOfCredit, cibcResources.professionalEdge, cibcResources.tips, cibcResources.advisor]} />
+      <ResourceGrid resources={[cibcResources.lineOfCredit, cibcResources.professionalEdge, cibcResources.advisor]} />
     </FlowScreen>
   );
 }
@@ -796,20 +839,15 @@ function InsuranceScreen({ profile, next, back }: { profile: Profile; next: () =
           { title: "Credit card controls", text: "Set payment reminders and keep the card for planned purchases, not emergency guessing.", icon: CalendarDays }
         ]}
       />
-      <ResourceGrid resources={[cibcResources.tips, cibcResources.creditGuide, cibcResources.creditCard]} />
+      <ResourceGrid resources={[cibcResources.alerts, cibcResources.creditGuide, cibcResources.creditCard]} />
     </FlowScreen>
   );
 }
 
 function BankingScreen({ profile, updateProfile, next, back }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void }) {
-  const resources = [
-    cibcResources.studentBanking,
-    cibcResources.bundle,
-    cibcResources.creditCard,
-    cibcResources.creditGuide,
-    ...(profile.international ? [cibcResources.internationalAccount, cibcResources.gic] : []),
-    cibcResources.lineOfCredit
-  ];
+  const resources = profile.international
+    ? [cibcResources.internationalAccount, cibcResources.gic, cibcResources.bundle]
+    : [cibcResources.studentBanking, cibcResources.bundle, cibcResources.creditCard];
   const setup = [
     ["Student chequing account", profile.hasCibcAccount ? "Started" : "Needs setup"],
     ["Savings pocket for tuition / rent", "Create before payments begin"],
@@ -1000,17 +1038,17 @@ function SummaryScreen({ profile, back, setStepIndex, funding, budget }: { profi
           ))}
           <div className="plan-section resources">
             <strong>CIBC resources to review</strong>
-            <p><ChevronRight size={15} /> {profile.international ? "International Student Account and International Student GIC Program" : "CIBC Smart for Students and Best Student Life Bundle"}</p>
-            <p><ChevronRight size={15} /> Student Credit Cards and Credit Score Guide</p>
-            <p><ChevronRight size={15} /> Advisor / banking centre appointment</p>
+            <p><ChevronRight size={15} /> <a href={profile.international ? cibcLinks.internationalStudents : cibcLinks.studentBanking} target="_blank" rel="noreferrer">{profile.international ? "International student banking" : "CIBC Smart for Students"}</a></p>
+            <p><ChevronRight size={15} /> <a href={cibcLinks.creditCards} target="_blank" rel="noreferrer">Student credit cards</a> and <a href={cibcLinks.creditGuide} target="_blank" rel="noreferrer">credit education</a></p>
+            <p><ChevronRight size={15} /> <a href={cibcLinks.appointment} target="_blank" rel="noreferrer">Advisor / banking centre appointment</a></p>
           </div>
         </div>
       </div>
       <div className="cta-row">
-        <button className="primary-button"><CalendarDays size={18} /> Book CIBC student banking appointment</button>
-        <button className="secondary-button"><Check size={18} /> Save plan</button>
-        <button className="secondary-button"><Landmark size={18} /> Open student account</button>
-        <button className="secondary-button"><CreditCard size={18} /> Review student credit card options</button>
+        <a className="primary-button" href={cibcLinks.appointment} target="_blank" rel="noreferrer"><CalendarDays size={18} /> Book CIBC student banking appointment</a>
+        <button className="secondary-button" onClick={() => window.print()}><Check size={18} /> Save plan</button>
+        <a className="secondary-button" href={cibcLinks.studentBanking} target="_blank" rel="noreferrer"><Landmark size={18} /> Open student account</a>
+        <a className="secondary-button" href={cibcLinks.creditCards} target="_blank" rel="noreferrer"><CreditCard size={18} /> Review student credit card options</a>
       </div>
     </FlowScreen>
   );
@@ -1112,12 +1150,12 @@ function ResourceGrid({ resources, compact = false }: { resources: ResourceCard[
       {resources.map((resource) => {
         const Icon = resource.icon;
         return (
-          <a href="#" className="resource-card" key={resource.title} onClick={(event) => event.preventDefault()}>
+          <a href={resource.url} className="resource-card" key={resource.title} target="_blank" rel="noreferrer" aria-label={`${resource.title}: official CIBC resource`}>
             <Icon size={22} />
             <span>{resource.category}</span>
             <strong>{resource.title}</strong>
             <p>{resource.description}</p>
-            <small>Mock CIBC resource <ChevronRight size={14} /></small>
+            <small>Official CIBC resource <ChevronRight size={14} /></small>
           </a>
         );
       })}
