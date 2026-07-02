@@ -1,6 +1,6 @@
-# CIBC Student Life Helper
+# CIBC CampusGo
 
-Prototype for a CIBC-connected Student Life Helper that activates existing student resources through a first-semester financial readiness journey.
+Prototype for CIBC CampusGo, an AI-guided first-semester financial readiness experience for new university students.
 
 ## Experience
 
