@@ -1,6 +1,9 @@
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
+  BarChart3,
+  BellRing,
   BookOpen,
   BriefcaseBusiness,
   Building2,
@@ -12,6 +15,7 @@ import {
   Coffee,
   CreditCard,
   GraduationCap,
+  Gauge,
   Home,
   KeyRound,
   Landmark,
@@ -21,7 +25,9 @@ import {
   ReceiptText,
   ShieldCheck,
   Sparkles,
+  Target,
   Text,
+  TrendingUp,
   Train,
   WalletCards
 } from "lucide-react";
@@ -89,29 +95,101 @@ const cibcLinks = {
   budgeting: "https://www.cibc.com/en/student/student-life/getting-smart-about-budgets.html",
   studentBudgetCalculator: "https://www.cibc.com/en/personal-banking/smart-advice/tools-calculators/student-budget-calculator.html",
   alerts: "https://www.cibc.com/en/personal-banking/ways-to-bank/how-to/set-alerts.html",
-  appointment: "https://www.cibc.com/en/personal-banking/ways-to-bank/how-to/appointment-booking.html"
+  appointment: "https://www.cibc.com/en/personal-banking/ways-to-bank/how-to/appointment-booking.html",
+  smartAdvice: "https://www.cibc.com/en/personal-banking/smart-advice.html",
+  smartPlanner: "https://www.cibc.com/en/personal-banking/ways-to-bank/smartplanner.html"
 };
 
 const steps: { id: StepId; label: string }[] = [
-  { id: "start", label: "Start" },
-  { id: "scan", label: "Profile" },
-  { id: "chat", label: "Setup" },
-  { id: "tuition", label: "Funding" },
-  { id: "housing", label: "Living" },
-  { id: "insurance", label: "Safety" },
-  { id: "banking", label: "Banking" },
-  { id: "budget", label: "Budget" },
-  { id: "summary", label: "Ready" }
+  { id: "start", label: "Profile" },
+  { id: "scan", label: "Timeline" },
+  { id: "chat", label: "Concern" },
+  { id: "tuition", label: "Money map" },
+  { id: "housing", label: "Move-in" },
+  { id: "insurance", label: "Banking" },
+  { id: "banking", label: "Simulator" },
+  { id: "budget", label: "Score" },
+  { id: "summary", label: "Action plan" }
 ];
 
 const timelineStages = [
-  { label: "Today", detail: "Scan profile", step: 1, icon: Sparkles },
-  { label: "Before July", detail: "Funding picture", step: 3, icon: ReceiptText },
-  { label: "Before August", detail: "Banking setup", step: 6, icon: WalletCards },
-  { label: "Move-in", detail: "Deposit and keys", step: 4, icon: KeyRound },
-  { label: "Tuition deadline", detail: "OSAP and gap", step: 3, icon: CalendarDays },
-  { label: "First week", detail: "Alerts and safety", step: 5, icon: ShieldCheck },
-  { label: "First month", detail: "Budget test", step: 7, icon: Coffee }
+  {
+    label: "Today",
+    detail: "Profile scan",
+    moment: "Confirm student type, school, living plan, and biggest concern.",
+    why: "A few inputs let the helper activate the right CIBC student resources.",
+    risk: "If this stays vague, every next step feels like generic advice.",
+    resource: "Student Hub",
+    statusStep: 1,
+    step: 1,
+    icon: Sparkles
+  },
+  {
+    label: "Before July",
+    detail: "Funding picture",
+    moment: "Estimate tuition, books, OSAP, savings, and support.",
+    why: "The student needs to know the payment gap before deadlines arrive.",
+    risk: "OSAP or family support may not land before deposits are due.",
+    resource: "Student Budget Calculator",
+    statusStep: 3,
+    step: 3,
+    icon: ReceiptText
+  },
+  {
+    label: "Before August",
+    detail: "Banking setup",
+    moment: "Open student banking, create savings pockets, and set alerts.",
+    why: "Tuition, rent, and credit routines need an account structure.",
+    risk: "Waiting can turn setup into a move-in scramble.",
+    resource: "CIBC Smart for Students",
+    statusStep: 5,
+    step: 5,
+    icon: WalletCards
+  },
+  {
+    label: "Move-in",
+    detail: "Deposit and keys",
+    moment: "Plan first/last rent, furniture, utilities, transit, and insurance.",
+    why: "Move-in costs often happen before regular income begins.",
+    risk: "A deposit or utility surprise can break the first-month budget.",
+    resource: "Budgeting tips",
+    statusStep: 4,
+    step: 4,
+    icon: KeyRound
+  },
+  {
+    label: "Tuition deadline",
+    detail: "OSAP and gap",
+    moment: "Confirm payment timing and whether a funding conversation is needed.",
+    why: "Registration and course access can depend on payment readiness.",
+    risk: "A gap discovered late leaves fewer options.",
+    resource: "Education Line of Credit",
+    statusStep: 3,
+    step: 3,
+    icon: CalendarDays
+  },
+  {
+    label: "First week",
+    detail: "Credit routine",
+    moment: "Set payment due-date reminders and safe utilization habits.",
+    why: "First credit should build history, not hide overspending.",
+    risk: "Late payments can damage a young Canadian credit file.",
+    resource: "Credit education",
+    statusStep: 5,
+    step: 5,
+    icon: ShieldCheck
+  },
+  {
+    label: "First month",
+    detail: "Budget test",
+    moment: "Stress-test rent, groceries, transit, OSAP delays, and work income.",
+    why: "The student needs to know if the plan survives real life.",
+    risk: "A small surprise can become a shortfall without a buffer.",
+    resource: "Smart Advice",
+    statusStep: 6,
+    step: 6,
+    icon: Coffee
+  }
 ];
 
 const initialProfile: Profile = {
@@ -240,6 +318,20 @@ const cibcResources: Record<string, ResourceCard> = {
     description: "Use CIBC's student budget calculator to estimate school costs, funding, and results.",
     url: cibcLinks.studentBudgetCalculator,
     icon: ReceiptText
+  },
+  smartAdvice: {
+    title: "CIBC Smart Advice",
+    category: "Financial education",
+    description: "Review practical CIBC advice for budgeting, saving, and everyday money moments.",
+    url: cibcLinks.smartAdvice,
+    icon: BookOpen
+  },
+  smartPlanner: {
+    title: "CIBC Smart Planner",
+    category: "Existing-client money management",
+    description: "A retention tool for current CIBC clients to understand spending and budgeting habits.",
+    url: cibcLinks.smartPlanner,
+    icon: BarChart3
   }
 };
 
@@ -280,6 +372,35 @@ function scenarioImpact(before: number, after: number) {
   return `Your monthly position stays near ${budgetLabel(after)}.`;
 }
 
+function calculateFirstSemesterMoney(profile: Profile, funding: { need: number }, budget: { expenses: number }) {
+  const firstMonth = budget.expenses;
+  const semesterLiving = firstMonth * 4;
+  const support = profile.savings + profile.familySupport + (profile.osapStatus === "Approved" ? profile.osapTotal : 0) + profile.partTimeIncome * 4;
+  const totalNeed = funding.need + semesterLiving;
+  const gap = Math.round(totalNeed - support);
+  return { totalNeed: Math.round(totalNeed), support: Math.round(support), gap };
+}
+
+function calculateReadiness(profile: Profile, funding: { gap: number }, budget: { surplus: number }) {
+  const tuition = funding.gap === 0 ? 88 : funding.gap < 1500 ? 68 : funding.gap < 3500 ? 55 : 42;
+  const housing = Math.round(clamp(82 - (profile.needsDeposit ? 12 : 0) - (profile.tenantInsurance ? 10 : 0) - (profile.furnitureBudget > 800 ? 8 : 0), 25, 95));
+  const cashFlow = Math.round(clamp(50 + budget.surplus / 12, 20, 95));
+  const banking = profile.hasCibcAccount ? 86 : 54;
+  const credit = profile.hasCreditCard ? 68 : 42;
+  const buffer = Math.round(clamp((profile.emergencyBuffer / 700) * 100, 20, 92));
+  const dimensions = [
+    { label: "Tuition & Funding", short: "Tuition", value: tuition, icon: ReceiptText },
+    { label: "Housing & Move-in", short: "Housing", value: housing, icon: Home },
+    { label: "Cash Flow", short: "Cash Flow", value: cashFlow, icon: TrendingUp },
+    { label: "Banking Setup", short: "Banking", value: banking, icon: Landmark },
+    { label: "Credit Foundation", short: "Credit", value: credit, icon: CreditCard },
+    { label: "Emergency Buffer", short: "Buffer", value: buffer, icon: ShieldCheck }
+  ];
+  const score = Math.round(dimensions.reduce((sum, item) => sum + item.value, 0) / dimensions.length);
+  const focus = dimensions.reduce((lowest, item) => (item.value < lowest.value ? item : lowest), dimensions[0]);
+  return { score, dimensions, focus };
+}
+
 function App() {
   const [stepIndex, setStepIndex] = useState(0);
   const [profile, setProfile] = useState<Profile>(initialProfile);
@@ -301,6 +422,8 @@ function App() {
   }, [profile]);
 
   const budget = useMemo(() => calculateBudget(profile), [profile]);
+  const semesterMoney = useMemo(() => calculateFirstSemesterMoney(profile, funding, budget), [profile, funding, budget]);
+  const readiness = useMemo(() => calculateReadiness(profile, funding, budget), [profile, funding, budget]);
 
   const next = () => setStepIndex((current) => Math.min(current + 1, steps.length - 1));
   const back = () => setStepIndex((current) => Math.max(current - 1, 0));
@@ -345,22 +468,21 @@ function App() {
           <button className="brand-button" onClick={() => setStepIndex(0)}>
             <span className="brand-mark">CIBC</span>
             <span>
-              <strong>Student Life Financial Coach</strong>
-              <small>From confusion to first-semester readiness</small>
+              <strong>Student Life Helper</strong>
+              <small>Acquisition + activation for first-semester readiness</small>
             </span>
           </button>
           <ReadinessTimeline stepIndex={stepIndex} />
         </header>
       )}
 
-      {step === "start" && <StartScreen profile={profile} updateProfile={updateProfile} next={next} />}
-      {step === "scan" && <ScanScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
+      {step === "start" && <StartScreen profile={profile} updateProfile={updateProfile} next={next} funding={funding} budget={budget} semesterMoney={semesterMoney} />}
+      {step === "scan" && <TimelineScreen profile={profile} next={next} back={back} stepIndex={stepIndex} />}
       {step === "chat" && <ChatScreen profile={profile} updateProfile={updateProfile} next={next} back={back} fundingGap={funding.gap} />}
-      {step === "tuition" && <TuitionScreen profile={profile} updateProfile={updateProfile} next={next} back={back} funding={funding} />}
+      {step === "tuition" && <TuitionScreen profile={profile} updateProfile={updateProfile} next={next} back={back} funding={funding} budget={budget} semesterMoney={semesterMoney} />}
       {step === "housing" && <HousingScreen profile={profile} updateProfile={updateProfile} next={next} back={back} budget={budget} />}
-      {step === "insurance" && <InsuranceScreen profile={profile} next={next} back={back} />}
-      {step === "banking" && <BankingScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
-      {step === "budget" && (
+      {step === "insurance" && <BankingScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
+      {step === "banking" && (
         <BudgetScreen
           profile={profile}
           updateProfile={updateProfile}
@@ -371,7 +493,8 @@ function App() {
           applyScenario={applyScenario}
         />
       )}
-      {step === "summary" && <SummaryScreen profile={profile} back={back} setStepIndex={setStepIndex} funding={funding} budget={budget} />}
+      {step === "budget" && <ScoreScreen profile={profile} next={next} back={back} readiness={readiness} funding={funding} budget={budget} semesterMoney={semesterMoney} />}
+      {step === "summary" && <SummaryScreen profile={profile} back={back} setStepIndex={setStepIndex} funding={funding} budget={budget} readiness={readiness} semesterMoney={semesterMoney} />}
     </main>
   );
 }
@@ -390,7 +513,7 @@ function ReadinessTimeline({ stepIndex }: { stepIndex: number }) {
       <div className="timeline-steps">
         {timelineStages.map((stage) => {
           const Icon = stage.icon;
-          const isDone = stepIndex >= stage.step;
+          const isDone = stepIndex >= stage.statusStep;
           const isActive = activeStep.id !== "summary" && stepIndex === stage.step;
           return (
             <div key={stage.label} className={`${isDone ? "done" : ""} ${isActive ? "current" : ""}`}>
@@ -501,19 +624,39 @@ function CharacterBand() {
   );
 }
 
-function StartScreen({ profile, updateProfile, next }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void }) {
+function StartScreen({ profile, updateProfile, next, funding, budget, semesterMoney }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; funding: { gap: number }; budget: { surplus: number }; semesterMoney: { totalNeed: number } }) {
+  const scanItems = [
+    ["Student", profile.international ? "International" : "Domestic"],
+    ["University", profile.university],
+    ["Living plan", profile.living],
+    ["Tuition gap", funding.gap > 0 ? formatCurrency(funding.gap) : "No gap yet"],
+    ["First month", budgetLabel(budget.surplus)],
+    ["Money number", formatCurrency(semesterMoney.totalNeed)]
+  ];
   return (
     <section className="start-screen page">
       <div className="start-copy">
         <div className="cibc-lockup">
           <span>CIBC</span>
-          <strong>Student Life Financial Coach</strong>
+          <strong>Student Life Helper</strong>
         </div>
-        <h1>Start university with a clear money plan.</h1>
-        <p>CIBC Student Life Financial Coach helps you plan tuition, housing, banking, credit, and everyday spending before the semester starts.</p>
+        <h1>CIBC has the products. Students need the journey.</h1>
+        <p>Student Life Helper turns scattered student banking products, OSAP timing, rent planning, credit education, budgeting tools, and CIBC resources into one first-semester readiness journey.</p>
+        <div className="positioning-strip">
+          <span>Smart Planner = retention tool</span>
+          <span>Student Life Helper = acquisition + activation tool</span>
+        </div>
+        <div className="scan-mini">
+          {scanItems.map(([label, value]) => (
+            <div key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
         <div className="start-actions">
           <button className="primary-button" onClick={next}>
-            Start my student plan <ArrowRight size={18} />
+            Start first-semester readiness <ArrowRight size={18} />
           </button>
           <button
             className={`secondary-button ${profile.international ? "selected" : ""}`}
@@ -558,6 +701,123 @@ function StartScreen({ profile, updateProfile, next }: { profile: Profile; updat
         </div>
       </div>
     </section>
+  );
+}
+
+function TimelineScreen({ profile, next, back, stepIndex }: { profile: Profile; next: () => void; back: () => void; stepIndex: number }) {
+  return (
+    <FlowScreen
+      eyebrow="Student Readiness Timeline"
+      title="Prepare for university by moment, not by product."
+      coach="I’ll show what matters now, why it matters, what happens if you delay, and which CIBC resource can help."
+      transition="Now that the journey is visible, let’s choose the student’s biggest concern."
+      nextLabel="Pick the biggest concern"
+      next={next}
+      back={back}
+      timelineIndex={1}
+    >
+      <div className="journey-logic">
+        <div>
+          <span className="section-kicker">Core positioning</span>
+          <h2>Student Life Helper activates CIBC’s existing student ecosystem.</h2>
+          <p>Smart Planner helps existing CIBC clients manage money better. Student Life Helper helps future and new CIBC student clients prepare for university.</p>
+        </div>
+        <div className="logic-cards">
+          <div><strong>What matters now</strong><span>{profile.international ? "Before landing in Canada" : "Before tuition and move-in deadlines"}</span></div>
+          <div><strong>Why it matters</strong><span>Deadlines, deposits, and first-month costs arrive close together.</span></div>
+          <div><strong>If they delay</strong><span>The student may discover a cash gap when fewer options are available.</span></div>
+        </div>
+      </div>
+      <MomentTimeline stepIndex={stepIndex} />
+    </FlowScreen>
+  );
+}
+
+function MomentTimeline({ stepIndex }: { stepIndex: number }) {
+  return (
+    <div className="moment-timeline">
+      {timelineStages.map((stage) => {
+        const Icon = stage.icon;
+        const ready = stepIndex >= stage.statusStep;
+        const inProgress = !ready && stepIndex + 1 >= stage.step;
+        const status = ready ? "Ready" : inProgress ? "In progress" : "Not started";
+        return (
+          <div className={`moment-card ${ready ? "ready" : inProgress ? "progress" : ""}`} key={stage.label}>
+            <div className="moment-top">
+              <span><Icon size={17} /></span>
+              <strong>{stage.label}</strong>
+              <em>{status}</em>
+            </div>
+            <h3>{stage.detail}</h3>
+            <p><b>What to do:</b> {stage.moment}</p>
+            <p><b>Why:</b> {stage.why}</p>
+            <p><b>Risk if delayed:</b> {stage.risk}</p>
+            <small>Relevant CIBC resource: {stage.resource}</small>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FirstSemesterMoneyMap({ profile, funding, budget, semesterMoney }: { profile: Profile; funding: { tuitionNeed: number; upfrontHousing: number; osap: number; available: number; gap: number; need: number }; budget: { rent: number; utilities: number; transport: number; expenses: number; income: number; surplus: number }; semesterMoney: { totalNeed: number; support: number; gap: number } }) {
+  const items: [string, number, string][] = [
+    ["Tuition", profile.tuition, "need"],
+    ["Books", profile.books, "need"],
+    ["Rent / residence", budget.rent * 4 + funding.upfrontHousing, "need"],
+    ["Groceries", profile.groceries * 4, "need"],
+    ["Transit / car", budget.transport * 4, "need"],
+    ["Phone", profile.phone * 4, "need"],
+    ["Emergency buffer", profile.emergencyBuffer * 4, "need"],
+    ["Expected OSAP", funding.osap, "support"],
+    ["Family support", profile.familySupport, "support"],
+    ["Part-time income", profile.partTimeIncome * 4, "support"]
+  ];
+  const max = Math.max(...items.map((item) => item[1]), 1);
+  return (
+    <div className="money-map-card">
+      <div className="money-map-head">
+        <span className="section-kicker">First-Semester Money Map</span>
+        <h2>You need approximately {formatCurrency(semesterMoney.totalNeed)} to be first-semester ready.</h2>
+        <p>{semesterMoney.gap > 0 ? `${formatCurrency(semesterMoney.gap)} still needs a plan before move-in and tuition deadlines.` : `${formatCurrency(Math.abs(semesterMoney.gap))} projected surplus after expected support.`}</p>
+      </div>
+      <div className="money-map-grid">
+        {items.map(([label, value, tone]) => (
+          <div className={`money-map-line ${tone}`} key={label}>
+            <span>{label}</span>
+            <i><b style={{ width: `${Math.max(5, (value / max) * 100)}%` }} /></i>
+            <strong>{formatCurrency(value)}</strong>
+          </div>
+        ))}
+      </div>
+      <div className={`surplus-card ${semesterMoney.gap > 0 ? "warn" : "ok"}`}>
+        <span>{semesterMoney.gap > 0 ? "Gap to solve" : "Projected surplus"}</span>
+        <strong>{formatCurrency(Math.abs(semesterMoney.gap))}</strong>
+      </div>
+    </div>
+  );
+}
+
+function TimelineCashNeed({ profile, funding, budget }: { profile: Profile; funding: { tuitionNeed: number; upfrontHousing: number; gap: number }; budget: { expenses: number } }) {
+  const rows: [string, number, string][] = [
+    ["Deposit", profile.needsDeposit ? profile.rent : 250, "Move-in"],
+    ["Books", profile.books, "First week"],
+    ["Tuition", funding.tuitionNeed, "Tuition deadline"],
+    ["First month", budget.expenses, "First month"]
+  ];
+  const max = Math.max(...rows.map((row) => row[1]), 1);
+  return (
+    <div className="cash-need-card">
+      <span className="section-kicker">Timeline cash need</span>
+      {rows.map(([label, value, moment]) => (
+        <div key={label} className="cash-need-row">
+          <div><strong>{label}</strong><span>{moment}</span></div>
+          <i><b style={{ width: `${Math.max(7, (value / max) * 100)}%` }} /></i>
+          <em>{formatCurrency(value)}</em>
+        </div>
+      ))}
+      <p>{funding.gap > 0 ? "A funding gap means timing should be discussed before the tuition deadline." : "The timeline looks covered on paper; the next risk is cash-flow timing."}</p>
+    </div>
   );
 }
 
@@ -628,9 +888,9 @@ function ChatScreen({ profile, updateProfile, next, back, fundingGap }: { profil
 
   return (
     <FlowScreen
-      eyebrow="Student Life Setup Chat"
+      eyebrow="Biggest Concern"
       title="What are you most worried about before school starts?"
-      coach="Pick one worry. I’ll use it to decide which part of the plan to build first."
+      coach="Pick one worry. I’ll translate it into what matters now, why it matters, the risk of waiting, and the next CIBC resource to review."
       transition="Since tuition is the deadline that can block registration, let’s solve that first."
       nextLabel="Build my first-semester plan"
       next={next}
@@ -662,19 +922,20 @@ function ChatScreen({ profile, updateProfile, next, back, fundingGap }: { profil
   );
 }
 
-function TuitionScreen({ profile, updateProfile, next, back, funding }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void; funding: { tuitionNeed: number; upfrontHousing: number; need: number; osap: number; available: number; gap: number } }) {
+function TuitionScreen({ profile, updateProfile, next, back, funding, budget, semesterMoney }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; next: () => void; back: () => void; funding: { tuitionNeed: number; upfrontHousing: number; need: number; osap: number; available: number; gap: number }; budget: { rent: number; utilities: number; transport: number; expenses: number; income: number; surplus: number }; semesterMoney: { totalNeed: number; support: number; gap: number } }) {
   const max = Math.max(funding.need, 1);
   return (
     <FlowScreen
-      eyebrow="Tuition + Funding Plan"
-      title="How will the first semester get paid on time?"
-      coach={funding.gap > 0 ? "You may want to discuss a student line of credit or payment timing with CIBC." : "Your current inputs cover the estimated school-start need. Now confirm timing."}
-      transition="Great. Tuition is clearer now. Your next biggest fixed cost is housing."
+      eyebrow="Tuition Deadline"
+      title="What money needs to be ready before school starts?"
+      coach={funding.gap > 0 ? "Matched next step: discuss payment timing and whether an Education Line of Credit is worth reviewing with CIBC." : "The estimated tuition path is covered on paper. Now check when each dollar has to arrive."}
+      transition="Great. The money number is clearer now. Next, let’s check move-in costs before they become surprises."
       nextLabel="Plan housing and transportation"
       next={next}
       back={back}
       timelineIndex={3}
     >
+      <FirstSemesterMoneyMap profile={profile} funding={funding} budget={budget} semesterMoney={semesterMoney} />
       <div className="two-column">
         <div className="planner-card">
           <Slider label="Expected tuition" value={profile.tuition} min={4000} max={28000} step={250} onChange={(tuition) => updateProfile({ tuition })} />
@@ -720,7 +981,8 @@ function TuitionScreen({ profile, updateProfile, next, back, funding }: { profil
           </div>
         </div>
       </div>
-      <ResourceGrid resources={[cibcResources.lineOfCredit, cibcResources.professionalEdge, cibcResources.advisor]} />
+      <TimelineCashNeed profile={profile} funding={funding} budget={budget} />
+      <ResourceGrid resources={[cibcResources.budgetCalculator, cibcResources.lineOfCredit, cibcResources.advisor]} />
     </FlowScreen>
   );
 }
@@ -736,11 +998,11 @@ function HousingScreen({ profile, updateProfile, next, back, budget }: { profile
 
   return (
     <FlowScreen
-      eyebrow="Housing + Transportation Plan"
-      title="Where will you live, and how will you get around?"
-      coach="Rent is your largest fixed cost. I’ll check if your monthly cash flow can support it."
-      transition="Before move-in, let’s check deposits, tenant insurance, and transportation."
-      nextLabel="Run a safety check"
+      eyebrow="Move-in"
+      title="What has to be paid before the student gets the keys?"
+      coach="Move-in is a cash-timing moment: rent, deposits, furniture, utilities, transit, and tenant insurance can all arrive before income settles."
+      transition="Move-in is mapped. Next, let’s activate the banking and credit setup that supports this plan."
+      nextLabel="Set up banking and credit"
       next={next}
       back={back}
       timelineIndex={4}
@@ -798,6 +1060,7 @@ function HousingScreen({ profile, updateProfile, next, back, budget }: { profile
           />
         </div>
       </div>
+      <ResourceGrid resources={[cibcResources.tips, cibcResources.budgetCalculator, cibcResources.advisor]} />
     </FlowScreen>
   );
 }
@@ -859,9 +1122,9 @@ function BankingScreen({ profile, updateProfile, next, back }: { profile: Profil
 
   return (
     <FlowScreen
-      eyebrow="Banking + Credit Setup"
-      title="What banking setup will support the first semester?"
-      coach="Use a student credit card to build credit history, not to spend beyond your budget."
+      eyebrow="Before August"
+      title="Which CIBC setup helps activate the student journey?"
+      coach="This is guided product fit, not a product push: match the next step to the student’s readiness gap."
       transition="Now let’s test whether the monthly plan survives real student-life surprises."
       nextLabel="Open monthly simulator"
       next={next}
@@ -897,7 +1160,88 @@ function BankingScreen({ profile, updateProfile, next, back }: { profile: Profil
         </div>
         <ResourceGrid resources={resources} compact />
       </div>
+      <CreditRoutine profile={profile} />
+      {profile.international && <InternationalChecklist />}
+      <StudentNudges profile={profile} />
     </FlowScreen>
+  );
+}
+
+function CreditRoutine({ profile }: { profile: Profile }) {
+  const routine = [
+    ["Statement balance", "Know the full amount owed each month, not just the minimum payment."],
+    ["Minimum payment", "Paying only the minimum avoids immediate delinquency but can leave interest and debt."],
+    ["Payment due date", "Set a reminder before the due date so the first credit file starts clean."],
+    ["Utilization", "Use a small share of the limit. Credit is not extra income."],
+    ["Auto-payment reminder", "Add a calendar nudge before the first statement arrives."],
+    ["Canada note", profile.international ? "Credit systems differ by country. Canada rewards responsible repayment, not spending more." : "Paying on time helps build a Canadian credit history for future rent, phone plans, or car financing."]
+  ];
+  return (
+    <div className="credit-routine">
+      <div>
+        <span className="section-kicker">First Credit Routine Setup</span>
+        <h2>Build credit safely before it becomes a habit.</h2>
+      </div>
+      <div className="routine-grid">
+        {routine.map(([label, text]) => (
+          <div key={label}>
+            <CreditCard size={18} />
+            <strong>{label}</strong>
+            <p>{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InternationalChecklist() {
+  const items = [
+    "International Student GIC",
+    "Arrival banking",
+    "First Canadian debit card",
+    "Rent deposit planning",
+    "Phone / transit / grocery budget",
+    "First 30 days spending estimate",
+    "Credit-building basics"
+  ];
+  return (
+    <div className="international-checklist">
+      <span className="section-kicker">Before You Land in Canada</span>
+      <div className="movein-grid">
+        {items.map((item) => (
+          <div key={item} className="done">
+            <Check size={18} />
+            <div>
+              <strong>{item}</strong>
+              <small>Activation checkpoint</small>
+            </div>
+            <ChevronRight size={16} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StudentNudges({ profile }: { profile: Profile }) {
+  const nudges = [
+    ["Tuition deadline reminder", "Tuition deadline"],
+    ["Rent due reminder", "Move-in"],
+    [profile.international ? "GIC / arrival banking reminder" : "OSAP timing reminder", "Before July"],
+    ["Credit card payment reminder", "First week"],
+    ["First-month budget check", "First month"],
+    ["Move-in cost reminder", "Move-in"]
+  ];
+  return (
+    <div className="nudge-strip">
+      <span className="section-kicker">Helpful future nudges</span>
+      <div>
+        {nudges.map(([label, moment]) => (
+          <span key={label}><BellRing size={15} /> <strong>{label}</strong><em>{moment}</em></span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -913,11 +1257,11 @@ function BudgetScreen({ profile, updateProfile, next, back, budget, scenarioNote
 
   return (
     <FlowScreen
-      eyebrow="Monthly Budget Simulator"
-      title="Can the monthly plan survive a real student-life surprise?"
+      eyebrow="First Month"
+      title="Can the plan survive real student-life surprises?"
       coach={scenarioNote}
-      transition="You’ve tested the first month. Let’s turn this into a readiness plan you can bring to CIBC."
-      nextLabel="See readiness summary"
+      transition="You’ve tested the first month. Now let’s diagnose the readiness score and focus area."
+      nextLabel="See readiness score"
       next={next}
       back={back}
       timelineIndex={7}
@@ -955,7 +1299,116 @@ function BudgetScreen({ profile, updateProfile, next, back, budget, scenarioNote
   );
 }
 
-function SummaryScreen({ profile, back, setStepIndex, funding, budget }: { profile: Profile; back: () => void; setStepIndex: (index: number) => void; funding: { gap: number; tuitionNeed: number; osap: number }; budget: { surplus: number; expenses: number; readiness: string } }) {
+function ScoreScreen({ profile, next, back, readiness, funding, budget, semesterMoney }: { profile: Profile; next: () => void; back: () => void; readiness: ReturnType<typeof calculateReadiness>; funding: { gap: number }; budget: { surplus: number; expenses: number; readiness: string }; semesterMoney: { totalNeed: number; gap: number } }) {
+  return (
+    <FlowScreen
+      eyebrow="First Semester Readiness Score"
+      title="What is ready, and what still needs attention?"
+      coach="This diagnostic turns the journey into one clear readiness score and one focus area, so the student knows the next action."
+      transition="Now let’s turn the diagnostic into an advisor-ready action plan."
+      nextLabel="Create advisor-ready plan"
+      next={next}
+      back={back}
+      timelineIndex={8}
+    >
+      <ReadinessScoreDashboard readiness={readiness} />
+      <div className="score-context-grid">
+        <div className="context-tile">
+          <span>First-semester money number</span>
+          <strong>{formatCurrency(semesterMoney.totalNeed)}</strong>
+        </div>
+        <div className="context-tile">
+          <span>Funding position</span>
+          <strong>{semesterMoney.gap > 0 ? `${formatCurrency(semesterMoney.gap)} gap` : `${formatCurrency(Math.abs(semesterMoney.gap))} surplus`}</strong>
+        </div>
+        <div className="context-tile">
+          <span>Monthly position</span>
+          <strong>{budgetLabel(budget.surplus)}</strong>
+        </div>
+        <div className="context-tile">
+          <span>Matched next step</span>
+          <strong>{funding.gap > 0 ? "Advisor funding conversation" : profile.hasCibcAccount ? "Turn on alerts" : "Student account setup"}</strong>
+        </div>
+      </div>
+      <ResourceGrid resources={[cibcResources.smartAdvice, cibcResources.budgetCalculator, cibcResources.advisor]} />
+    </FlowScreen>
+  );
+}
+
+function ReadinessScoreDashboard({ readiness }: { readiness: ReturnType<typeof calculateReadiness> }) {
+  const status = readiness.score >= 80 ? "Ready" : readiness.score >= 65 ? "On track" : "Needs attention";
+  return (
+    <div className="readiness-dashboard">
+      <div className="score-head">
+        <strong>{readiness.score}%</strong>
+        <div>
+          <h2>First Semester Readiness Score</h2>
+          <p>Six dimensions show whether the student is ready for tuition, move-in, banking, credit, cash flow, and emergencies.</p>
+        </div>
+        <span>{status}</span>
+      </div>
+      <div className="score-body">
+        <div className="dimension-list">
+          {readiness.dimensions.map((dimension) => {
+            const Icon = dimension.icon;
+            return (
+              <div className="dimension-row" key={dimension.label}>
+                <Icon size={18} />
+                <span>{dimension.label}</span>
+                <i><b style={{ width: `${dimension.value}%` }} /></i>
+                <strong>{dimension.value}%</strong>
+              </div>
+            );
+          })}
+        </div>
+        <RadarChart dimensions={readiness.dimensions} />
+      </div>
+      <div className="focus-area">
+        <span>Focus area</span>
+        <strong>{readiness.focus.label} is your highest risk.</strong>
+        <p>{readiness.focus.label === "Emergency Buffer" ? "Aim for $500-$1,000 in a separate savings account before move-in. One unexpected cost should not derail the semester." : `${readiness.focus.label} needs the next action before the semester starts. Review the matched CIBC resource and bring this question to an advisor.`}</p>
+      </div>
+    </div>
+  );
+}
+
+function RadarChart({ dimensions }: { dimensions: { short: string; value: number }[] }) {
+  const center = 120;
+  const radius = 82;
+  const points = dimensions.map((dimension, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI * 2) / dimensions.length;
+    const valueRadius = (dimension.value / 100) * radius;
+    return {
+      label: dimension.short,
+      x: center + Math.cos(angle) * valueRadius,
+      y: center + Math.sin(angle) * valueRadius,
+      lx: center + Math.cos(angle) * (radius + 27),
+      ly: center + Math.sin(angle) * (radius + 27),
+      ax: center + Math.cos(angle) * radius,
+      ay: center + Math.sin(angle) * radius
+    };
+  });
+  const polygon = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const rings = [0.33, 0.66, 1].map((scale) =>
+    dimensions
+      .map((_, index) => {
+        const angle = -Math.PI / 2 + (index * Math.PI * 2) / dimensions.length;
+        return `${center + Math.cos(angle) * radius * scale},${center + Math.sin(angle) * radius * scale}`;
+      })
+      .join(" ")
+  );
+  return (
+    <svg className="radar-chart" viewBox="0 0 240 240" role="img" aria-label="Readiness radar chart">
+      {rings.map((ring) => <polygon key={ring} points={ring} />)}
+      {points.map((point) => <line key={`${point.label}-line`} x1={center} y1={center} x2={point.ax} y2={point.ay} />)}
+      <polygon className="radar-fill" points={polygon} />
+      {points.map((point) => <circle key={`${point.label}-dot`} cx={point.x} cy={point.y} r="5" />)}
+      {points.map((point) => <text key={point.label} x={point.lx} y={point.ly}>{point.label}</text>)}
+    </svg>
+  );
+}
+
+function SummaryScreen({ profile, back, setStepIndex, funding, budget, readiness, semesterMoney }: { profile: Profile; back: () => void; setStepIndex: (index: number) => void; funding: { gap: number; tuitionNeed: number; osap: number }; budget: { surplus: number; expenses: number; readiness: string }; readiness: ReturnType<typeof calculateReadiness>; semesterMoney: { totalNeed: number; gap: number } }) {
   const badges = [
     ["Tuition", funding.gap > 0 ? "Needs funding conversation" : "Payment path looks clear", funding.gap > 0 ? "red" : "green"],
     ["Housing", profile.needsDeposit || profile.tenantInsurance ? "Deposit and insurance pending" : "Move-in basics checked", profile.needsDeposit || profile.tenantInsurance ? "yellow" : "green"],
@@ -999,21 +1452,21 @@ function SummaryScreen({ profile, back, setStepIndex, funding, budget }: { profi
 
   return (
     <FlowScreen
-      eyebrow="Student Readiness Summary"
+      eyebrow="Advisor-Ready Action Plan"
       title="Your First-Semester Money Plan"
-      coach="CIBC helps students move from financial confusion to first-semester readiness."
+      coach="CIBC has the products. Student Life Helper turns them into a sequenced action plan the student can act on or bring to an advisor."
       nextLabel="Compare another scenario"
-      next={() => setStepIndex(7)}
+      next={() => setStepIndex(6)}
       back={back}
       timelineIndex={8}
     >
       <div className="summary-layout">
         <div className={`summary-hero ${budget.readiness}`}>
           <SupportBuddy variant="budget" />
-          <GraduationCap size={30} />
+          <Gauge size={30} />
           <span>{profile.name} at {profile.university}</span>
-          <strong>{budget.readiness === "green" ? "Ready with buffer" : budget.readiness === "yellow" ? "Almost ready" : "Needs a funding conversation"}</strong>
-          <p>{budget.surplus >= 0 ? "Your plan has room for everyday changes." : "Your plan needs an adjustment before move-in."}</p>
+          <strong>{readiness.score}% first-semester ready</strong>
+          <p>{formatCurrency(semesterMoney.totalNeed)} estimated first-semester money number. {semesterMoney.gap > 0 ? `${formatCurrency(semesterMoney.gap)} still needs a plan.` : `${formatCurrency(Math.abs(semesterMoney.gap))} projected surplus.`}</p>
           <div className="next-action">
             <span>Next best action</span>
             <strong>{funding.gap > 0 ? "Book a CIBC student banking appointment" : "Open student account and turn on alerts"}</strong>
@@ -1040,7 +1493,13 @@ function SummaryScreen({ profile, back, setStepIndex, funding, budget }: { profi
             <strong>CIBC resources to review</strong>
             <p><ChevronRight size={15} /> <a href={profile.international ? cibcLinks.internationalStudents : cibcLinks.studentBanking} target="_blank" rel="noreferrer">{profile.international ? "International student banking" : "CIBC Smart for Students"}</a></p>
             <p><ChevronRight size={15} /> <a href={cibcLinks.creditCards} target="_blank" rel="noreferrer">Student credit cards</a> and <a href={cibcLinks.creditGuide} target="_blank" rel="noreferrer">credit education</a></p>
-            <p><ChevronRight size={15} /> <a href={cibcLinks.appointment} target="_blank" rel="noreferrer">Advisor / banking centre appointment</a></p>
+            <p><ChevronRight size={15} /> <a href={funding.gap > 0 ? cibcLinks.educationLineOfCredit : cibcLinks.appointment} target="_blank" rel="noreferrer">{funding.gap > 0 ? "Education Line of Credit discussion option" : "Advisor / banking centre appointment"}</a></p>
+          </div>
+          <div className="plan-section resources">
+            <strong>Questions to ask CIBC advisor</strong>
+            <p><ChevronRight size={15} /> What student account setup best separates tuition, rent, and everyday spending?</p>
+            <p><ChevronRight size={15} /> Should this funding gap be handled through timing, savings, OSAP updates, or an advisor discussion option?</p>
+            <p><ChevronRight size={15} /> Which first-credit routine should be set before the first statement arrives?</p>
           </div>
         </div>
       </div>
@@ -1049,6 +1508,7 @@ function SummaryScreen({ profile, back, setStepIndex, funding, budget }: { profi
         <button className="secondary-button" onClick={() => window.print()}><Check size={18} /> Save plan</button>
         <a className="secondary-button" href={cibcLinks.studentBanking} target="_blank" rel="noreferrer"><Landmark size={18} /> Open student account</a>
         <a className="secondary-button" href={cibcLinks.creditCards} target="_blank" rel="noreferrer"><CreditCard size={18} /> Review student credit card options</a>
+        <a className="secondary-button" href={cibcLinks.educationLineOfCredit} target="_blank" rel="noreferrer"><CircleDollarSign size={18} /> Learn about Education Line of Credit</a>
       </div>
     </FlowScreen>
   );

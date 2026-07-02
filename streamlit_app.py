@@ -5,7 +5,7 @@ import streamlit.components.v1 as components
 
 
 st.set_page_config(
-    page_title="CIBC Student Life Financial Coach",
+    page_title="CIBC Student Life Helper",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -13,7 +13,7 @@ st.set_page_config(
 bundle_path = Path(__file__).parent / "streamlit_build" / "financial_coach.html"
 
 if not bundle_path.exists():
-    st.error("CIBC Student Life Financial Coach bundle is missing. Run `npm run build:streamlit` before launching Streamlit.")
+    st.error("CIBC Student Life Helper bundle is missing. Run `npm run build:streamlit` before launching Streamlit.")
     st.stop()
 
 st.markdown(

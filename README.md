@@ -1,20 +1,20 @@
-# CIBC Student Life Financial Coach
+# CIBC Student Life Helper
 
-Prototype for a CIBC-connected Student Life Financial Coach that helps first-year students in Canada prepare for university financially, step by step.
+Prototype for a CIBC-connected Student Life Helper that activates existing student resources through a first-semester financial readiness journey.
 
 ## Experience
 
-The prototype follows a first-semester readiness journey:
+The prototype follows a focused first-semester readiness journey:
 
-1. Student start / sign in
-2. AI student profile scan
-3. Student life setup chat
-4. Tuition and funding plan
-5. Housing and transportation plan
-6. Insurance and safety check
-7. Banking and credit setup
-8. Monthly budget simulator
-9. First-semester money plan summary
+1. Welcome / student profile scan
+2. Student readiness timeline
+3. Biggest concern selection
+4. Tuition and funding readiness
+5. Move-in readiness
+6. Banking and credit setup
+7. First-month budget simulator
+8. Readiness score dashboard
+9. Advisor-ready action plan
 
 The experience is educational and illustrative only. Resource cards link to official CIBC pages, but the prototype does not provide financial advice.
 
