@@ -1687,6 +1687,267 @@ input[type="range"] {
   gap: 10px;
 }
 
+.campus-companion {
+  display: grid;
+  gap: 16px;
+  border: 1px solid rgba(87, 0, 31, 0.13);
+  border-radius: 8px;
+  padding: clamp(18px, 3vw, 26px);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 250, 242, 0.76)),
+    var(--cream-2);
+  box-shadow: var(--shadow-soft);
+}
+
+.companion-head {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.companion-head span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--burgundy);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.companion-head h2 {
+  margin: 0;
+  font-size: clamp(25px, 4vw, 38px);
+  line-height: 1.08;
+}
+
+.companion-head p,
+.companion-panel p,
+.companion-ending p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.companion-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.75fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.companion-panel {
+  display: grid;
+  gap: 11px;
+  border: 1px solid rgba(87, 0, 31, 0.11);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.whats-next {
+  grid-row: span 2;
+}
+
+.semester-timeline {
+  display: grid;
+  gap: 0;
+}
+
+.semester-timeline div {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 118px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-height: 54px;
+  padding: 4px 0 12px;
+}
+
+.semester-timeline div:not(:last-child)::after {
+  position: absolute;
+  top: 30px;
+  left: 13px;
+  width: 2px;
+  height: calc(100% - 24px);
+  border-radius: 999px;
+  background: rgba(87, 0, 31, 0.14);
+  content: "";
+}
+
+.semester-timeline i {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(87, 0, 31, 0.18);
+  border-radius: 999px;
+  color: white;
+  background: rgba(255, 255, 255, 0.78);
+  font-style: normal;
+}
+
+.semester-timeline .done i {
+  background: var(--burgundy);
+}
+
+.semester-timeline strong {
+  color: var(--burgundy);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.semester-timeline p {
+  font-size: 13px;
+}
+
+.checkin-card,
+.campus-inbox div,
+.milestone-list div,
+.reflection-panel div,
+.daily-examples article,
+.companion-ending {
+  border: 1px solid rgba(87, 0, 31, 0.09);
+  border-radius: 8px;
+  background: var(--cream-2);
+}
+
+.checkin-card {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+.checkin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.checkin-actions button,
+.checkin-response button {
+  border: 1px solid rgba(143, 0, 52, 0.18);
+  border-radius: 999px;
+  padding: 8px 10px;
+  color: var(--burgundy);
+  background: white;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.checkin-response {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+  border-left: 3px solid var(--gold);
+  padding-left: 10px;
+}
+
+.checkin-response button {
+  width: fit-content;
+  background: var(--gold-soft);
+}
+
+.campus-inbox div,
+.daily-examples article {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  padding: 10px;
+}
+
+.campus-inbox svg,
+.daily-examples svg,
+.reflection-panel svg {
+  color: var(--gold);
+}
+
+.milestone-list {
+  display: grid;
+  gap: 8px;
+}
+
+.milestone-list div {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 9px 10px;
+}
+
+.milestone-list span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid rgba(87, 0, 31, 0.18);
+  border-radius: 999px;
+  color: white;
+}
+
+.milestone-list .complete span {
+  background: var(--burgundy);
+}
+
+.milestone-list p,
+.daily-examples p,
+.campus-inbox p {
+  font-size: 13px;
+}
+
+.reflection-panel > strong {
+  color: var(--ink);
+}
+
+.reflection-panel div {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 10px;
+  background: rgba(223, 240, 232, 0.72);
+}
+
+.daily-examples {
+  grid-column: 1 / -1;
+}
+
+.daily-examples > div {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.companion-ending {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--burgundy), var(--burgundy-deep));
+}
+
+.companion-ending svg,
+.companion-ending strong,
+.companion-ending span {
+  color: white;
+}
+
+.companion-ending p {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.companion-ending span {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 950;
+}
+
 .summary-item {
   min-height: 92px;
 }
@@ -2655,8 +2916,17 @@ details > * + * {
   .funding-decision,
   .movein-decision,
   .ai-insight-card,
-  .brief-grid {
+  .brief-grid,
+  .companion-grid {
     grid-template-columns: 1fr;
+  }
+
+  .whats-next {
+    grid-row: auto;
+  }
+
+  .daily-examples > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .scan-result-grid,
@@ -2800,14 +3070,26 @@ details > * + * {
 
   .advisor-brief-head,
   .advisor-summary-note,
-  .advisor-brief-generate {
+  .advisor-brief-generate,
+  .companion-head,
+  .checkin-card,
+  .companion-ending {
     grid-template-columns: 1fr;
   }
 
   .brief-facts,
   .advisor-question-grid,
-  .advisor-brief-actions {
+  .advisor-brief-actions,
+  .daily-examples > div {
     grid-template-columns: 1fr;
+  }
+
+  .semester-timeline div {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .semester-timeline p {
+    grid-column: 2;
   }
 
   .thinking-moment {

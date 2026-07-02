@@ -827,6 +827,7 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
           <a className="secondary-button" href={cibcLinks.creditCards} target="_blank" rel="noreferrer"><CreditCard size={18} /> Review student credit card options</a>
           <a className="secondary-button" href={cibcLinks.educationLineOfCredit} target="_blank" rel="noreferrer"><CircleDollarSign size={18} /> Learn about Education Line of Credit</a>
         </div>
+        <CampusCompanionLayer profile={profile} budget={budget} />
       </div>
     </DecisionScreen>
   );
@@ -948,6 +949,147 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
         <button className="secondary-button" onClick={onCopy}><Copy size={18} /> {copied ? "Copied" : "Copy advisor brief"}</button>
         <button className="secondary-button" onClick={onDownload}><Download size={18} /> Download brief</button>
         <a className="primary-button" href={cibcLinks.appointment} target="_blank" rel="noreferrer"><CalendarDays size={18} /> Book appointment</a>
+      </div>
+    </section>
+  );
+}
+
+function CampusCompanionLayer({ profile, budget }: { profile: Profile; budget: ReturnType<typeof calculateBudget> }) {
+  const [checkIn, setCheckIn] = useState<string | null>(null);
+  const checkInResponses: Record<string, string> = {
+    well: "Great. Keep the routine simple: confirm tuition timing, pay statements on time, and review your budget once a month.",
+    tight: "Let's update your monthly budget together and look for one spending category to reduce first.",
+    expense: "Let's protect your emergency buffer and decide what can wait until next month."
+  };
+  const timeline = [
+    ["Today", "Financial plan completed.", true],
+    ["September", "Tuition payment reminder.", false],
+    ["Late September", "First credit card statement.", false],
+    ["October", "First month budget review.", false],
+    ["November", "Emergency fund check.", false],
+    ["December", "Prepare for next semester.", false]
+  ] as const;
+  const inboxItems: [ElementType, string][] = [
+    [BookOpen, "Tuition deadline is coming next week."],
+    [CreditCard, "Your first statement may arrive this month."],
+    [Home, "Have you finished your tenant insurance?"],
+    [Train, "Student transit pass registration is now available."],
+    [CalendarDays, "Winter semester planning starts next month."]
+  ];
+  const milestones = [
+    ["Admission Offer Scanned", true],
+    ["Funding Plan Completed", true],
+    ["Student Account Opened", profile.hasCibcAccount],
+    ["Tuition Paid", false],
+    ["First Credit Card Payment On Time", profile.hasCreditCard],
+    ["Emergency Fund Started", profile.emergencyBuffer > 0],
+    ["First Semester Complete", false]
+  ] as const;
+  const dailyCards: [ElementType, string][] = [
+    [CreditCard, "Pay your statement balance before the due date."],
+    [Gauge, "Keep credit utilization below 30%."],
+    [ReceiptText, "Tuition payment is due in 6 days."],
+    [WalletCards, "Remember to set up Auto Deposit."],
+    [PiggyBank, `You planned a ${formatCurrency(profile.emergencyBuffer)} emergency buffer. You currently have ${formatCurrency(Math.max(0, profile.emergencyBuffer - 80))}.`]
+  ];
+  return (
+    <section className="campus-companion" aria-label="Campus Companion">
+      <div className="companion-head">
+        <AIOrb compact />
+        <div>
+          <span>Campus Companion</span>
+          <h2>CampusGo will stay with you throughout your first semester.</h2>
+          <p>A lightweight companion layer for reminders, reflections, and student-life financial check-ins.</p>
+        </div>
+      </div>
+
+      <div className="companion-grid">
+        <div className="companion-panel whats-next">
+          <span className="section-kicker">What's Next Timeline</span>
+          <div className="semester-timeline">
+            {timeline.map(([label, body, done]) => (
+              <div key={label} className={done ? "done" : ""}>
+                <i>{done ? <Check size={13} /> : null}</i>
+                <strong>{label}</strong>
+                <p>{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="companion-panel checkin-panel">
+          <span className="section-kicker">AI Companion Check-in</span>
+          <div className="checkin-card">
+            <AIOrb compact />
+            <div>
+              <strong>Hi {profile.name}. How has your first month been?</strong>
+              <div className="checkin-actions">
+                <button onClick={() => setCheckIn("well")}>Everything is going well</button>
+                <button onClick={() => setCheckIn("tight")}>Money is tighter than expected</button>
+                <button onClick={() => setCheckIn("expense")}>I had an unexpected expense</button>
+              </div>
+              {checkIn && (
+                <div className="checkin-response">
+                  <p>{checkInResponses[checkIn]}</p>
+                  <button>Update Budget</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="companion-panel campus-inbox">
+          <span className="section-kicker">CampusGo Inbox</span>
+          {inboxItems.map(([Icon, text]) => (
+            <div key={text}>
+              <Icon size={17} />
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="companion-panel milestones-panel">
+          <span className="section-kicker">Financial Milestones</span>
+          <div className="milestone-list">
+            {milestones.map(([label, done]) => (
+              <div key={label} className={done ? "complete" : ""}>
+                <span>{done ? <Check size={13} /> : null}</span>
+                <p>{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="companion-panel reflection-panel">
+          <span className="section-kicker">Monthly Reflection</span>
+          <strong>Compared with your original plan:</strong>
+          <p>{budget.surplus < 0 ? "Spending is tighter than expected." : "Spending is on track."}</p>
+          <div>
+            <Sparkles size={16} />
+            <p>Students usually save the most by reducing food delivery first.</p>
+          </div>
+        </div>
+
+        <div className="companion-panel daily-examples">
+          <span className="section-kicker">Daily Companion Examples</span>
+          <div>
+            {dailyCards.map(([Icon, text]) => (
+              <article key={text}>
+                <Icon size={17} />
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="companion-ending">
+        <GraduationCap size={26} />
+        <div>
+          <strong>You're ready for your first semester.</strong>
+          <p>But CampusGo does not end here. I'll continue helping you through tuition deadlines, move-in, budgeting, credit building, and your first year.</p>
+          <span>See you next month.</span>
+        </div>
       </div>
     </section>
   );
