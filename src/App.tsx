@@ -29,7 +29,6 @@ import {
   WalletCards
 } from "lucide-react";
 import { type ElementType, type ReactNode, useEffect, useMemo, useState } from "react";
-import buddiesImage from "../assets/generated/student-life-buddies.png";
 import heroImage from "../assets/generated/student-life-coach-hero.png";
 
 type StepId = "landing" | "offer" | "scan" | "funding" | "housing" | "credit" | "budget" | "score" | "summary";
@@ -74,6 +73,12 @@ type ResourceCard = {
   category: string;
   description: string;
   url: string;
+  icon: ElementType;
+};
+
+type FutureReminder = {
+  title: string;
+  body: string;
   icon: ElementType;
 };
 
@@ -190,6 +195,15 @@ const timelineStages = [
   { label: "Tuition deadline", detail: "Payment timing", unlockStep: 3, icon: CalendarDays },
   { label: "First week", detail: "Credit routine", unlockStep: 5, icon: ShieldCheck },
   { label: "First month", detail: "Budget tested", unlockStep: 6, icon: Coffee }
+];
+
+const habitItems = [
+  "Tuition reviewed",
+  "Move-in costs checked",
+  "Student banking reviewed",
+  "Credit basics learned",
+  "First-month budget tested",
+  "Emergency buffer planned"
 ];
 
 const initialProfile: Profile = {
@@ -400,7 +414,7 @@ function LandingScreen({ next }: { next: () => void }) {
         <h1>Start university with a clear first-semester money plan.</h1>
         <p>Upload your admission offer to build a guided plan for tuition, move-in costs, banking, credit, and first-month spending.</p>
         <div className="coach-line">
-          <Sparkles size={18} />
+          <AIOrb compact />
           <span>CIBC CampusGo helps students understand what to do next before classes begin.</span>
         </div>
         <div className="start-actions">
@@ -424,7 +438,11 @@ function OfferScreen({ next, back, offerName, setOfferName, updateProfile, profi
     <DecisionScreen
       eyebrow="Onboarding"
       title="Upload your admission offer."
-      coach="I will use the offer to understand your school, city, intake, and likely tuition before we make any money decisions."
+      coach="I'll use the offer to understand your school, city, intake, and likely tuition before we make any money decisions."
+      thinkingText="Preparing secure offer scan..."
+      aiTip="Your offer letter is a useful starting point because it usually confirms the school, program, intake, city, and tuition range."
+      nextAction="Scan your admission offer"
+      completedHabits={0}
       back={back}
       ctaLabel="Scan admission letter"
       next={next}
@@ -467,7 +485,12 @@ function ScanScreen({ next, back, profile, offerName }: { next: () => void; back
     <DecisionScreen
       eyebrow="AI scan"
       title={done ? `Hi ${profile.name}. I found your admission offer.` : "Scanning your admission offer."}
-      coach={done ? "You have approximately 9 weeks before your first semester. Let us prepare your finances step by step." : "I am reading the offer first, so I do not have to ask for everything manually."}
+      coach={done ? "Great. I found your admission offer. Before we think about banking products, let's understand your first semester." : "I'm reading the offer first, so I do not have to ask for everything manually."}
+      thinkingText={done ? "Building your readiness path..." : "Reading admission details..."}
+      aiTip="Students often make better money decisions when they separate admission costs from first-month living costs."
+      nextAction="Begin the readiness journey"
+      completedHabits={0}
+      futureReminder={{ title: "Upcoming reminder", body: "Your tuition payment is due in 5 days.", icon: CalendarDays }}
       back={back}
       ctaLabel="Begin the readiness journey"
       next={next}
@@ -508,7 +531,12 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
     <DecisionScreen
       eyebrow="Tuition deadline"
       title="Can I actually afford my first semester?"
-      coach={funding.gap > 0 ? `${profile.name}, your biggest issue is the ${formatCurrency(funding.gap)} funding gap before September.` : `${profile.name}, your tuition path looks covered. Now confirm timing before September.`}
+      coach={funding.gap > 0 ? "Your tuition is not actually your biggest challenge. Timing is." : `${profile.name}, your tuition path looks covered. Now confirm timing before September.`}
+      thinkingText={reveal === 0 ? "Checking funding sources..." : reveal === 1 ? "Understanding tuition timeline..." : "Matching CIBC resources..."}
+      aiTip="Before relying on OSAP, check whether approval timing lines up with tuition, deposits, and first-month cash needs."
+      nextAction={reveal < 2 ? "Review tuition timing" : "Review advisor discussion options"}
+      completedHabits={1}
+      futureReminder={{ title: "Tuition reminder", body: "Your payment deadline is approaching. Confirm OSAP timing and backup funds before the due date.", icon: ReceiptText }}
       back={back}
       ctaLabel={reveal === 0 ? "Show me why" : reveal === 1 ? "Show OSAP timing" : "Plan move-in costs"}
       next={reveal < 2 ? () => setReveal((current) => current + 1) : next}
@@ -550,7 +578,12 @@ function HousingScreen({ profile, updateProfile, budget, next, back }: { profile
     <DecisionScreen
       eyebrow="Move-in"
       title="Am I ready to move in without a cash surprise?"
-      coach="I noticed rent and deposits happen before the first month settles. Let us check move-in readiness only."
+      coach="Students usually underestimate move-in costs. Let's make sure there are no surprises."
+      thinkingText="Checking deposit and move-in costs..."
+      aiTip="Most students forget that first and last month's rent can happen before classes begin."
+      nextAction="Confirm deposit and tenant insurance"
+      completedHabits={2}
+      futureReminder={{ title: "Move-in reminder", body: "Remember to budget for first and last month's rent before you pick up the keys.", icon: Home }}
       back={back}
       ctaLabel="Set up credit routine"
       next={next}
@@ -597,7 +630,12 @@ function CreditScreen({ profile, updateProfile, next, back }: { profile: Profile
     <DecisionScreen
       eyebrow="First week"
       title="How do I build healthy credit habits?"
-      coach="A student credit card can help build history, but the first routine matters more than the application."
+      coach="Canada builds credit differently than many countries. I'll help you build good habits from day one."
+      thinkingText="Preparing first credit routine..."
+      aiTip="Paying the full statement balance builds stronger credit habits than paying only the minimum."
+      nextAction="Learn how Canadian credit works"
+      completedHabits={4}
+      futureReminder={{ title: "Credit reminder", body: "Your first statement arrives next week. Pay the full statement balance to build healthy credit.", icon: CreditCard }}
       back={back}
       ctaLabel="Test first-month budget"
       next={next}
@@ -639,7 +677,12 @@ function BudgetScreen({ profile, updateProfile, budget, scenarioNote, applyScena
     <DecisionScreen
       eyebrow="First month"
       title="Can I survive my first month?"
-      coach={scenarioNote}
+      coach={scenarioNote === "Your base plan is ready to test." ? "Let's see if your monthly plan still works after real life happens." : scenarioNote}
+      thinkingText="Comparing student scenarios..."
+      aiTip="Students usually spend 20-30% more than expected during their first month."
+      nextAction="Estimate your first grocery budget"
+      completedHabits={5}
+      futureReminder={{ title: "Budget check", body: "Your first-month budget check is ready after move-in costs settle.", icon: BarChart3 }}
       back={back}
       ctaLabel="Generate readiness score"
       next={next}
@@ -672,7 +715,11 @@ function ScoreScreen({ readiness, semesterMoney, funding, budget, next, back }: 
     <DecisionScreen
       eyebrow="Readiness score"
       title="First Semester Readiness Score"
-      coach="We are almost ready. Here is the diagnostic after completing the journey."
+      coach="You have finished the journey. Here is where I would focus first."
+      thinkingText="Building your readiness profile..."
+      aiTip="A readiness score is most useful when it points to the next conversation, not when it tries to answer everything at once."
+      nextAction="Review your highest-risk area"
+      completedHabits={6}
       back={back}
       ctaLabel="Create action plan"
       next={next}
@@ -699,7 +746,12 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
     <DecisionScreen
       eyebrow="Action plan"
       title="Your First-Semester Money Plan"
-      coach={`Great. Your score is ${readiness.score}%. The next step is to handle ${readiness.focus.label.toLowerCase()} before the semester starts.`}
+      coach="You have done the hard part. Bring this plan to your CIBC advisor, and you will start the conversation prepared."
+      thinkingText="Preparing advisor-ready next steps..."
+      aiTip={`Your highest-risk area is ${readiness.focus.label.toLowerCase()}. Handle that before adding more decisions.`}
+      nextAction="Book a student banking conversation"
+      completedHabits={6}
+      futureReminder={{ title: "Next conversation", body: "Bring your plan, funding gap, and credit questions to your advisor discussion.", icon: CalendarDays }}
       back={back}
       ctaLabel="Compare another scenario"
       next={() => setStepIndex(6)}
@@ -730,7 +782,42 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
   );
 }
 
-function DecisionScreen({ eyebrow, title, coach, children, ctaLabel, next, back, ctaDisabled = false }: { eyebrow: string; title: string; coach: string; children: ReactNode; ctaLabel: string; next: () => void; back: () => void; ctaDisabled?: boolean }) {
+function DecisionScreen({
+  eyebrow,
+  title,
+  coach,
+  children,
+  ctaLabel,
+  next,
+  back,
+  ctaDisabled = false,
+  thinkingText = "Thinking through the next step...",
+  aiTip,
+  nextAction,
+  completedHabits = 0,
+  futureReminder
+}: {
+  eyebrow: string;
+  title: string;
+  coach: string;
+  children: ReactNode;
+  ctaLabel: string;
+  next: () => void;
+  back: () => void;
+  ctaDisabled?: boolean;
+  thinkingText?: string;
+  aiTip?: string;
+  nextAction?: string;
+  completedHabits?: number;
+  futureReminder?: FutureReminder;
+}) {
+  const [thinking, setThinking] = useState(true);
+  useEffect(() => {
+    setThinking(true);
+    const timer = window.setTimeout(() => setThinking(false), 850);
+    return () => window.clearTimeout(timer);
+  }, [title, coach, thinkingText]);
+
   return (
     <section className="flow-screen page v2-decision">
       <div className="flow-heading">
@@ -740,8 +827,17 @@ function DecisionScreen({ eyebrow, title, coach, children, ctaLabel, next, back,
           <SupportBuddy />
           <p>{coach}</p>
         </div>
+        {thinking && <ThinkingMoment text={thinkingText} />}
       </div>
       <div className="flow-content">{children}</div>
+      {aiTip && nextAction && (
+        <AIInsightCard
+          tip={aiTip}
+          nextAction={nextAction}
+          completedHabits={completedHabits}
+          futureReminder={futureReminder}
+        />
+      )}
       <div className="flow-actions">
         <button className="ghost-button" onClick={back}><ArrowLeft size={18} /> Back</button>
         <button className="primary-button" onClick={next} disabled={ctaDisabled}>{ctaLabel} <ArrowRight size={18} /></button>
@@ -751,10 +847,71 @@ function DecisionScreen({ eyebrow, title, coach, children, ctaLabel, next, back,
 }
 
 function SupportBuddy() {
+  return <AIOrb compact />;
+}
+
+function AIOrb({ compact = false }: { compact?: boolean }) {
   return (
-    <span className="support-buddy compact">
-      <img src={buddiesImage} alt="" />
+    <span className={compact ? "ai-orb compact" : "ai-orb"} aria-hidden="true">
+      <span className="ai-orb-glow" />
+      <span className="ai-orb-face">
+        <i />
+        <i />
+        <b />
+      </span>
     </span>
+  );
+}
+
+function ThinkingMoment({ text }: { text: string }) {
+  return (
+    <div className="thinking-moment" aria-live="polite">
+      <AIOrb compact />
+      <span>{text}</span>
+      <i><b /></i>
+    </div>
+  );
+}
+
+function AIInsightCard({ tip, nextAction, completedHabits, futureReminder }: { tip: string; nextAction: string; completedHabits: number; futureReminder?: FutureReminder }) {
+  const ReminderIcon = futureReminder?.icon;
+  return (
+    <aside className="ai-insight-card" aria-label="AI companion insight">
+      <div className="ai-tip">
+        <Sparkles size={17} />
+        <div>
+          <span>Today's AI Tip</span>
+          <p>{tip}</p>
+        </div>
+      </div>
+      <div className="next-best-action">
+        <Check size={17} />
+        <div>
+          <span>Next Best Action</span>
+          <strong>{nextAction}</strong>
+        </div>
+      </div>
+      <div className="habit-panel">
+        <span>Financial Habit</span>
+        <div>
+          {habitItems.map((habit, index) => (
+            <small key={habit} className={index < completedHabits ? "complete" : ""}>
+              {index < completedHabits ? <Check size={11} /> : null}
+              {habit}
+            </small>
+          ))}
+        </div>
+      </div>
+      {futureReminder && ReminderIcon && (
+        <div className="future-reminder">
+          <ReminderIcon size={18} />
+          <div>
+            <span>{futureReminder.title}</span>
+            <p>{futureReminder.body}</p>
+          </div>
+        </div>
+      )}
+    </aside>
   );
 }
 
