@@ -1513,6 +1513,180 @@ input[type="range"] {
   line-height: 1.25;
 }
 
+.advisor-brief-generate {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(143, 0, 52, 0.22);
+  border-radius: 8px;
+  padding: 16px;
+  color: white;
+  background: linear-gradient(135deg, var(--burgundy), var(--burgundy-deep));
+  text-align: left;
+  box-shadow: var(--shadow-soft);
+}
+
+.advisor-brief-generate svg {
+  color: var(--gold-soft);
+}
+
+.advisor-brief-generate strong,
+.advisor-brief-generate small {
+  display: block;
+}
+
+.advisor-brief-generate strong {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.advisor-brief-generate small {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.advisor-brief {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(87, 0, 31, 0.14);
+  border-radius: 8px;
+  padding: clamp(16px, 3vw, 24px);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 250, 242, 0.82)),
+    var(--cream-2);
+  box-shadow: var(--shadow-soft);
+}
+
+.advisor-brief-head,
+.advisor-summary-note {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.advisor-brief-head span,
+.brief-intent-card span,
+.brief-section > span,
+.brief-risk-card span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--burgundy);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.advisor-brief-head h2 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.05;
+}
+
+.advisor-brief-head p,
+.brief-intent-card p,
+.brief-risk-card p,
+.advisor-summary-note p,
+.advisor-question-grid p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.brief-intent-card,
+.brief-section,
+.brief-risk-card,
+.advisor-summary-note {
+  border: 1px solid rgba(87, 0, 31, 0.11);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.brief-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.75fr);
+  gap: 12px;
+}
+
+.brief-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.brief-facts div {
+  display: grid;
+  gap: 4px;
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--cream-2);
+}
+
+.brief-facts small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.brief-facts strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.brief-risk-card {
+  align-content: start;
+  background: var(--yellow-soft);
+}
+
+.brief-risk-card svg {
+  color: var(--burgundy);
+  margin-bottom: 8px;
+}
+
+.advisor-question-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.advisor-question-grid article {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  min-height: 72px;
+  border: 1px solid rgba(87, 0, 31, 0.09);
+  border-radius: 8px;
+  padding: 11px;
+  background: var(--cream-2);
+}
+
+.advisor-question-grid svg,
+.advisor-summary-note .ai-orb {
+  flex: 0 0 auto;
+}
+
+.advisor-question-grid svg {
+  color: var(--gold);
+  margin-top: 3px;
+}
+
+.advisor-summary-note {
+  background: rgba(223, 240, 232, 0.78);
+}
+
+.advisor-brief-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .summary-item {
   min-height: 92px;
 }
@@ -2480,7 +2654,8 @@ details > * + * {
 
   .funding-decision,
   .movein-decision,
-  .ai-insight-card {
+  .ai-insight-card,
+  .brief-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2620,6 +2795,18 @@ details > * + * {
   }
 
   .ai-insight-card {
+    grid-template-columns: 1fr;
+  }
+
+  .advisor-brief-head,
+  .advisor-summary-note,
+  .advisor-brief-generate {
+    grid-template-columns: 1fr;
+  }
+
+  .brief-facts,
+  .advisor-question-grid,
+  .advisor-brief-actions {
     grid-template-columns: 1fr;
   }
 

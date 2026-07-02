@@ -11,8 +11,10 @@ import {
   Check,
   ChevronRight,
   CircleDollarSign,
+  Copy,
   Coffee,
   CreditCard,
+  Download,
   FileText,
   Gauge,
   GraduationCap,
@@ -737,11 +739,41 @@ function ScoreScreen({ readiness, semesterMoney, funding, budget, next, back }: 
 }
 
 function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, back, setStepIndex }: { profile: Profile; readiness: ReturnType<typeof calculateReadiness>; semesterMoney: ReturnType<typeof calculateSemesterMoney>; funding: ReturnType<typeof calculateFunding>; budget: ReturnType<typeof calculateBudget>; back: () => void; setStepIndex: (index: number) => void }) {
+  const [showAdvisorBrief, setShowAdvisorBrief] = useState(false);
+  const [copied, setCopied] = useState(false);
   const resourceSet = [
     profile.international ? resources.internationalAccount : resources.studentBanking,
     funding.gap > 0 ? resources.lineOfCredit : resources.budgetCalculator,
     resources.advisor
   ];
+  const advisorResources = [
+    resources.studentBanking,
+    resources.bundle,
+    resources.creditCard,
+    resources.lineOfCredit,
+    resources.budgetCalculator,
+    resources.advisor
+  ];
+  const briefText = createAdvisorBriefText(profile, funding, budget);
+  const handleCopyBrief = async () => {
+    try {
+      await navigator.clipboard.writeText(briefText);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    }
+  };
+  const handleDownloadBrief = () => {
+    const blob = new Blob([briefText], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "cibc-campusgo-advisor-brief.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
   return (
     <DecisionScreen
       eyebrow="Action plan"
@@ -770,6 +802,24 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
           <p><ChevronRight size={15} /> Which credit routine should be set before the first statement arrives?</p>
         </div>
         <ResourceGrid resources={resourceSet} />
+        <button className="advisor-brief-generate" onClick={() => setShowAdvisorBrief(true)}>
+          <Sparkles size={20} />
+          <span>
+            <strong>Generate My Advisor Brief</strong>
+            <small>Prepare the conversation before booking an appointment.</small>
+          </span>
+        </button>
+        {showAdvisorBrief && (
+          <AdvisorBrief
+            profile={profile}
+            funding={funding}
+            budget={budget}
+            resources={advisorResources}
+            copied={copied}
+            onCopy={handleCopyBrief}
+            onDownload={handleDownloadBrief}
+          />
+        )}
         <div className="cta-row">
           <button className="secondary-button" onClick={() => window.print()}><Check size={18} /> Save plan</button>
           <a className="primary-button" href={cibcLinks.appointment} target="_blank" rel="noreferrer"><CalendarDays size={18} /> Book CIBC student banking appointment</a>
@@ -779,6 +829,127 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
         </div>
       </div>
     </DecisionScreen>
+  );
+}
+
+function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>) {
+  return [
+    "AI Advisor Brief",
+    "",
+    "What I am trying to do",
+    "I am starting university this September and want to make sure I can afford tuition, move-in costs, first-month spending, and credit setup without surprises.",
+    "",
+    "My current situation",
+    `University: ${profile.university}`,
+    `Program: ${profile.program}`,
+    `Student type: ${profile.international ? "International" : "Domestic"}`,
+    `Living plan: ${profile.living}`,
+    `Tuition estimate: ${formatCurrency(profile.tuition)}`,
+    `Funding gap: ${formatCurrency(funding.gap)}`,
+    `First-month result: ${budgetLabel(budget.surplus)}`,
+    `OSAP: ${profile.international ? "Not applicable" : profile.osapStatus}`,
+    `Student account: ${profile.hasCibcAccount ? "Opened" : "Not yet opened"}`,
+    `Credit card: ${profile.hasCreditCard ? "Already has one" : "Not yet"}`,
+    "Part-time job: Considering",
+    "",
+    "Biggest risk before semester starts",
+    "The biggest remaining risk is cash flow timing. Tuition, rent deposit, books, and first-month expenses may happen before all funding arrives.",
+    "",
+    "Questions to ask my CIBC advisor",
+    "- Should I open a CIBC student account before tuition payment deadlines?",
+    "- How should I separate tuition money, rent money, and everyday spending?",
+    "- Is an Education Line of Credit worth discussing for my funding gap?",
+    "- Which student credit card option is appropriate if I want to build credit safely?",
+    "- What alerts or automatic payments should I set up before school starts?",
+    "- What should I prepare if OSAP or family support arrives later than expected?",
+    "",
+    "AI summary",
+    "Based on my readiness journey, I would not start the advisor conversation with a product. I would start with my timing risk: when tuition, rent, OSAP, and first-month expenses happen."
+  ].join("\n");
+}
+
+function AdvisorBrief({ profile, funding, budget, resources: advisorResources, copied, onCopy, onDownload }: { profile: Profile; funding: ReturnType<typeof calculateFunding>; budget: ReturnType<typeof calculateBudget>; resources: ResourceCard[]; copied: boolean; onCopy: () => void; onDownload: () => void }) {
+  const situation = [
+    ["University", profile.university],
+    ["Program", profile.program],
+    ["Student type", profile.international ? "International" : "Domestic"],
+    ["Living plan", profile.living],
+    ["Tuition estimate", formatCurrency(profile.tuition)],
+    ["Funding gap", formatCurrency(funding.gap)],
+    ["First-month result", budgetLabel(budget.surplus)],
+    ["OSAP", profile.international ? "Not applicable" : profile.osapStatus],
+    ["Student account", profile.hasCibcAccount ? "Opened" : "Not yet opened"],
+    ["Credit card", profile.hasCreditCard ? "Already has one" : "Not yet"],
+    ["Part-time job", "Considering"]
+  ];
+  const questions = [
+    "Should I open a CIBC student account before tuition payment deadlines?",
+    "How should I separate tuition money, rent money, and everyday spending?",
+    "Is an Education Line of Credit worth discussing for my funding gap?",
+    "Which student credit card option is appropriate if I want to build credit safely?",
+    "What alerts or automatic payments should I set up before school starts?",
+    "What should I prepare if OSAP or family support arrives later than expected?"
+  ];
+  return (
+    <section className="advisor-brief" aria-label="AI Advisor Brief">
+      <div className="advisor-brief-head">
+        <AIOrb compact />
+        <div>
+          <span>AI-generated handoff</span>
+          <h2>AI Advisor Brief</h2>
+          <p>Bring this to your CIBC appointment so you do not have to start from scratch.</p>
+        </div>
+      </div>
+
+      <div className="brief-intent-card">
+        <span>What I am trying to do</span>
+        <p>I am starting university this September and want to make sure I can afford tuition, move-in costs, first-month spending, and credit setup without surprises.</p>
+      </div>
+
+      <div className="brief-grid">
+        <div className="brief-section">
+          <span>My current situation</span>
+          <div className="brief-facts">
+            {situation.map(([label, value]) => (
+              <div key={label}><small>{label}</small><strong>{value}</strong></div>
+            ))}
+          </div>
+        </div>
+        <div className="brief-risk-card">
+          <ShieldCheck size={22} />
+          <span>Biggest risk before semester starts</span>
+          <p>The biggest remaining risk is cash flow timing. Tuition, rent deposit, books, and first-month expenses may happen before all funding arrives.</p>
+        </div>
+      </div>
+
+      <div className="brief-section">
+        <span>Questions to ask my CIBC advisor</span>
+        <div className="advisor-question-grid">
+          {questions.map((question) => (
+            <article key={question}>
+              <ChevronRight size={15} />
+              <p>{question}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="brief-section">
+        <span>Matched CIBC resources to review</span>
+        <ResourceGrid resources={advisorResources} />
+      </div>
+
+      <div className="advisor-summary-note">
+        <AIOrb compact />
+        <p>Based on your readiness journey, I would not start the advisor conversation with a product. I would start with your timing risk: when tuition, rent, OSAP, and first-month expenses happen.</p>
+      </div>
+
+      <div className="advisor-brief-actions">
+        <button className="secondary-button" onClick={onCopy}><Copy size={18} /> {copied ? "Copied" : "Copy advisor brief"}</button>
+        <button className="secondary-button" onClick={onDownload}><Download size={18} /> Download brief</button>
+        <a className="primary-button" href={cibcLinks.appointment} target="_blank" rel="noreferrer"><CalendarDays size={18} /> Book appointment</a>
+      </div>
+    </section>
   );
 }
 
