@@ -540,8 +540,16 @@ p {
   flex: 0 0 auto;
   border-radius: 999px;
   background:
-    radial-gradient(circle at 36% 28%, #fff, #f7d7ae 22%, #cc6e6a 44%, #7b173f 72%, #315f64 100%);
-  box-shadow: 0 0 22px rgba(143, 0, 52, 0.22), inset 0 0 18px rgba(255, 255, 255, 0.58);
+    radial-gradient(circle at 33% 25%, rgba(255, 255, 255, 0.98), transparent 18%),
+    radial-gradient(circle at 72% 22%, rgba(255, 223, 189, 0.86), transparent 26%),
+    radial-gradient(circle at 32% 76%, rgba(255, 238, 202, 0.9), transparent 28%),
+    radial-gradient(circle at 78% 74%, rgba(185, 146, 222, 0.62), transparent 34%),
+    linear-gradient(145deg, rgba(255, 218, 227, 0.92), rgba(210, 181, 220, 0.9) 52%, rgba(255, 238, 202, 0.9));
+  box-shadow:
+    0 16px 34px rgba(143, 0, 52, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.72),
+    inset 0 0 15px rgba(255, 255, 255, 0.76),
+    inset 0 -12px 24px rgba(143, 0, 52, 0.08);
 }
 
 .mini-orb {
@@ -556,8 +564,18 @@ p {
   height: 58px;
   place-items: center;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.82);
   animation: ai-float 4.8s ease-in-out infinite;
+}
+
+.ai-orb::before {
+  position: absolute;
+  inset: 5px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 26% 20%, rgba(255, 255, 255, 0.88), transparent 22%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.24), transparent 55%);
+  content: "";
 }
 
 .ai-orb.compact {
@@ -567,14 +585,14 @@ p {
 
 .ai-orb-glow {
   position: absolute;
-  inset: -34%;
+  inset: -26%;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 34% 22%, rgba(255, 255, 255, 0.95), transparent 23%),
-    radial-gradient(circle at 67% 76%, rgba(198, 154, 68, 0.8), transparent 24%),
-    conic-gradient(from 140deg, rgba(143, 0, 52, 0.92), rgba(198, 154, 68, 0.76), rgba(49, 95, 100, 0.74), rgba(143, 0, 52, 0.92));
-  filter: blur(1px);
-  animation: ai-glow 6s linear infinite;
+    radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.74), transparent 22%),
+    conic-gradient(from 120deg, rgba(255, 223, 189, 0.5), rgba(185, 146, 222, 0.52), rgba(255, 238, 202, 0.55), rgba(255, 194, 211, 0.48));
+  filter: blur(2px);
+  opacity: 0.86;
+  animation: ai-glow 9s linear infinite;
 }
 
 .ai-orb-face {
@@ -587,8 +605,7 @@ p {
   width: 29px;
   height: 20px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.22);
+  background: transparent;
 }
 
 .ai-orb.compact .ai-orb-face {
@@ -756,6 +773,24 @@ p {
 .ai-orb {
   width: 138px;
   height: 138px;
+}
+
+.orb-card .ai-orb .ai-orb-face {
+  width: 72px;
+  height: 52px;
+  grid-template-columns: repeat(2, 13px);
+  gap: 22px;
+}
+
+.orb-card .ai-orb .ai-orb-face i {
+  width: 12px;
+  height: 12px;
+}
+
+.orb-card .ai-orb .ai-orb-face b {
+  width: 34px;
+  height: 12px;
+  border-bottom-width: 4px;
 }
 
 .orb-card svg,
@@ -2689,6 +2724,21 @@ input[type="range"] {
   color: var(--muted);
 }
 
+.sample-offer-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 680px;
+}
+
+.sample-offer-row .primary-button,
+.sample-offer-row .secondary-button {
+  min-height: 54px;
+  justify-content: center;
+  text-align: center;
+}
+
 .file-picker {
   display: inline-flex;
   width: fit-content;
@@ -2767,7 +2817,7 @@ input[type="range"] {
 
 .scan-result-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
 }
 
@@ -2795,9 +2845,25 @@ input[type="range"] {
   display: grid;
   gap: 10px;
   align-content: center;
+  min-width: 0;
   border-radius: 8px;
   padding: 22px;
   min-height: 250px;
+}
+
+.funding-decision > .gap-hero:only-child {
+  grid-column: 1 / -1;
+  min-height: 310px;
+}
+
+.funding-decision > .gap-hero:not(:only-child) {
+  overflow: hidden;
+}
+
+.funding-decision > .gap-hero:not(:only-child) strong {
+  font-size: clamp(34px, 3.1vw, 42px);
+  line-height: 1.05;
+  white-space: normal;
 }
 
 .gap-hero.warn {
@@ -2817,8 +2883,11 @@ input[type="range"] {
 
 .gap-hero strong {
   color: var(--burgundy);
-  font-size: clamp(42px, 6vw, 72px);
-  line-height: 0.96;
+  max-width: 100%;
+  font-size: clamp(36px, 4.2vw, 54px);
+  line-height: 1;
+  overflow-wrap: normal;
+  white-space: nowrap;
 }
 
 .gap-hero p,
@@ -2830,6 +2899,39 @@ input[type="range"] {
 
 .v2-stack {
   box-shadow: none;
+}
+
+.funding-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.funding-totals div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(87, 0, 31, 0.08);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--cream-2);
+}
+
+.funding-totals span,
+.funding-strategy-card span,
+.borrow-less-simulator span,
+.borrow-estimate span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.funding-totals strong,
+.borrow-estimate strong {
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.15;
 }
 
 .progressive-panel {
@@ -2846,8 +2948,114 @@ input[type="range"] {
   align-items: flex-start;
 }
 
+.funding-strategy-card,
+.borrow-less-simulator {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(143, 0, 52, 0.12);
+  border-radius: 8px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 250, 242, 0.88));
+}
+
+.strategy-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--burgundy);
+}
+
+.strategy-head svg {
+  color: var(--gold);
+}
+
+.strategy-head strong,
+.borrow-less-simulator strong {
+  display: block;
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.international-arrival-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.strategy-grid p,
+.advisor-note {
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--cream-2);
+}
+
+.strategy-grid svg {
+  color: var(--burgundy);
+  flex: 0 0 auto;
+}
+
+.borrow-estimate {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.borrow-estimate div {
+  display: grid;
+  gap: 5px;
+  border-left: 3px solid var(--burgundy);
+  border-radius: 8px;
+  padding: 11px;
+  background: white;
+}
+
+.borrow-estimate small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.advisor-note {
+  color: var(--ink) !important;
+  font-weight: 850;
+}
+
+.borrow-less-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.borrow-less-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  border: 1px solid rgba(143, 0, 52, 0.14);
+  border-radius: 999px;
+  padding: 0 12px;
+  color: var(--burgundy);
+  background: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.borrow-less-actions button.active {
+  color: white;
+  border-color: var(--burgundy);
+  background: var(--burgundy);
+}
+
 .movein-decision {
   grid-template-columns: minmax(0, 1fr) 360px;
+}
+
+.international-movein-panel {
+  grid-column: 1 / -1;
 }
 
 .credit-decision,
@@ -2992,6 +3200,9 @@ details > * + * {
   }
 
   .funding-decision,
+  .funding-totals,
+  .strategy-grid,
+  .borrow-estimate,
   .movein-decision,
   .ai-insight-card,
   .brief-grid,
