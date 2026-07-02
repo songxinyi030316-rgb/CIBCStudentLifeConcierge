@@ -11,6 +11,7 @@ st.set_page_config(
 )
 
 bundle_path = Path(__file__).parent / "streamlit_build" / "financial_coach.html"
+app_version = "student-life-helper-readiness-v2-2026-07-02"
 
 if not bundle_path.exists():
     st.error("CIBC Student Life Helper bundle is missing. Run `npm run build:streamlit` before launching Streamlit.")
@@ -28,4 +29,4 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-components.html(bundle_path.read_text(encoding="utf-8"), height=1200, scrolling=True)
+components.html(f"<!-- {app_version} -->\n{bundle_path.read_text(encoding='utf-8')}", height=1200, scrolling=True)
