@@ -307,6 +307,7 @@ function calculateReadiness(profile: Profile, funding: ReturnType<typeof calcula
 
 function App() {
   const [stepIndex, setStepIndex] = useState(0);
+  const [companionOpen, setCompanionOpen] = useState(false);
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [offerName, setOfferName] = useState("Western_Business_Offer.pdf");
   const [scenarioNote, setScenarioNote] = useState("Your base plan is ready to test.");
@@ -350,6 +351,14 @@ function App() {
     setScenarioNote(`${lead} Your monthly position moves from ${budgetLabel(before)} to ${budgetLabel(after)}.`);
   };
 
+  if (companionOpen) {
+    return (
+      <main className="app-shell v2-shell">
+        <CompanionPage profile={profile} budget={budget} onBack={() => setCompanionOpen(false)} />
+      </main>
+    );
+  }
+
   return (
     <main className="app-shell v2-shell">
       {stepIndex >= 3 && (
@@ -373,7 +382,7 @@ function App() {
       {step === "credit" && <CreditScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
       {step === "budget" && <BudgetScreen profile={profile} updateProfile={updateProfile} budget={budget} scenarioNote={scenarioNote} applyScenario={applyScenario} next={next} back={back} />}
       {step === "score" && <ScoreScreen readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} next={next} back={back} />}
-      {step === "summary" && <SummaryScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} back={back} setStepIndex={setStepIndex} />}
+      {step === "summary" && <SummaryScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} back={back} setStepIndex={setStepIndex} openCompanion={() => setCompanionOpen(true)} />}
     </main>
   );
 }
@@ -738,7 +747,7 @@ function ScoreScreen({ readiness, semesterMoney, funding, budget, next, back }: 
   );
 }
 
-function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, back, setStepIndex }: { profile: Profile; readiness: ReturnType<typeof calculateReadiness>; semesterMoney: ReturnType<typeof calculateSemesterMoney>; funding: ReturnType<typeof calculateFunding>; budget: ReturnType<typeof calculateBudget>; back: () => void; setStepIndex: (index: number) => void }) {
+function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, back, setStepIndex, openCompanion }: { profile: Profile; readiness: ReturnType<typeof calculateReadiness>; semesterMoney: ReturnType<typeof calculateSemesterMoney>; funding: ReturnType<typeof calculateFunding>; budget: ReturnType<typeof calculateBudget>; back: () => void; setStepIndex: (index: number) => void; openCompanion: () => void }) {
   const [showAdvisorBrief, setShowAdvisorBrief] = useState(false);
   const [copied, setCopied] = useState(false);
   const resourceSet = [
@@ -827,7 +836,7 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
           <a className="secondary-button" href={cibcLinks.creditCards} target="_blank" rel="noreferrer"><CreditCard size={18} /> Review student credit card options</a>
           <a className="secondary-button" href={cibcLinks.educationLineOfCredit} target="_blank" rel="noreferrer"><CircleDollarSign size={18} /> Learn about Education Line of Credit</a>
         </div>
-        <CampusCompanionLayer profile={profile} budget={budget} />
+        <CampusCompanionTeaser onEnable={openCompanion} />
       </div>
     </DecisionScreen>
   );
@@ -954,7 +963,34 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
   );
 }
 
-function CampusCompanionLayer({ profile, budget }: { profile: Profile; budget: ReturnType<typeof calculateBudget> }) {
+function CampusCompanionTeaser({ onEnable }: { onEnable: () => void }) {
+  const bullets = [
+    "Tuition deadline reminders",
+    "Credit card payment reminders",
+    "Monthly budget check-ins",
+    "Emergency buffer tracker",
+    "First-semester milestone support"
+  ];
+  return (
+    <section className="companion-teaser" aria-label="Campus Companion optional next phase">
+      <div className="companion-teaser-copy">
+        <AIOrb compact />
+        <div>
+          <span>Campus Companion</span>
+          <h2>CampusGo can stay with you through your first semester.</h2>
+          <div className="companion-teaser-list">
+            {bullets.map((bullet) => (
+              <p key={bullet}><Check size={14} /> {bullet}</p>
+            ))}
+          </div>
+        </div>
+      </div>
+      <button className="primary-button" onClick={onEnable}><Sparkles size={18} /> Enable Campus Companion</button>
+    </section>
+  );
+}
+
+function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: ReturnType<typeof calculateBudget>; onBack: () => void }) {
   const [checkIn, setCheckIn] = useState<string | null>(null);
   const checkInResponses: Record<string, string> = {
     well: "Great. Keep the routine simple: confirm tuition timing, pay statements on time, and review your budget once a month.",
@@ -976,30 +1012,21 @@ function CampusCompanionLayer({ profile, budget }: { profile: Profile; budget: R
     [Train, "Student transit pass registration is now available."],
     [CalendarDays, "Winter semester planning starts next month."]
   ];
-  const milestones = [
-    ["Admission Offer Scanned", true],
-    ["Funding Plan Completed", true],
-    ["Student Account Opened", profile.hasCibcAccount],
-    ["Tuition Paid", false],
-    ["First Credit Card Payment On Time", profile.hasCreditCard],
-    ["Emergency Fund Started", profile.emergencyBuffer > 0],
-    ["First Semester Complete", false]
-  ] as const;
-  const dailyCards: [ElementType, string][] = [
-    [CreditCard, "Pay your statement balance before the due date."],
-    [Gauge, "Keep credit utilization below 30%."],
-    [ReceiptText, "Tuition payment is due in 6 days."],
-    [WalletCards, "Remember to set up Auto Deposit."],
-    [PiggyBank, `You planned a ${formatCurrency(profile.emergencyBuffer)} emergency buffer. You currently have ${formatCurrency(Math.max(0, profile.emergencyBuffer - 80))}.`]
+  const companionCards: [ElementType, string][] = [
+    [ReceiptText, "Tuition payment is due in 6 days. Review your funding plan."],
+    [CreditCard, "Your first credit statement may arrive this month. Pay the statement balance before the due date."],
+    [PiggyBank, `Your emergency buffer goal is ${formatCurrency(profile.emergencyBuffer)}. You currently have ${formatCurrency(Math.max(0, profile.emergencyBuffer - 80))}.`],
+    [BarChart3, budget.surplus < 0 ? "Food spending may be tighter than expected. Review your first-month budget." : "Your first-month budget is on track. Keep checking it monthly."]
   ];
   return (
-    <section className="campus-companion" aria-label="Campus Companion">
+    <section className="campus-companion page" aria-label="Campus Companion">
+      <button className="ghost-button companion-back" onClick={onBack}><ArrowLeft size={18} /> Back to money plan</button>
       <div className="companion-head">
         <AIOrb compact />
         <div>
           <span>Campus Companion</span>
-          <h2>CampusGo will stay with you throughout your first semester.</h2>
-          <p>A lightweight companion layer for reminders, reflections, and student-life financial check-ins.</p>
+          <h1>Campus Companion</h1>
+          <p>Your first-semester financial check-ins, after the plan is built.</p>
         </div>
       </div>
 
@@ -1018,7 +1045,7 @@ function CampusCompanionLayer({ profile, budget }: { profile: Profile; budget: R
         </div>
 
         <div className="companion-panel checkin-panel">
-          <span className="section-kicker">AI Companion Check-in</span>
+          <span className="section-kicker">Monthly Check-in</span>
           <div className="checkin-card">
             <AIOrb compact />
             <div>
@@ -1048,32 +1075,10 @@ function CampusCompanionLayer({ profile, budget }: { profile: Profile; budget: R
           ))}
         </div>
 
-        <div className="companion-panel milestones-panel">
-          <span className="section-kicker">Financial Milestones</span>
-          <div className="milestone-list">
-            {milestones.map(([label, done]) => (
-              <div key={label} className={done ? "complete" : ""}>
-                <span>{done ? <Check size={13} /> : null}</span>
-                <p>{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="companion-panel reflection-panel">
-          <span className="section-kicker">Monthly Reflection</span>
-          <strong>Compared with your original plan:</strong>
-          <p>{budget.surplus < 0 ? "Spending is tighter than expected." : "Spending is on track."}</p>
+        <div className="companion-panel companion-cards">
+          <span className="section-kicker">AI Companion Cards</span>
           <div>
-            <Sparkles size={16} />
-            <p>Students usually save the most by reducing food delivery first.</p>
-          </div>
-        </div>
-
-        <div className="companion-panel daily-examples">
-          <span className="section-kicker">Daily Companion Examples</span>
-          <div>
-            {dailyCards.map(([Icon, text]) => (
+            {companionCards.map(([Icon, text]) => (
               <article key={text}>
                 <Icon size={17} />
                 <p>{text}</p>
@@ -1084,11 +1089,10 @@ function CampusCompanionLayer({ profile, budget }: { profile: Profile; budget: R
       </div>
 
       <div className="companion-ending">
-        <GraduationCap size={26} />
+        <Sparkles size={24} />
         <div>
-          <strong>You're ready for your first semester.</strong>
-          <p>But CampusGo does not end here. I'll continue helping you through tuition deadlines, move-in, budgeting, credit building, and your first year.</p>
-          <span>See you next month.</span>
+          <strong>CampusGo starts before university. Campus Companion continues through the first semester.</strong>
+          <p>Reminder, check-in, and milestone support only. No transaction monitoring.</p>
         </div>
       </div>
     </section>
