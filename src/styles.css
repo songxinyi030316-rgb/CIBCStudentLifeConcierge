@@ -3217,8 +3217,130 @@ input[type="range"] {
 }
 
 .funding-decision {
-  grid-template-columns: minmax(260px, 0.52fr) minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
   align-items: stretch;
+}
+
+.funding-assumptions-card,
+.funding-picture-card,
+.funding-scenarios {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(143, 0, 52, 0.12);
+  border-radius: 8px;
+  padding: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 242, 0.82)),
+    var(--white);
+  box-shadow: 0 10px 30px rgba(71, 24, 34, 0.055);
+}
+
+.funding-assumptions-card {
+  align-content: start;
+}
+
+.assumption-head {
+  display: grid;
+  gap: 5px;
+}
+
+.assumption-head strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.16;
+}
+
+.assumption-head p,
+.funding-picture-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.assumption-control-list {
+  display: grid;
+  gap: 12px;
+}
+
+.assumption-control-list .slider-row {
+  border-top: 1px solid rgba(87, 0, 31, 0.08);
+  padding-top: 10px;
+}
+
+.assumption-control-list .slider-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.funding-picture-column {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.funding-picture-card {
+  min-height: 100%;
+}
+
+.funding-picture-card.warn {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.34), transparent 46%),
+    var(--red-soft);
+}
+
+.funding-picture-card.watch {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.34), transparent 46%),
+    var(--yellow-soft);
+}
+
+.funding-picture-card.ok {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.34), transparent 46%),
+    var(--mint);
+}
+
+.funding-picture-main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.funding-picture-main div {
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(87, 0, 31, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.funding-picture-main small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.funding-picture-main strong {
+  color: var(--ink);
+  font-size: clamp(18px, 2.4vw, 24px);
+  line-height: 1.08;
+}
+
+.funding-live-note {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+}
+
+.funding-live-note svg {
+  color: var(--gold);
+  margin-top: 2px;
+}
+
+.funding-live-note p {
+  margin: 0;
 }
 
 .gap-hero {
@@ -3985,6 +4107,7 @@ details > * + * {
   .scan-result-grid,
   .v2-routine,
   .v2-resource-grid,
+  .funding-picture-main,
   .financial-position-head,
   .financial-position-grid,
   .funding-totals,

@@ -61,6 +61,8 @@ type Profile = {
   carCosts: number;
   osapStatus: "Not started" | "Applied" | "Approved";
   osapTotal: number;
+  osapGrant: number;
+  osapLoan: number;
   savings: number;
   familySupport: number;
   scholarship: number;
@@ -78,6 +80,7 @@ type Profile = {
   winterClothing: number;
   familyTransfer: number;
   gicAmount: number;
+  currencyBuffer: number;
 };
 
 type ResourceCard = {
@@ -257,6 +260,8 @@ const initialProfile: Profile = {
   carCosts: 0,
   osapStatus: "Approved",
   osapTotal: 5200,
+  osapGrant: 2200,
+  osapLoan: 3000,
   savings: 2800,
   familySupport: 2500,
   scholarship: 800,
@@ -273,7 +278,8 @@ const initialProfile: Profile = {
   arrivalEssentials: 0,
   winterClothing: 0,
   familyTransfer: 0,
-  gicAmount: 0
+  gicAmount: 0,
+  currencyBuffer: 0
 };
 
 const internationalProfile: Profile = {
@@ -299,6 +305,8 @@ const internationalProfile: Profile = {
   carCosts: 0,
   osapStatus: "Not started",
   osapTotal: 0,
+  osapGrant: 0,
+  osapLoan: 0,
   savings: 9500,
   familySupport: 0,
   scholarship: 3000,
@@ -315,7 +323,8 @@ const internationalProfile: Profile = {
   arrivalEssentials: 850,
   winterClothing: 650,
   familyTransfer: 52000,
-  gicAmount: 20635
+  gicAmount: 20635,
+  currencyBuffer: 1200
 };
 
 function formatCurrency(value: number) {
@@ -347,13 +356,15 @@ function calculateFunding(profile: Profile) {
   const upfrontHousing = profile.living === "Renting off-campus" ? profile.rent + (profile.needsDeposit ? profile.rent : 0) + profile.furnitureBudget : 0;
   if (profile.international) {
     const proofFunds = profile.gicStatus === "Ready" ? profile.gicAmount : profile.gicStatus === "In progress" ? Math.round(profile.gicAmount * 0.75) : 0;
-    const firstMonthCash = profile.temporaryHousing + profile.arrivalEssentials + profile.winterClothing + profile.groceries + profile.phone + 128;
+    const firstMonthCash = profile.temporaryHousing + profile.arrivalEssentials + profile.winterClothing + profile.groceries + profile.phone + 128 + profile.currencyBuffer;
     const available = proofFunds + profile.savings + profile.familyTransfer + profile.scholarship;
     const need = tuitionNeed + upfrontHousing + firstMonthCash;
     const gap = Math.max(0, need - available);
     return { tuitionNeed, upfrontHousing, firstMonthCash, osap: 0, proofFunds, available, need, gap };
   }
-  const osap = profile.international ? 0 : profile.osapStatus === "Approved" ? profile.osapTotal : profile.osapStatus === "Applied" ? Math.round(profile.osapTotal * 0.65) : 0;
+  const osapGrant = profile.osapStatus === "Approved" ? profile.osapGrant : profile.osapStatus === "Applied" ? Math.round(profile.osapGrant * 0.65) : 0;
+  const osapLoan = profile.osapStatus === "Approved" ? profile.osapLoan : profile.osapStatus === "Applied" ? Math.round(profile.osapLoan * 0.65) : 0;
+  const osap = osapGrant + osapLoan;
   const available = osap + profile.savings + profile.familySupport + profile.scholarship;
   const need = tuitionNeed + upfrontHousing;
   const gap = Math.max(0, need - available);
@@ -399,10 +410,10 @@ function calculateFundingStrategy(profile: Profile, funding: ReturnType<typeof c
 }
 
 function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>, fundingStrategy: ReturnType<typeof calculateFundingStrategy>) {
-  const osapGrant = profile.international ? 0 : Math.min(funding.osap, profile.osapStatus === "Approved" ? 2200 : profile.osapStatus === "Applied" ? 1400 : 0);
-  const osapRepayableFunding = profile.international ? 0 : Math.max(0, funding.osap - osapGrant);
+  const osapGrant = profile.international ? 0 : profile.osapStatus === "Approved" ? profile.osapGrant : profile.osapStatus === "Applied" ? Math.round(profile.osapGrant * 0.65) : 0;
+  const osapRepayableFunding = profile.international ? 0 : profile.osapStatus === "Approved" ? profile.osapLoan : profile.osapStatus === "Applied" ? Math.round(profile.osapLoan * 0.65) : 0;
   const firstLastRent = profile.living === "Renting off-campus" ? profile.rent + (profile.needsDeposit ? profile.rent : 0) : 0;
-  const moveInCosts = profile.furnitureBudget + (profile.international ? profile.temporaryHousing + profile.arrivalEssentials + profile.winterClothing : 0);
+  const moveInCosts = profile.furnitureBudget + (profile.international ? profile.temporaryHousing + profile.arrivalEssentials + profile.winterClothing + profile.currencyBuffer : 0);
   const monthlyLiving = Math.max(0, budget.expenses - budget.rent - profile.emergencyBuffer) * 4;
   const totalCost = profile.tuition + profile.books + firstLastRent + moveInCosts + monthlyLiving + profile.emergencyBuffer;
   const partTimeSemester = profile.partTimeIncome * 4;
@@ -807,50 +818,133 @@ function ScanScreen({ next, back, profile, offerName }: { next: () => void; back
 
 function FundingScreen({ profile, updateProfile, funding, next, back }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; funding: ReturnType<typeof calculateFunding>; next: () => void; back: () => void }) {
   const [reveal, setReveal] = useState(0);
-  const [selectedGapReductions, setSelectedGapReductions] = useState<string[]>([]);
+  const [scenarioMessage, setScenarioMessage] = useState("Adjust the assumptions to see your funding picture update live.");
   const budget = calculateBudget(profile);
   const semesterMoney = calculateSemesterMoney(profile, funding, budget);
-  const fundingStrategy = calculateFundingStrategy(profile, funding, selectedGapReductions);
+  const fundingStrategy = calculateFundingStrategy(profile, funding);
   const financialPosition = calculateFinancialPosition(profile, funding, budget, fundingStrategy);
   const fundingResources = getFundingResourceSet(profile, funding, financialPosition);
   const max = Math.max(funding.need, 1);
   const isInternational = profile.international;
-  const toggleGapReduction = (id: string) => {
-    setSelectedGapReductions((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  const timingRisk = financialPosition.timingGap > 2500 ? "High" : financialPosition.timingGap > 0 ? "Watch" : "Low";
+  const aiExplanation = isInternational
+    ? "I calculated this using your offer, tuition estimate, arrival cash, rent plan, proof-of-funds setup, and family transfer timing. Your tuition, arrival cash, proof-of-funds setup, and family transfer timing need to be checked before landing."
+    : "I calculated this using your offer, tuition estimate, rent plan, confirmed funding, and OSAP timing. Your OSAP may arrive after some school and housing costs are due, so the timing gap matters.";
+  const applyFundingScenario = (id: string) => {
+    if (isInternational) {
+      const actions: Record<string, () => void> = {
+        transfer: () => {
+          updateProfile({ familyTransfer: Math.max(0, profile.familyTransfer - 4000) });
+          setScenarioMessage("If the family transfer is delayed, accessible funding drops for the arrival window. Keep first-month cash separate.");
+        },
+        exchange: () => {
+          updateProfile({ currencyBuffer: profile.currencyBuffer + Math.round(profile.tuition * 0.05) });
+          setScenarioMessage("A 5% exchange-rate buffer increases the amount you should keep available before landing.");
+        },
+        temporary: () => {
+          updateProfile({ temporaryHousing: profile.temporaryHousing + 800 });
+          setScenarioMessage("Temporary housing adds pressure before your regular lease and campus routine begin.");
+        },
+        winter: () => {
+          updateProfile({ winterClothing: profile.winterClothing + 600 });
+          setScenarioMessage("Winter setup is a real arrival cost. It should be planned before it becomes urgent.");
+        },
+        job: () => {
+          updateProfile({ partTimeIncome: Math.max(profile.partTimeIncome, 600) });
+          setScenarioMessage("A campus job after arrival can improve monthly cash flow, but it may not solve pre-arrival timing needs.");
+        }
+      };
+      actions[id]?.();
+      return;
+    }
+    const actions: Record<string, () => void> = {
+      osap: () => {
+        updateProfile({ osapStatus: "Applied" });
+        setScenarioMessage("If OSAP is delayed, your timing risk increases because tuition and deposits may be due first.");
+      },
+      scholarship: () => {
+        updateProfile({ scholarship: profile.scholarship + 1000 });
+        setScenarioMessage("A $1,000 scholarship improves confirmed funding and reduces the current difference.");
+      },
+      rent: () => {
+        updateProfile({ rent: profile.rent + 150 });
+        setScenarioMessage("A rent increase affects both move-in cash and your monthly budget.");
+      },
+      work: () => {
+        updateProfile({ partTimeIncome: Math.max(profile.partTimeIncome, 640) });
+        setScenarioMessage("Working 8 hours per week helps monthly cash flow, but confirm whether income arrives before key deadlines.");
+      },
+      home: () => {
+        updateProfile({ living: "Living at home" });
+        setScenarioMessage("Living at home for the first month can reduce move-in pressure and lower the timing gap.");
+      }
+    };
+    actions[id]?.();
   };
-  const fundingDiscussionRange = financialPosition.discussionLow === 0
-    ? "$0"
-    : `${formatCurrency(financialPosition.discussionLow)}-${formatCurrency(financialPosition.discussionHigh)}`;
-  const heroLabel = isInternational ? "Arrival funding gap" : funding.gap > 0 ? "Estimated funding still needed" : "First payment coverage";
-  const heroValue = isInternational ? formatCurrency(funding.gap) : funding.gap > 0 ? fundingDiscussionRange : formatCurrency(0);
-  const heroBody = isInternational
-    ? funding.gap > 0
-      ? "Focus on arrival cash, proof of funds, transfer timing, and what can wait until after landing."
-      : "Your arrival funding is covered based on current assumptions. Confirm timing before booking travel."
-    : funding.gap > 0
-      ? `Not the full ${formatCurrency(funding.gap)} shortfall. Explore all available funding before considering additional financing.`
-      : "No immediate shortfall based on current inputs.";
+  const scenarioButtons = isInternational
+    ? [
+        ["transfer", "Family transfer delayed"],
+        ["exchange", "Exchange rate buffer +5%"],
+        ["temporary", "Temporary housing +$800"],
+        ["winter", "Winter setup +$600"],
+        ["job", "Campus job after arrival"]
+      ]
+    : [
+        ["osap", "OSAP delayed"],
+        ["scholarship", "Scholarship +$1,000"],
+        ["rent", "Rent +$150"],
+        ["work", "Work 8 hrs/week"],
+        ["home", "Live at home first month"]
+      ];
   return (
     <DecisionScreen
       eyebrow="Tuition deadline"
-      title={isInternational ? "What money should I have ready before I land?" : "How can I cover my first semester with confidence?"}
-      coach={isInternational ? "Before products, let’s make sure tuition, proof of funds, transfer timing, and first-month cash are ready." : financialPosition.timingGap > 0 ? "Your total funding may be close, but timing is the issue. Let’s see what has to be covered before September." : funding.gap > 0 ? "We’ve already considered confirmed funding sources and available options. If a gap still remains, it is worth discussing with a CIBC advisor." : `${profile.name}, your tuition path looks covered. Now confirm timing before September.`}
-      thinkingText={reveal === 0 ? "Checking funding sources..." : reveal === 1 ? isInternational ? "Checking arrival cash timing..." : "Building your funding plan..." : "Matching CIBC resources..."}
+      title={isInternational ? "Let's build your arrival funding picture." : "Check your first-semester funding picture."}
+      coach="Before I estimate the gap, let's make sure these assumptions match your real situation."
+      thinkingText={reveal === 0 ? "Recalculating your funding picture..." : "Showing the calculation behind this result..."}
       aiTip={isInternational ? "Before landing, keep some money accessible immediately. Transfer timing, deposits, and phone setup can happen before campus routines begin." : "Before relying on OSAP, check whether approval timing lines up with tuition, deposits, and first-month cash needs."}
-      nextAction={reveal < 2 ? isInternational ? "Review arrival funding timing" : "Review tuition timing" : isInternational ? "Review arrival banking resources" : "Discuss the smallest backup amount"}
+      nextAction={reveal < 1 ? "See how CampusGo calculated this" : isInternational ? "Review arrival banking resources" : "Review funding options with CIBC"}
       completedHabits={1}
       futureReminder={{ title: isInternational ? "Arrival reminder" : "Tuition reminder", body: isInternational ? "Confirm tuition payment method, GIC status, and accessible first-month cash before departure." : "Your payment deadline is approaching. Confirm OSAP timing and backup funds before the due date.", icon: ReceiptText }}
       back={back}
-      ctaLabel={reveal === 0 ? "Show me why" : reveal === 1 ? isInternational ? "Show arrival checklist" : "See how I built your funding plan" : "Plan move-in costs"}
-      next={reveal < 2 ? () => setReveal((current) => current + 1) : next}
+      ctaLabel={reveal === 0 ? "See how CampusGo calculated this" : "Plan move-in costs"}
+      next={reveal < 1 ? () => setReveal(1) : next}
     >
       <div className="single-visual funding-decision">
-        <div className={`gap-hero ${funding.gap > 0 ? "warn" : "ok"}`}>
-          <span>{heroLabel}</span>
-          <strong>{heroValue}</strong>
-          <p>{heroBody}</p>
+        <FundingAssumptionsCard profile={profile} updateProfile={updateProfile} isInternational={isInternational} />
+        <div className="funding-picture-column">
+          <FundingPictureCard
+            totalNeed={financialPosition.totalCost}
+            confirmedFunding={financialPosition.confirmedFunding}
+            difference={financialPosition.remainingGap}
+            timingRisk={timingRisk}
+            timingGap={financialPosition.timingGap}
+          />
+          <div className="funding-scenarios">
+            <span className="section-kicker">What if</span>
+            <div className="gap-reduction-actions">
+              {scenarioButtons.map(([id, label]) => (
+                <button key={id} onClick={() => applyFundingScenario(id)}><Sparkles size={14} /> {label}</button>
+              ))}
+            </div>
+          </div>
+          <div className="advisor-note funding-live-note">
+            <Sparkles size={16} />
+            <p>{scenarioMessage}</p>
+          </div>
         </div>
         {reveal >= 1 && (
+          <div className="progressive-panel">
+            <div className="funding-strategy-card">
+              <div className="strategy-head">
+                <Sparkles size={18} />
+                <div>
+                  <span>CampusGo analysis</span>
+                  <strong>{isInternational ? "Why this arrival funding picture matters" : "Why this first-semester funding picture matters"}</strong>
+                </div>
+              </div>
+              <p className="advisor-note">{aiExplanation}</p>
+            </div>
           <div className="stack-card v2-stack">
             <StackLine label={isInternational ? "International tuition + books" : "Tuition + books"} value={funding.tuitionNeed} max={max} tone="need" />
             <StackLine label={isInternational ? "Move-in + first landing cash" : "Move-in impact"} value={isInternational ? funding.upfrontHousing + funding.firstMonthCash : funding.upfrontHousing} max={max} tone="need-soft" />
@@ -863,9 +957,6 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
               <div><span>Confirmed funding sources</span><strong>{formatCurrency(funding.available)}</strong></div>
             </div>
           </div>
-        )}
-        {reveal >= 2 && (
-          <div className="progressive-panel">
             <FinancialPositionCalculator position={financialPosition} />
             <TimingGapBar position={financialPosition} isInternational={isInternational} />
             {isInternational ? (
@@ -895,8 +986,7 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
                 <p className="advisor-note">I would review payment timing first: when tuition is due, when your transfer clears, and how much cash you can access during your first week in Canada.</p>
               </div>
             ) : (
-              <>
-                <div className="funding-strategy-card">
+              <div className="funding-strategy-card">
               <div className="strategy-head">
                 <Sparkles size={18} />
                 <div>
@@ -919,43 +1009,83 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
               </div>
               <p className="advisor-note">Initial gap: {formatCurrency(financialPosition.remainingGap)}. After delayable expenses and expected income, {financialPosition.discussionLow > 0 ? `approximately ${formatCurrency(financialPosition.discussionLow)}-${formatCurrency(financialPosition.discussionHigh)} remains as one topic worth discussing with an advisor.` : "the gap may be manageable through timing and available funding sources."} This is an advisor discussion option, not a product recommendation.</p>
                 </div>
-                <div className="gap-reduction-simulator">
-              <div>
-                <span>Funding gap simulator</span>
-                <strong>How can I reduce my funding gap?</strong>
-              </div>
-              <div className="gap-reduction-actions">
-                {gapReductionActions.map((action) => {
-                  const active = selectedGapReductions.includes(action.id);
-                  return (
-                    <button key={action.id} className={active ? "active" : ""} onClick={() => toggleGapReduction(action.id)}>
-                      {active ? <Check size={14} /> : <ChevronRight size={14} />}
-                      {action.label}
-                    </button>
-                  );
-                })}
-              </div>
-                </div>
-              </>
             )}
             <p><CalendarDays size={16} /> {isInternational ? "Tuition, deposits, transfers, and arrival expenses may not happen in the same week. Keep some first-month money accessible when you land." : "OSAP and deposits may not arrive in the same week. Keep a first-payment backup before the tuition deadline."}</p>
-            <details>
-              <summary>Adjust funding assumptions</summary>
-              <Slider label="Tuition" value={profile.tuition} min={isInternational ? 25000 : 4000} max={isInternational ? 85000 : 28000} step={250} onChange={(tuition) => updateProfile({ tuition })} />
-              <Slider label="Books" value={profile.books} min={300} max={3000} step={50} onChange={(books) => updateProfile({ books })} />
-              <Slider label="Savings" value={profile.savings} min={0} max={isInternational ? 40000 : 12000} step={250} onChange={(savings) => updateProfile({ savings })} />
-              {isInternational && (
-                <>
-                  <Slider label="Family transfer" value={profile.familyTransfer} min={0} max={90000} step={500} onChange={(familyTransfer) => updateProfile({ familyTransfer })} />
-                  <Slider label="GIC / proof of funds" value={profile.gicAmount} min={0} max={35000} step={500} onChange={(gicAmount) => updateProfile({ gicAmount, gicStatus: gicAmount > 0 ? "In progress" : "Not started" })} />
-                </>
-              )}
-            </details>
             <ProductFitGrid resources={fundingResources} isInternational={isInternational} />
           </div>
         )}
       </div>
     </DecisionScreen>
+  );
+}
+
+function FundingAssumptionsCard({ profile, updateProfile, isInternational }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; isInternational: boolean }) {
+  const updateOsapGrant = (osapGrant: number) => updateProfile({ osapGrant, osapTotal: osapGrant + profile.osapLoan });
+  const updateOsapLoan = (osapLoan: number) => updateProfile({ osapLoan, osapTotal: profile.osapGrant + osapLoan });
+  return (
+    <section className="funding-assumptions-card" aria-label="Your funding assumptions">
+      <div className="assumption-head">
+        <span className="section-kicker">Your assumptions</span>
+        <strong>{isInternational ? "Adjust your arrival money assumptions" : "Adjust your first-semester assumptions"}</strong>
+        <p>Change any value to see the funding picture update live.</p>
+      </div>
+      <div className="assumption-control-list">
+        {isInternational ? (
+          <>
+            <Slider label="International tuition" value={profile.tuition} min={25000} max={85000} step={250} onChange={(tuition) => updateProfile({ tuition })} />
+            <Slider label="Books" value={profile.books} min={300} max={3000} step={50} onChange={(books) => updateProfile({ books })} />
+            <Slider label="First landing cash" value={profile.arrivalEssentials} min={0} max={5000} step={100} onChange={(arrivalEssentials) => updateProfile({ arrivalEssentials })} />
+            <Slider label="Rent / residence cost" value={profile.rent} min={0} max={3500} step={50} onChange={(rent) => updateProfile({ rent })} />
+            <Slider label="Temporary housing" value={profile.temporaryHousing} min={0} max={5000} step={100} onChange={(temporaryHousing) => updateProfile({ temporaryHousing })} />
+            <Slider label="GIC / proof of funds" value={profile.gicAmount} min={0} max={35000} step={500} onChange={(gicAmount) => updateProfile({ gicAmount, gicStatus: gicAmount > 0 ? "In progress" : "Not started" })} />
+            <Slider label="Savings" value={profile.savings} min={0} max={40000} step={250} onChange={(savings) => updateProfile({ savings })} />
+            <Slider label="Family transfer" value={profile.familyTransfer} min={0} max={90000} step={500} onChange={(familyTransfer) => updateProfile({ familyTransfer })} />
+            <Slider label="Currency buffer" value={profile.currencyBuffer} min={0} max={8000} step={100} onChange={(currencyBuffer) => updateProfile({ currencyBuffer })} />
+            <Slider label="Part-time income after arrival" value={profile.partTimeIncome} min={0} max={1800} step={50} onChange={(partTimeIncome) => updateProfile({ partTimeIncome })} />
+          </>
+        ) : (
+          <>
+            <Slider label="Tuition" value={profile.tuition} min={4000} max={28000} step={250} onChange={(tuition) => updateProfile({ tuition })} />
+            <Slider label="Books" value={profile.books} min={300} max={3000} step={50} onChange={(books) => updateProfile({ books })} />
+            <Slider label="Rent / residence cost" value={profile.rent} min={0} max={2400} step={25} onChange={(rent) => updateProfile({ rent })} />
+            <Slider label="OSAP grant" value={profile.osapGrant} min={0} max={7000} step={100} onChange={updateOsapGrant} />
+            <Slider label="OSAP repayable funding" value={profile.osapLoan} min={0} max={12000} step={100} onChange={updateOsapLoan} />
+            <Slider label="Savings / RESP" value={profile.savings} min={0} max={16000} step={250} onChange={(savings) => updateProfile({ savings })} />
+            <Slider label="Family support" value={profile.familySupport} min={0} max={12000} step={250} onChange={(familySupport) => updateProfile({ familySupport })} />
+            <Slider label="Scholarship" value={profile.scholarship} min={0} max={10000} step={100} onChange={(scholarship) => updateProfile({ scholarship })} />
+            <Slider label="Part-time income" value={profile.partTimeIncome} min={0} max={1800} step={50} onChange={(partTimeIncome) => updateProfile({ partTimeIncome })} />
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function FundingPictureCard({ totalNeed, confirmedFunding, difference, timingRisk, timingGap }: { totalNeed: number; confirmedFunding: number; difference: number; timingRisk: string; timingGap: number }) {
+  const statusClass = difference === 0 && timingGap === 0 ? "ok" : timingRisk === "High" ? "warn" : "watch";
+  return (
+    <section className={`funding-picture-card ${statusClass}`} aria-label="Your Funding Picture">
+      <span className="section-kicker">Your Funding Picture</span>
+      <div className="funding-picture-main">
+        <div>
+          <small>Total need</small>
+          <strong>{formatCurrency(totalNeed)}</strong>
+        </div>
+        <div>
+          <small>Confirmed funding</small>
+          <strong>{formatCurrency(confirmedFunding)}</strong>
+        </div>
+        <div>
+          <small>Current difference</small>
+          <strong>{formatCurrency(difference)}</strong>
+        </div>
+        <div>
+          <small>Timing risk</small>
+          <strong>{timingRisk}</strong>
+        </div>
+      </div>
+      <p>{timingGap > 0 ? `${formatCurrency(timingGap)} may be needed before later funding is available.` : "No timing gap is flagged based on current assumptions."}</p>
+    </section>
   );
 }
 
@@ -1176,6 +1306,27 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
         "What funding option should I discuss if a gap still remains?",
         "Which credit routine should be set before the first statement arrives?"
       ];
+  const keyAssumptions = profile.international
+    ? [
+        `International tuition: ${formatCurrency(profile.tuition)}`,
+        `Books: ${formatCurrency(profile.books)}`,
+        `Rent / residence: ${formatCurrency(profile.rent)}`,
+        `Temporary housing: ${formatCurrency(profile.temporaryHousing)}`,
+        `GIC / proof of funds: ${formatCurrency(profile.gicAmount)}`,
+        `Savings: ${formatCurrency(profile.savings)}`,
+        `Family transfer: ${formatCurrency(profile.familyTransfer)}`,
+        `Currency buffer: ${formatCurrency(profile.currencyBuffer)}`
+      ]
+    : [
+        `Tuition: ${formatCurrency(profile.tuition)}`,
+        `Books: ${formatCurrency(profile.books)}`,
+        `Rent / residence: ${formatCurrency(profile.rent)}`,
+        `OSAP grant: ${formatCurrency(profile.osapGrant)}`,
+        `OSAP repayable funding: ${formatCurrency(profile.osapLoan)}`,
+        `Savings / RESP: ${formatCurrency(profile.savings)}`,
+        `Family support: ${formatCurrency(profile.familySupport)}`,
+        `Scholarship: ${formatCurrency(profile.scholarship)}`
+      ];
   const briefText = createAdvisorBriefText(profile, funding, budget);
   const handleCopyBrief = async () => {
     try {
@@ -1225,8 +1376,12 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
           <strong>Funding position to bring forward</strong>
           <p><ChevronRight size={15} /> Total first-semester money number: {formatCurrency(financialPosition.totalCost)}</p>
           <p><ChevronRight size={15} /> Confirmed funding: {formatCurrency(financialPosition.confirmedFunding)}</p>
-          <p><ChevronRight size={15} /> Timing gap before September: {formatCurrency(financialPosition.timingGap)}</p>
+          <p><ChevronRight size={15} /> {profile.international ? "Timing gap before arrival" : "Timing gap before September"}: {formatCurrency(financialPosition.timingGap)}</p>
           <p><ChevronRight size={15} /> Funding option discussion estimate: {financialPosition.discussionLow > 0 ? `${formatCurrency(financialPosition.discussionLow)}-${formatCurrency(financialPosition.discussionHigh)}` : "$0"}</p>
+        </div>
+        <div className="plan-section">
+          <strong>Key assumptions used</strong>
+          {keyAssumptions.map((assumption) => <p key={assumption}><ChevronRight size={15} /> {assumption}</p>)}
         </div>
         <ResourceGrid resources={resourceSet} />
         <button className="advisor-brief-generate" onClick={() => setShowAdvisorBrief(true)}>
@@ -1289,6 +1444,17 @@ function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof cal
       `Canadian bank account: ${profile.hasCibcAccount ? "Opened" : "Not yet"}`,
       `Credit card: ${profile.hasCreditCard ? "Already has one" : "Not yet"}`,
       "",
+      "Key assumptions used",
+      `International tuition: ${formatCurrency(profile.tuition)}`,
+      `Books: ${formatCurrency(profile.books)}`,
+      `Rent / residence: ${formatCurrency(profile.rent)}`,
+      `Temporary housing: ${formatCurrency(profile.temporaryHousing)}`,
+      `GIC / proof-of-funds amount: ${formatCurrency(profile.gicAmount)}`,
+      `Savings: ${formatCurrency(profile.savings)}`,
+      `Family transfer: ${formatCurrency(profile.familyTransfer)}`,
+      `Currency buffer: ${formatCurrency(profile.currencyBuffer)}`,
+      `Part-time income after arrival: ${formatCurrency(profile.partTimeIncome)}`,
+      "",
       "Biggest risk before landing",
       "The biggest remaining risk is timing: tuition payment, family transfer, GIC/proof-of-funds, rent deposit, and first-month cash may not all be accessible at the same time.",
       "",
@@ -1328,6 +1494,17 @@ function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof cal
     `Student account: ${profile.hasCibcAccount ? "Opened" : "Not yet opened"}`,
     `Credit card: ${profile.hasCreditCard ? "Already has one" : "Not yet"}`,
     "Part-time job: Considering",
+    "",
+    "Key assumptions used",
+    `Tuition: ${formatCurrency(profile.tuition)}`,
+    `Books: ${formatCurrency(profile.books)}`,
+    `Rent / residence: ${formatCurrency(profile.rent)}`,
+    `OSAP grant: ${formatCurrency(profile.osapGrant)}`,
+    `OSAP repayable funding: ${formatCurrency(profile.osapLoan)}`,
+    `Savings / RESP: ${formatCurrency(profile.savings)}`,
+    `Family support: ${formatCurrency(profile.familySupport)}`,
+    `Scholarship: ${formatCurrency(profile.scholarship)}`,
+    `Part-time income: ${formatCurrency(profile.partTimeIncome)}`,
     "",
     "Biggest risk before semester starts",
     "The biggest remaining risk is cash flow timing. Tuition, rent deposit, books, and first-month expenses may happen before all funding arrives.",
@@ -1384,6 +1561,29 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
         ["Student account", profile.hasCibcAccount ? "Opened" : "Not yet opened"],
         ["Credit card", profile.hasCreditCard ? "Already has one" : "Not yet"],
         ["Part-time job", "Considering"]
+      ];
+  const assumptions = profile.international
+    ? [
+        ["International tuition", formatCurrency(profile.tuition)],
+        ["Books", formatCurrency(profile.books)],
+        ["Rent / residence", formatCurrency(profile.rent)],
+        ["Temporary housing", formatCurrency(profile.temporaryHousing)],
+        ["GIC / proof of funds", formatCurrency(profile.gicAmount)],
+        ["Savings", formatCurrency(profile.savings)],
+        ["Family transfer", formatCurrency(profile.familyTransfer)],
+        ["Currency buffer", formatCurrency(profile.currencyBuffer)],
+        ["Part-time income", formatCurrency(profile.partTimeIncome)]
+      ]
+    : [
+        ["Tuition", formatCurrency(profile.tuition)],
+        ["Books", formatCurrency(profile.books)],
+        ["Rent / residence", formatCurrency(profile.rent)],
+        ["OSAP grant", formatCurrency(profile.osapGrant)],
+        ["OSAP repayable funding", formatCurrency(profile.osapLoan)],
+        ["Savings / RESP", formatCurrency(profile.savings)],
+        ["Family support", formatCurrency(profile.familySupport)],
+        ["Scholarship", formatCurrency(profile.scholarship)],
+        ["Part-time income", formatCurrency(profile.partTimeIncome)]
       ];
   const questions = profile.international
     ? [
@@ -1444,6 +1644,15 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
           <ShieldCheck size={22} />
           <span>{profile.international ? "Biggest risk before landing" : "Biggest risk before semester starts"}</span>
           <p>{risk}</p>
+        </div>
+      </div>
+
+      <div className="brief-section">
+        <span>Key assumptions used</span>
+        <div className="brief-facts">
+          {assumptions.map(([label, value]) => (
+            <div key={label}><small>{label}</small><strong>{value}</strong></div>
+          ))}
         </div>
       </div>
 
