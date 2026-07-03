@@ -37,6 +37,12 @@ type StepId = "landing" | "offer" | "scan" | "funding" | "housing" | "credit" | 
 type Concern = "Paying tuition" | "Finding rent money" | "OSAP" | "Building credit" | "Managing monthly spending" | "Working part-time" | "I'm not sure";
 type Living = "Residence" | "Renting off-campus" | "Living at home";
 type Transport = "Transit" | "Car" | "Ride share" | "Walking/biking";
+type FundingScenario = {
+  id: string;
+  label: string;
+  category: "Good News" | "Unexpected Events" | "Life Choices";
+  effect: (profile: Profile) => Partial<Profile>;
+};
 
 type Profile = {
   name: string;
@@ -476,6 +482,63 @@ function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof
   };
 }
 
+function getFundingScenarios(isInternational: boolean): FundingScenario[] {
+  if (isInternational) {
+    return [
+      { id: "transfer-early", label: "Family transfer arrives early", category: "Good News", effect: (profile) => ({ familyTransfer: profile.familyTransfer + 2000 }) },
+      { id: "campus-job", label: "Campus job after arrival", category: "Good News", effect: (profile) => ({ partTimeIncome: Math.max(profile.partTimeIncome, 600) }) },
+      { id: "savings-plus", label: "Savings +$1,000", category: "Good News", effect: (profile) => ({ savings: profile.savings + 1000 }) },
+      { id: "transfer-delayed", label: "Family transfer delayed", category: "Unexpected Events", effect: (profile) => ({ familyTransfer: Math.max(0, profile.familyTransfer - 4000) }) },
+      { id: "exchange-buffer", label: "Exchange rate buffer +5%", category: "Unexpected Events", effect: (profile) => ({ currencyBuffer: profile.currencyBuffer + Math.round(profile.tuition * 0.05) }) },
+      { id: "temp-housing", label: "Temporary housing +$800", category: "Unexpected Events", effect: (profile) => ({ temporaryHousing: profile.temporaryHousing + 800 }) },
+      { id: "winter-setup", label: "Winter setup +$600", category: "Unexpected Events", effect: (profile) => ({ winterClothing: profile.winterClothing + 600 }) },
+      { id: "relatives", label: "Live with relatives first month", category: "Life Choices", effect: () => ({ temporaryHousing: 0 }) },
+      { id: "delay-furniture-intl", label: "Delay furniture purchase", category: "Life Choices", effect: (profile) => ({ furnitureBudget: Math.max(0, profile.furnitureBudget - 500) }) },
+      { id: "transit-choice", label: "Use transit instead of car", category: "Life Choices", effect: () => ({ transport: "Transit", carCosts: 0 }) }
+    ];
+  }
+  return [
+    { id: "scholarship", label: "Scholarship +$1,000", category: "Good News", effect: (profile) => ({ scholarship: profile.scholarship + 1000 }) },
+    { id: "work", label: "Work 8 hrs/week", category: "Good News", effect: (profile) => ({ partTimeIncome: Math.max(profile.partTimeIncome, 640) }) },
+    { id: "family-plus", label: "Family support +$500", category: "Good News", effect: (profile) => ({ familySupport: profile.familySupport + 500 }) },
+    { id: "osap", label: "OSAP delayed", category: "Unexpected Events", effect: () => ({ osapStatus: "Applied" }) },
+    { id: "rent", label: "Rent +$150", category: "Unexpected Events", effect: (profile) => ({ rent: profile.rent + 150 }) },
+    { id: "books", label: "Books cost more", category: "Unexpected Events", effect: (profile) => ({ books: profile.books + 400 }) },
+    { id: "emergency", label: "Emergency expense", category: "Unexpected Events", effect: (profile) => ({ emergencyBuffer: profile.emergencyBuffer + 500 }) },
+    { id: "home", label: "Live at home first month", category: "Life Choices", effect: () => ({ living: "Living at home" }) },
+    { id: "car", label: "Buy a car", category: "Life Choices", effect: (profile) => ({ transport: "Car", carCosts: Math.max(profile.carCosts, 520) }) },
+    { id: "delay-furniture", label: "Delay furniture purchase", category: "Life Choices", effect: (profile) => ({ furnitureBudget: Math.max(0, profile.furnitureBudget - 500) }) }
+  ];
+}
+
+function applyFundingScenarioOverlay(profile: Profile, scenarios: FundingScenario[], activeIds: string[]) {
+  return activeIds.reduce((current, id) => {
+    const scenario = scenarios.find((item) => item.id === id);
+    return scenario ? { ...current, ...scenario.effect(current) } : current;
+  }, profile);
+}
+
+function createScenarioExplanation(activeLabels: string[], differenceDelta: number, timingDelta: number) {
+  if (activeLabels.length === 0) {
+    return "Original plan is active. Toggle scenarios to test how your funding picture changes.";
+  }
+  const count = activeLabels.length;
+  const scenarioText = activeLabels.slice(0, 3).join(", ");
+  if (differenceDelta > 0) {
+    return `You're testing ${count} ${count === 1 ? "change" : "changes"}. Compared with your original plan, your funding difference increased by ${formatCurrency(differenceDelta)} because of ${scenarioText}.`;
+  }
+  if (differenceDelta < 0) {
+    return `You're testing ${count} ${count === 1 ? "change" : "changes"}. Compared with your original plan, your funding difference decreased by ${formatCurrency(Math.abs(differenceDelta))} because of ${scenarioText}.`;
+  }
+  if (timingDelta > 0) {
+    return `You're testing ${count} ${count === 1 ? "change" : "changes"}. The total difference is similar, but timing risk increased by ${formatCurrency(timingDelta)}.`;
+  }
+  if (timingDelta < 0) {
+    return `You're testing ${count} ${count === 1 ? "change" : "changes"}. The total difference is similar, but timing risk improved by ${formatCurrency(Math.abs(timingDelta))}.`;
+  }
+  return `You're testing ${count} ${count === 1 ? "change" : "changes"}. The current funding picture is close to your original plan, so compare timing before making a decision.`;
+}
+
 function getFundingResourceSet(profile: Profile, funding: ReturnType<typeof calculateFunding>, position: ReturnType<typeof calculateFinancialPosition>) {
   if (profile.international) {
     return [
@@ -816,86 +879,36 @@ function ScanScreen({ next, back, profile, offerName }: { next: () => void; back
   );
 }
 
-function FundingScreen({ profile, updateProfile, funding, next, back }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; funding: ReturnType<typeof calculateFunding>; next: () => void; back: () => void }) {
+function FundingScreen({ profile, updateProfile, next, back }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; funding: ReturnType<typeof calculateFunding>; next: () => void; back: () => void }) {
   const [reveal, setReveal] = useState(0);
-  const [scenarioMessage, setScenarioMessage] = useState("Adjust the assumptions to see your funding picture update live.");
-  const budget = calculateBudget(profile);
-  const semesterMoney = calculateSemesterMoney(profile, funding, budget);
-  const fundingStrategy = calculateFundingStrategy(profile, funding);
-  const financialPosition = calculateFinancialPosition(profile, funding, budget, fundingStrategy);
-  const fundingResources = getFundingResourceSet(profile, funding, financialPosition);
-  const max = Math.max(funding.need, 1);
+  const [activeScenarios, setActiveScenarios] = useState<string[]>([]);
   const isInternational = profile.international;
+  const scenarioDefinitions = useMemo(() => getFundingScenarios(isInternational), [isInternational]);
+  const scenarioProfile = useMemo(() => applyFundingScenarioOverlay(profile, scenarioDefinitions, activeScenarios), [profile, scenarioDefinitions, activeScenarios]);
+  const baseBudget = calculateBudget(profile);
+  const baseFunding = calculateFunding(profile);
+  const baseFundingStrategy = calculateFundingStrategy(profile, baseFunding);
+  const baseFinancialPosition = calculateFinancialPosition(profile, baseFunding, baseBudget, baseFundingStrategy);
+  const budget = calculateBudget(scenarioProfile);
+  const funding = calculateFunding(scenarioProfile);
+  const semesterMoney = calculateSemesterMoney(scenarioProfile, funding, budget);
+  const fundingStrategy = calculateFundingStrategy(scenarioProfile, funding);
+  const financialPosition = calculateFinancialPosition(scenarioProfile, funding, budget, fundingStrategy);
+  const fundingResources = getFundingResourceSet(scenarioProfile, funding, financialPosition);
+  const max = Math.max(funding.need, 1);
   const timingRisk = financialPosition.timingGap > 2500 ? "High" : financialPosition.timingGap > 0 ? "Watch" : "Low";
+  const activeScenarioLabels = activeScenarios.map((id) => scenarioDefinitions.find((scenario) => scenario.id === id)?.label).filter(Boolean) as string[];
+  const scenarioExplanation = createScenarioExplanation(
+    activeScenarioLabels,
+    financialPosition.remainingGap - baseFinancialPosition.remainingGap,
+    financialPosition.timingGap - baseFinancialPosition.timingGap
+  );
   const aiExplanation = isInternational
     ? "I calculated this using your offer, tuition estimate, arrival cash, rent plan, proof-of-funds setup, and family transfer timing. Your tuition, arrival cash, proof-of-funds setup, and family transfer timing need to be checked before landing."
     : "I calculated this using your offer, tuition estimate, rent plan, confirmed funding, and OSAP timing. Your OSAP may arrive after some school and housing costs are due, so the timing gap matters.";
-  const applyFundingScenario = (id: string) => {
-    if (isInternational) {
-      const actions: Record<string, () => void> = {
-        transfer: () => {
-          updateProfile({ familyTransfer: Math.max(0, profile.familyTransfer - 4000) });
-          setScenarioMessage("If the family transfer is delayed, accessible funding drops for the arrival window. Keep first-month cash separate.");
-        },
-        exchange: () => {
-          updateProfile({ currencyBuffer: profile.currencyBuffer + Math.round(profile.tuition * 0.05) });
-          setScenarioMessage("A 5% exchange-rate buffer increases the amount you should keep available before landing.");
-        },
-        temporary: () => {
-          updateProfile({ temporaryHousing: profile.temporaryHousing + 800 });
-          setScenarioMessage("Temporary housing adds pressure before your regular lease and campus routine begin.");
-        },
-        winter: () => {
-          updateProfile({ winterClothing: profile.winterClothing + 600 });
-          setScenarioMessage("Winter setup is a real arrival cost. It should be planned before it becomes urgent.");
-        },
-        job: () => {
-          updateProfile({ partTimeIncome: Math.max(profile.partTimeIncome, 600) });
-          setScenarioMessage("A campus job after arrival can improve monthly cash flow, but it may not solve pre-arrival timing needs.");
-        }
-      };
-      actions[id]?.();
-      return;
-    }
-    const actions: Record<string, () => void> = {
-      osap: () => {
-        updateProfile({ osapStatus: "Applied" });
-        setScenarioMessage("If OSAP is delayed, your timing risk increases because tuition and deposits may be due first.");
-      },
-      scholarship: () => {
-        updateProfile({ scholarship: profile.scholarship + 1000 });
-        setScenarioMessage("A $1,000 scholarship improves confirmed funding and reduces the current difference.");
-      },
-      rent: () => {
-        updateProfile({ rent: profile.rent + 150 });
-        setScenarioMessage("A rent increase affects both move-in cash and your monthly budget.");
-      },
-      work: () => {
-        updateProfile({ partTimeIncome: Math.max(profile.partTimeIncome, 640) });
-        setScenarioMessage("Working 8 hours per week helps monthly cash flow, but confirm whether income arrives before key deadlines.");
-      },
-      home: () => {
-        updateProfile({ living: "Living at home" });
-        setScenarioMessage("Living at home for the first month can reduce move-in pressure and lower the timing gap.");
-      }
-    };
-    actions[id]?.();
+  const toggleScenario = (id: string) => {
+    setActiveScenarios((current) => current.includes(id) ? current.filter((scenarioId) => scenarioId !== id) : [...current, id]);
   };
-  const scenarioButtons = isInternational
-    ? [
-        ["transfer", "Family transfer delayed"],
-        ["exchange", "Exchange rate buffer +5%"],
-        ["temporary", "Temporary housing +$800"],
-        ["winter", "Winter setup +$600"],
-        ["job", "Campus job after arrival"]
-      ]
-    : [
-        ["osap", "OSAP delayed"],
-        ["scholarship", "Scholarship +$1,000"],
-        ["rent", "Rent +$150"],
-        ["work", "Work 8 hrs/week"],
-        ["home", "Live at home first month"]
-      ];
   return (
     <DecisionScreen
       eyebrow="Tuition deadline"
@@ -920,17 +933,18 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
             timingRisk={timingRisk}
             timingGap={financialPosition.timingGap}
           />
-          <div className="funding-scenarios">
-            <span className="section-kicker">What if</span>
-            <div className="gap-reduction-actions">
-              {scenarioButtons.map(([id, label]) => (
-                <button key={id} onClick={() => applyFundingScenario(id)}><Sparkles size={14} /> {label}</button>
-              ))}
-            </div>
-          </div>
+          <ScenarioBuilder
+            scenarios={scenarioDefinitions}
+            activeScenarios={activeScenarios}
+            toggleScenario={toggleScenario}
+            resetScenarios={() => setActiveScenarios([])}
+            baseDifference={baseFinancialPosition.remainingGap}
+            currentDifference={financialPosition.remainingGap}
+            explanation={scenarioExplanation}
+          />
           <div className="advisor-note funding-live-note">
             <Sparkles size={16} />
-            <p>{scenarioMessage}</p>
+            <p>{scenarioExplanation}</p>
           </div>
         </div>
         {reveal >= 1 && (
@@ -1016,6 +1030,78 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
         )}
       </div>
     </DecisionScreen>
+  );
+}
+
+function ScenarioBuilder({
+  scenarios,
+  activeScenarios,
+  toggleScenario,
+  resetScenarios,
+  baseDifference,
+  currentDifference,
+  explanation
+}: {
+  scenarios: FundingScenario[];
+  activeScenarios: string[];
+  toggleScenario: (id: string) => void;
+  resetScenarios: () => void;
+  baseDifference: number;
+  currentDifference: number;
+  explanation: string;
+}) {
+  const groupedScenarios = (["Good News", "Unexpected Events", "Life Choices"] as FundingScenario["category"][])
+    .map((category) => ({ category, items: scenarios.filter((scenario) => scenario.category === category) }));
+  const activeLabels = activeScenarios.map((id) => scenarios.find((scenario) => scenario.id === id)?.label).filter(Boolean) as string[];
+  const differenceChange = currentDifference - baseDifference;
+  const comparisonCopy = differenceChange > 0
+    ? `Your funding difference increased by ${formatCurrency(differenceChange)}.`
+    : differenceChange < 0
+      ? `Your funding difference decreased by ${formatCurrency(Math.abs(differenceChange))}.`
+      : "Your funding difference is unchanged.";
+
+  return (
+    <section className="funding-scenarios scenario-builder" aria-label="Build your scenario">
+      <div className="scenario-builder-head">
+        <div>
+          <span className="section-kicker">Build your scenario</span>
+          <strong>Test changes against your original plan</strong>
+        </div>
+        <button className="scenario-reset" onClick={resetScenarios} disabled={activeScenarios.length === 0}>Reset to original plan</button>
+      </div>
+      <div className="active-scenario-card">
+        <span>Active Scenario</span>
+        <div className="active-scenario-tags">
+          <strong>Original plan</strong>
+          {activeLabels.map((label) => <em key={label}>+ {label}</em>)}
+        </div>
+        <p>Compared with your original plan: {comparisonCopy}</p>
+        <small>{explanation}</small>
+      </div>
+      <div className="scenario-groups">
+        {groupedScenarios.map(({ category, items }) => (
+          <div key={category} className="scenario-group">
+            <span>{category}</span>
+            <div className="scenario-toggle-list">
+              {items.map((scenario) => {
+                const active = activeScenarios.includes(scenario.id);
+                return (
+                  <button
+                    key={scenario.id}
+                    className={active ? "active" : ""}
+                    onClick={() => toggleScenario(scenario.id)}
+                    aria-pressed={active}
+                  >
+                    {active ? <Check size={15} /> : <Sparkles size={15} />}
+                    {scenario.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
