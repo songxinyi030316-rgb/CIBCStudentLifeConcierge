@@ -1373,6 +1373,16 @@ function CityInsightScreen({ profile, next, back }: { profile: Profile; next: ()
 }
 
 function CityMapCard({ insight }: { insight: CityInsight }) {
+  const roads = [
+    { className: "map-road main horizontal", style: { left: "-8%", top: "48%", width: "116%" } },
+    { className: "map-road arterial horizontal", style: { left: "-6%", top: "67%", width: "112%" } },
+    { className: "map-road arterial vertical", style: { left: "31%", top: "-8%", height: "116%" } },
+    { className: "map-road local vertical", style: { left: "52%", top: "-8%", height: "116%" } },
+    { className: "map-road local vertical", style: { left: "74%", top: "-8%", height: "116%" } },
+    { className: "map-road local horizontal", style: { left: "-8%", top: "28%", width: "116%" } },
+    { className: "map-road local horizontal", style: { left: "-8%", top: "84%", width: "116%" } },
+    { className: "map-road diagonal", style: { left: "10%", top: "20%", width: "96%", transform: "rotate(-22deg)" } }
+  ];
   return (
     <section className="city-map-card" aria-label={`${insight.cityName} map`}>
       <div className="city-map-head">
@@ -1380,30 +1390,19 @@ function CityMapCard({ insight }: { insight: CityInsight }) {
         <strong>{insight.map.label}</strong>
       </div>
       <div className="city-map-visual">
-        <svg viewBox="0 0 320 190" role="img" aria-label={`${insight.cityName} student area map`}>
-          <defs>
-            <linearGradient id={`mapWater-${insight.cityName.replace(/\W/g, "")}`} x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stopColor="#e9f7f1" />
-              <stop offset="100%" stopColor="#fff4dc" />
-            </linearGradient>
-          </defs>
-          <rect x="0" y="0" width="320" height="190" rx="18" />
-          <path d="M20 134 C68 108 96 116 130 88 S218 48 300 28" />
-          <path d="M34 44 C78 66 116 58 156 82 S230 124 292 108" />
-          <path d="M84 18 C92 58 92 91 112 126 S160 160 186 176" />
-          <path d="M224 12 C198 52 200 88 218 124 S250 164 290 176" />
-          <circle className="campus-pulse" cx={insight.map.marker.x * 3.2} cy={insight.map.marker.y * 1.9} r="18" />
-          <g className="campus-marker" transform={`translate(${insight.map.marker.x * 3.2} ${insight.map.marker.y * 1.9})`}>
-            <circle r="9" />
-            <path d="M-4 0 L0 -5 L4 0 L0 5 Z" />
-          </g>
-          {insight.map.areas.map((area) => (
-            <g key={area.name} className="map-area-pin" transform={`translate(${area.x * 3.2} ${area.y * 1.9})`}>
-              <circle r="5" />
-              <text x="9" y="4">{area.name}</text>
-            </g>
-          ))}
-        </svg>
+        <div className="map-water" />
+        <div className="map-park park-one" />
+        <div className="map-park park-two" />
+        {roads.map((road) => <span key={`${road.className}-${road.style.left}-${road.style.top}`} className={road.className} style={road.style} />)}
+        {insight.map.areas.map((area) => (
+          <span key={area.name} className="city-place-pin" style={{ left: `${area.x}%`, top: `${area.y}%` }}>
+            <i />
+            <b>{area.name}</b>
+          </span>
+        ))}
+        <span className="city-campus-pin" style={{ left: `${insight.map.marker.x}%`, top: `${insight.map.marker.y}%` }}>
+          <MapPin size={22} />
+        </span>
         <div className="city-map-campus">
           <MapPin size={18} />
           <div>

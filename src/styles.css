@@ -3645,70 +3645,144 @@ input[type="range"] {
   overflow: hidden;
   border: 1px solid rgba(87, 0, 31, 0.08);
   border-radius: 12px;
+  min-height: 280px;
   background:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.72), transparent 26%),
-    linear-gradient(135deg, #e8f6f0, #fff3dc 72%);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.42) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.48) 1px, transparent 1px),
+    linear-gradient(135deg, #edf2e9, #f8f1df 70%);
+  background-size: 32px 32px, 32px 32px, auto;
 }
 
-.city-map-visual > svg {
+.map-water,
+.map-park,
+.map-road,
+.city-place-pin,
+.city-campus-pin {
+  position: absolute;
+}
+
+.map-water {
+  right: -10%;
+  bottom: -20%;
+  width: 48%;
+  height: 38%;
+  border-radius: 45% 0 0 0;
+  background: rgba(188, 219, 229, 0.68);
+  box-shadow: inset 0 0 0 1px rgba(102, 145, 158, 0.12);
+}
+
+.map-park {
+  border-radius: 18px;
+  background: rgba(198, 225, 191, 0.74);
+  box-shadow: inset 0 0 0 1px rgba(96, 132, 92, 0.08);
+}
+
+.park-one {
+  left: 8%;
+  top: 11%;
+  width: 25%;
+  height: 23%;
+  transform: rotate(-7deg);
+}
+
+.park-two {
+  right: 10%;
+  top: 14%;
+  width: 21%;
+  height: 18%;
+  transform: rotate(9deg);
+}
+
+.map-road {
   display: block;
-  width: 100%;
-  height: auto;
+  z-index: 1;
+  border-radius: 999px;
+  background: white;
+  box-shadow:
+    0 0 0 1px rgba(118, 107, 99, 0.08),
+    0 2px 8px rgba(71, 24, 34, 0.05);
 }
 
-.city-map-visual > svg > rect {
-  fill: transparent;
+.map-road.horizontal {
+  height: 14px;
 }
 
-.city-map-visual > svg > path {
-  fill: none;
-  stroke: rgba(143, 0, 52, 0.22);
-  stroke-width: 7;
-  stroke-linecap: round;
+.map-road.vertical {
+  width: 14px;
 }
 
-.city-map-visual > svg > path:nth-of-type(2) {
-  stroke: rgba(46, 102, 106, 0.24);
-  stroke-width: 5;
+.map-road.main {
+  height: 18px;
+  background: #ffe8a8;
+  transform: rotate(-12deg);
 }
 
-.city-map-visual > svg > path:nth-of-type(3),
-.city-map-visual > svg > path:nth-of-type(4) {
-  stroke: rgba(212, 162, 59, 0.34);
-  stroke-width: 4;
-  stroke-dasharray: 9 9;
+.map-road.arterial {
+  background: #fff7d6;
 }
 
-.campus-pulse {
-  fill: rgba(143, 0, 52, 0.12);
-  stroke: rgba(143, 0, 52, 0.18);
-  stroke-width: 1;
+.map-road.arterial.horizontal {
+  transform: rotate(8deg);
 }
 
-.campus-marker circle {
-  fill: var(--burgundy);
-  stroke: white;
-  stroke-width: 3;
+.map-road.arterial.vertical {
+  transform: rotate(6deg);
 }
 
-.campus-marker path {
-  fill: white;
-  stroke: none;
+.map-road.local {
+  opacity: 0.92;
 }
 
-.map-area-pin circle {
-  fill: var(--gold);
-  stroke: white;
-  stroke-width: 2;
+.map-road.diagonal {
+  height: 12px;
+  background: white;
 }
 
-.map-area-pin text {
-  fill: var(--ink);
-  font-size: 12px;
+.city-place-pin {
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transform: translate(-10px, -50%);
+}
+
+.city-place-pin i {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  border: 3px solid white;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 0 3px 8px rgba(71, 24, 34, 0.16);
+}
+
+.city-place-pin b {
+  border: 1px solid rgba(87, 0, 31, 0.08);
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ink);
+  font-size: 11px;
   font-weight: 900;
-  paint-order: stroke;
-  stroke: rgba(255, 250, 242, 0.92);
-  stroke-width: 4px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 5px 12px rgba(71, 24, 34, 0.08);
+}
+
+.city-campus-pin {
+  z-index: 4;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  background: var(--burgundy);
+  color: white;
+  box-shadow:
+    0 0 0 12px rgba(143, 0, 52, 0.12),
+    0 12px 26px rgba(71, 24, 34, 0.2);
+  transform: translate(-50%, -50%);
 }
 
 .city-map-campus {
