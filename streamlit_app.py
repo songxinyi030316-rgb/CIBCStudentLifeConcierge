@@ -19,7 +19,8 @@ if not bundle_path.exists():
 
 bundle_html = bundle_path.read_text(encoding="utf-8")
 bundle_hash = hashlib.sha256(bundle_html.encode("utf-8")).hexdigest()[:10]
-app_version = f"cibc-campusgo-v2-2026-07-03-{bundle_hash}"
+deploy_marker = "motion-polish-2026-07-03-cc3386d"
+app_version = f"cibc-campusgo-v2-{deploy_marker}-{bundle_hash}"
 
 st.markdown(
     """
