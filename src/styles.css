@@ -2926,8 +2926,8 @@ input[type="range"] {
 
 .funding-totals span,
 .funding-strategy-card span,
-.borrow-less-simulator span,
-.borrow-estimate span {
+.gap-reduction-simulator span,
+.funding-estimate span {
   color: var(--muted);
   font-size: 11px;
   font-weight: 950;
@@ -2935,7 +2935,7 @@ input[type="range"] {
 }
 
 .funding-totals strong,
-.borrow-estimate strong {
+.funding-estimate strong {
   color: var(--ink);
   font-size: 18px;
   line-height: 1.15;
@@ -3144,7 +3144,7 @@ input[type="range"] {
 }
 
 .funding-strategy-card,
-.borrow-less-simulator {
+.gap-reduction-simulator {
   display: grid;
   gap: 14px;
   border: 1px solid rgba(143, 0, 52, 0.12);
@@ -3165,7 +3165,7 @@ input[type="range"] {
 }
 
 .strategy-head strong,
-.borrow-less-simulator strong {
+.gap-reduction-simulator strong {
   display: block;
   color: var(--ink);
   font-size: 20px;
@@ -3193,13 +3193,13 @@ input[type="range"] {
   flex: 0 0 auto;
 }
 
-.borrow-estimate {
+.funding-estimate {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
-.borrow-estimate div {
+.funding-estimate div {
   display: grid;
   gap: 5px;
   border-left: 3px solid var(--burgundy);
@@ -3208,7 +3208,7 @@ input[type="range"] {
   background: white;
 }
 
-.borrow-estimate small {
+.funding-estimate small {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.35;
@@ -3219,13 +3219,13 @@ input[type="range"] {
   font-weight: 850;
 }
 
-.borrow-less-actions {
+.gap-reduction-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.borrow-less-actions button {
+.gap-reduction-actions button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -3239,7 +3239,7 @@ input[type="range"] {
   cursor: pointer;
 }
 
-.borrow-less-actions button.active {
+.gap-reduction-actions button.active {
   color: white;
   border-color: var(--burgundy);
   background: var(--burgundy);
@@ -3422,7 +3422,7 @@ details > * + * {
   .funding-decision,
   .funding-totals,
   .strategy-grid,
-  .borrow-estimate,
+  .funding-estimate,
   .movein-decision,
   .ai-insight-card,
   .brief-grid,

@@ -148,7 +148,7 @@ const resources: Record<string, ResourceCard> = {
   lineOfCredit: {
     title: "CIBC Education Line of Credit",
     category: "Worth discussing with CIBC",
-    description: "Review only if a remaining shortfall still needs a backup after lower-borrowing options.",
+    description: "One possible funding option to discuss if a remaining shortfall still needs a backup.",
     url: cibcLinks.educationLineOfCredit,
     icon: CircleDollarSign
   },
@@ -360,7 +360,7 @@ function calculateFunding(profile: Profile) {
   return { tuitionNeed, upfrontHousing, firstMonthCash: 0, osap, proofFunds: 0, available, need, gap };
 }
 
-const borrowLessActions = [
+const gapReductionActions = [
   { id: "work", label: "I can work 8 hrs/week", amount: (profile: Profile) => Math.max(360, Math.round(profile.partTimeIncome * 0.75)) },
   { id: "scholarship", label: "I received a $1,000 scholarship", amount: () => 1000 },
   { id: "parents", label: "My parents can help with rent", amount: (profile: Profile) => (profile.living === "Living at home" ? 0 : Math.min(600, Math.round(profile.rent * 0.5))) },
@@ -373,8 +373,8 @@ function roundUpToHundred(value: number) {
   return Math.ceil(value / 100) * 100;
 }
 
-function calculateBorrowingStrategy(profile: Profile, funding: ReturnType<typeof calculateFunding>, selectedActionIds: string[] = []) {
-  const selectedActionValue = borrowLessActions
+function calculateFundingStrategy(profile: Profile, funding: ReturnType<typeof calculateFunding>, selectedActionIds: string[] = []) {
+  const selectedActionValue = gapReductionActions
     .filter((action) => selectedActionIds.includes(action.id))
     .reduce((sum, action) => sum + action.amount(profile), 0);
   const remainingGap = Math.max(0, funding.gap - selectedActionValue);
@@ -382,9 +382,9 @@ function calculateBorrowingStrategy(profile: Profile, funding: ReturnType<typeof
   const delayableMoveIn = profile.living === "Renting off-campus" ? Math.min(400, Math.round(profile.furnitureBudget * 0.45)) : 0;
   const spendingFlex = 250;
   const flexibleCoverage = Math.min(remainingGap, partTimeBeforeDeadline + delayableMoveIn + spendingFlex);
-  const recommendedBorrowing = remainingGap === 0 ? 0 : roundUpToHundred(Math.max(0, remainingGap - flexibleCoverage));
-  const recommendedHigh = recommendedBorrowing === 0 ? 0 : Math.min(remainingGap, recommendedBorrowing + 500);
-  const repaymentImpact = Math.round((recommendedBorrowing * 0.07) / 12);
+  const discussionAmount = remainingGap === 0 ? 0 : roundUpToHundred(Math.max(0, remainingGap - flexibleCoverage));
+  const discussionHigh = discussionAmount === 0 ? 0 : Math.min(remainingGap, discussionAmount + 500);
+  const planningImpact = Math.round((discussionAmount * 0.07) / 12);
   return {
     selectedActionValue,
     remainingGap,
@@ -392,15 +392,15 @@ function calculateBorrowingStrategy(profile: Profile, funding: ReturnType<typeof
     delayableMoveIn,
     spendingFlex,
     flexibleCoverage,
-    recommendedBorrowing,
-    recommendedHigh,
-    repaymentImpact
+    discussionAmount,
+    discussionHigh,
+    planningImpact
   };
 }
 
-function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>, borrowingStrategy: ReturnType<typeof calculateBorrowingStrategy>) {
+function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>, fundingStrategy: ReturnType<typeof calculateFundingStrategy>) {
   const osapGrant = profile.international ? 0 : Math.min(funding.osap, profile.osapStatus === "Approved" ? 2200 : profile.osapStatus === "Applied" ? 1400 : 0);
-  const osapLoan = profile.international ? 0 : Math.max(0, funding.osap - osapGrant);
+  const osapRepayableFunding = profile.international ? 0 : Math.max(0, funding.osap - osapGrant);
   const firstLastRent = profile.living === "Renting off-campus" ? profile.rent + (profile.needsDeposit ? profile.rent : 0) : 0;
   const moveInCosts = profile.furnitureBudget + (profile.international ? profile.temporaryHousing + profile.arrivalEssentials + profile.winterClothing : 0);
   const monthlyLiving = Math.max(0, budget.expenses - budget.rent - profile.emergencyBuffer) * 4;
@@ -408,7 +408,7 @@ function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof
   const partTimeSemester = profile.partTimeIncome * 4;
   const confirmedFunding = profile.international
     ? funding.proofFunds + profile.savings + profile.familyTransfer + profile.scholarship + partTimeSemester
-    : osapGrant + osapLoan + profile.savings + profile.familySupport + profile.scholarship + partTimeSemester;
+    : osapGrant + osapRepayableFunding + profile.savings + profile.familySupport + profile.scholarship + partTimeSemester;
   const remainingGap = Math.max(0, totalCost - confirmedFunding);
   const partTimeBeforeSeptember = profile.partTimeIncome > 0 ? Math.round(profile.partTimeIncome * 1.25) : 0;
   const moneyNeededBeforeSeptember = profile.tuition + profile.books + firstLastRent + moveInCosts + profile.emergencyBuffer;
@@ -418,8 +418,8 @@ function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof
   const timingGap = Math.max(0, moneyNeededBeforeSeptember - moneyAvailableBeforeSeptember);
   const delayableExpenses = profile.living === "Renting off-campus" ? Math.min(profile.furnitureBudget, profile.international ? 700 : 500) : 0;
   const postFlexGap = Math.max(0, Math.min(remainingGap || funding.gap, timingGap) - delayableExpenses - partTimeBeforeSeptember);
-  const borrowingLow = postFlexGap === 0 ? 0 : roundUpToHundred(Math.max(0, postFlexGap));
-  const borrowingHigh = borrowingLow === 0 ? 0 : roundUpToHundred(Math.max(borrowingLow + 500, borrowingStrategy.recommendedHigh));
+  const discussionLow = postFlexGap === 0 ? 0 : roundUpToHundred(Math.max(0, postFlexGap));
+  const discussionHigh = discussionLow === 0 ? 0 : roundUpToHundred(Math.max(discussionLow + 500, fundingStrategy.discussionHigh));
   const incoming: [string, number][] = profile.international
     ? [
         ["GIC / proof of funds", funding.proofFunds],
@@ -430,7 +430,7 @@ function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof
       ]
     : [
         ["OSAP grant", osapGrant],
-        ["OSAP loan", osapLoan],
+        ["OSAP repayable funding", osapRepayableFunding],
         ["Savings / RESP", profile.savings],
         ["Family support", profile.familySupport],
         ["Scholarship", profile.scholarship],
@@ -446,7 +446,7 @@ function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof
   ];
   return {
     osapGrant,
-    osapLoan,
+    osapRepayableFunding,
     firstLastRent,
     moveInCosts,
     monthlyLiving,
@@ -458,8 +458,8 @@ function calculateFinancialPosition(profile: Profile, funding: ReturnType<typeof
     timingGap: Math.round(timingGap),
     delayableExpenses,
     partTimeBeforeSeptember,
-    borrowingLow,
-    borrowingHigh,
+    discussionLow,
+    discussionHigh,
     incoming,
     outgoing
   };
@@ -479,7 +479,7 @@ function getFundingResourceSet(profile: Profile, funding: ReturnType<typeof calc
     resources.studentBanking,
     resources.bundle
   ];
-  if (funding.gap > 0 || position.borrowingLow > 0) {
+  if (funding.gap > 0 || position.discussionLow > 0) {
     cards.push(resources.lineOfCredit);
   } else {
     cards.push(resources.creditCard);
@@ -807,41 +807,41 @@ function ScanScreen({ next, back, profile, offerName }: { next: () => void; back
 
 function FundingScreen({ profile, updateProfile, funding, next, back }: { profile: Profile; updateProfile: (updates: Partial<Profile>) => void; funding: ReturnType<typeof calculateFunding>; next: () => void; back: () => void }) {
   const [reveal, setReveal] = useState(0);
-  const [selectedBorrowLess, setSelectedBorrowLess] = useState<string[]>([]);
+  const [selectedGapReductions, setSelectedGapReductions] = useState<string[]>([]);
   const budget = calculateBudget(profile);
   const semesterMoney = calculateSemesterMoney(profile, funding, budget);
-  const borrowingStrategy = calculateBorrowingStrategy(profile, funding, selectedBorrowLess);
-  const financialPosition = calculateFinancialPosition(profile, funding, budget, borrowingStrategy);
+  const fundingStrategy = calculateFundingStrategy(profile, funding, selectedGapReductions);
+  const financialPosition = calculateFinancialPosition(profile, funding, budget, fundingStrategy);
   const fundingResources = getFundingResourceSet(profile, funding, financialPosition);
   const max = Math.max(funding.need, 1);
   const isInternational = profile.international;
-  const toggleBorrowLess = (id: string) => {
-    setSelectedBorrowLess((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
+  const toggleGapReduction = (id: string) => {
+    setSelectedGapReductions((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
   };
-  const positionBorrowingRange = financialPosition.borrowingLow === 0
+  const fundingDiscussionRange = financialPosition.discussionLow === 0
     ? "$0"
-    : `${formatCurrency(financialPosition.borrowingLow)}-${formatCurrency(financialPosition.borrowingHigh)}`;
-  const heroLabel = isInternational ? "Arrival funding gap" : funding.gap > 0 ? "Estimated borrowing needed" : "First payment coverage";
-  const heroValue = isInternational ? formatCurrency(funding.gap) : funding.gap > 0 ? positionBorrowingRange : formatCurrency(0);
+    : `${formatCurrency(financialPosition.discussionLow)}-${formatCurrency(financialPosition.discussionHigh)}`;
+  const heroLabel = isInternational ? "Arrival funding gap" : funding.gap > 0 ? "Estimated funding still needed" : "First payment coverage";
+  const heroValue = isInternational ? formatCurrency(funding.gap) : funding.gap > 0 ? fundingDiscussionRange : formatCurrency(0);
   const heroBody = isInternational
     ? funding.gap > 0
       ? "Focus on arrival cash, proof of funds, transfer timing, and what can wait until after landing."
       : "Your arrival funding is covered based on current assumptions. Confirm timing before booking travel."
     : funding.gap > 0
-      ? `Not the full ${formatCurrency(funding.gap)} shortfall. Borrow only what you actually need.`
+      ? `Not the full ${formatCurrency(funding.gap)} shortfall. Explore all available funding before considering additional financing.`
       : "No immediate shortfall based on current inputs.";
   return (
     <DecisionScreen
       eyebrow="Tuition deadline"
       title={isInternational ? "What money should I have ready before I land?" : "How can I cover my first semester with confidence?"}
-      coach={isInternational ? "Before products, let’s make sure tuition, proof of funds, transfer timing, and first-month cash are ready." : financialPosition.timingGap > 0 ? "Your total funding may be close, but timing is the issue. Let’s see what has to be covered before September." : funding.gap > 0 ? "Before borrowing, I’ll look for the smallest amount you may actually need." : `${profile.name}, your tuition path looks covered. Now confirm timing before September.`}
-      thinkingText={reveal === 0 ? "Checking funding sources..." : reveal === 1 ? isInternational ? "Checking arrival cash timing..." : "Reducing unnecessary borrowing..." : "Matching CIBC resources..."}
+      coach={isInternational ? "Before products, let’s make sure tuition, proof of funds, transfer timing, and first-month cash are ready." : financialPosition.timingGap > 0 ? "Your total funding may be close, but timing is the issue. Let’s see what has to be covered before September." : funding.gap > 0 ? "We’ve already considered confirmed funding sources and available options. If a gap still remains, it is worth discussing with a CIBC advisor." : `${profile.name}, your tuition path looks covered. Now confirm timing before September.`}
+      thinkingText={reveal === 0 ? "Checking funding sources..." : reveal === 1 ? isInternational ? "Checking arrival cash timing..." : "Building your funding plan..." : "Matching CIBC resources..."}
       aiTip={isInternational ? "Before landing, keep some money accessible immediately. Transfer timing, deposits, and phone setup can happen before campus routines begin." : "Before relying on OSAP, check whether approval timing lines up with tuition, deposits, and first-month cash needs."}
       nextAction={reveal < 2 ? isInternational ? "Review arrival funding timing" : "Review tuition timing" : isInternational ? "Review arrival banking resources" : "Discuss the smallest backup amount"}
       completedHabits={1}
       futureReminder={{ title: isInternational ? "Arrival reminder" : "Tuition reminder", body: isInternational ? "Confirm tuition payment method, GIC status, and accessible first-month cash before departure." : "Your payment deadline is approaching. Confirm OSAP timing and backup funds before the due date.", icon: ReceiptText }}
       back={back}
-      ctaLabel={reveal === 0 ? "Show me why" : reveal === 1 ? isInternational ? "Show arrival checklist" : "Show borrowing strategy" : "Plan move-in costs"}
+      ctaLabel={reveal === 0 ? "Show me why" : reveal === 1 ? isInternational ? "Show arrival checklist" : "See how I built your funding plan" : "Plan move-in costs"}
       next={reveal < 2 ? () => setReveal((current) => current + 1) : next}
     >
       <div className="single-visual funding-decision">
@@ -860,7 +860,7 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
             <div className="funding-totals">
               <div><span>{isInternational ? "Arrival money number" : "Total first-semester need"}</span><strong>{formatCurrency(isInternational ? funding.need : semesterMoney.totalNeed)}</strong></div>
               <div><span>{isInternational ? "Arrival funding gap" : "First-payment shortfall"}</span><strong>{formatCurrency(funding.gap)}</strong></div>
-              <div><span>Covered before borrowing</span><strong>{formatCurrency(funding.available)}</strong></div>
+              <div><span>Confirmed funding sources</span><strong>{formatCurrency(funding.available)}</strong></div>
             </div>
           </div>
         )}
@@ -887,7 +887,7 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
                   <p><Check size={14} /> SIN application reminder</p>
                   <p><Check size={14} /> First 30 days cash estimate</p>
                 </div>
-                <div className="borrow-estimate">
+                <div className="funding-estimate">
                   <div><span>Accessible savings</span><strong>{formatCurrency(profile.savings)}</strong></div>
                   <div><span>Family transfer planned</span><strong>{formatCurrency(profile.familyTransfer)}</strong></div>
                   <div><span>Arrival gap to review</span><strong>{formatCurrency(funding.gap)}</strong><small>Planning estimate only. Confirm with CIBC and your school.</small></div>
@@ -901,7 +901,7 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
                 <Sparkles size={18} />
                 <div>
                   <span>CampusGo analysis</span>
-                  <strong>How I reduced your borrowing estimate</strong>
+                  <strong>How I built your funding plan</strong>
                 </div>
               </div>
               <div className="strategy-grid">
@@ -912,23 +912,23 @@ function FundingScreen({ profile, updateProfile, funding, next, back }: { profil
                 <p><Check size={14} /> Considered possible scholarship income only when confirmed</p>
                 <p><Check size={14} /> Identified expenses that can be delayed</p>
               </div>
-              <div className="borrow-estimate">
+              <div className="funding-estimate">
                 <div><span>Initial gap</span><strong>{formatCurrency(financialPosition.remainingGap)}</strong></div>
-                <div><span>After timing and delayable costs</span><strong>{financialPosition.borrowingLow === 0 ? "$0" : `${formatCurrency(financialPosition.borrowingLow)}-${formatCurrency(financialPosition.borrowingHigh)}`}</strong></div>
-                <div><span>Example monthly interest impact</span><strong>{formatCurrency(borrowingStrategy.repaymentImpact)}</strong><small>Planning estimate only. Your advisor can confirm rates and terms.</small></div>
+                <div><span>After timing and delayable costs</span><strong>{financialPosition.discussionLow === 0 ? "$0" : `${formatCurrency(financialPosition.discussionLow)}-${formatCurrency(financialPosition.discussionHigh)}`}</strong></div>
+                <div><span>Funding option planning note</span><strong>{formatCurrency(fundingStrategy.planningImpact)}</strong><small>Illustrative monthly cost only if additional financing becomes part of an advisor discussion.</small></div>
               </div>
-              <p className="advisor-note">Initial gap: {formatCurrency(financialPosition.remainingGap)}. After delayable expenses and expected income, {financialPosition.borrowingLow > 0 ? `discuss approximately ${formatCurrency(financialPosition.borrowingLow)}-${formatCurrency(financialPosition.borrowingHigh)} with an advisor.` : "borrowing may not be needed based on this planning estimate."} This is an advisor discussion option, not a recommendation to borrow.</p>
+              <p className="advisor-note">Initial gap: {formatCurrency(financialPosition.remainingGap)}. After delayable expenses and expected income, {financialPosition.discussionLow > 0 ? `approximately ${formatCurrency(financialPosition.discussionLow)}-${formatCurrency(financialPosition.discussionHigh)} remains as one topic worth discussing with an advisor.` : "the gap may be manageable through timing and available funding sources."} This is an advisor discussion option, not a product recommendation.</p>
                 </div>
-                <div className="borrow-less-simulator">
+                <div className="gap-reduction-simulator">
               <div>
-                <span>Borrow Less simulator</span>
-                <strong>How can I reduce my borrowing?</strong>
+                <span>Funding gap simulator</span>
+                <strong>How can I reduce my funding gap?</strong>
               </div>
-              <div className="borrow-less-actions">
-                {borrowLessActions.map((action) => {
-                  const active = selectedBorrowLess.includes(action.id);
+              <div className="gap-reduction-actions">
+                {gapReductionActions.map((action) => {
+                  const active = selectedGapReductions.includes(action.id);
                   return (
-                    <button key={action.id} className={active ? "active" : ""} onClick={() => toggleBorrowLess(action.id)}>
+                    <button key={action.id} className={active ? "active" : ""} onClick={() => toggleGapReduction(action.id)}>
                       {active ? <Check size={14} /> : <ChevronRight size={14} />}
                       {action.label}
                     </button>
@@ -1155,8 +1155,8 @@ function ScoreScreen({ profile, readiness, semesterMoney, funding, budget, next,
 function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, back, setStepIndex, openCompanion }: { profile: Profile; readiness: ReturnType<typeof calculateReadiness>; semesterMoney: ReturnType<typeof calculateSemesterMoney>; funding: ReturnType<typeof calculateFunding>; budget: ReturnType<typeof calculateBudget>; back: () => void; setStepIndex: (index: number) => void; openCompanion: () => void }) {
   const [showAdvisorBrief, setShowAdvisorBrief] = useState(false);
   const [copied, setCopied] = useState(false);
-  const borrowingStrategy = calculateBorrowingStrategy(profile, funding);
-  const financialPosition = calculateFinancialPosition(profile, funding, budget, borrowingStrategy);
+  const fundingStrategy = calculateFundingStrategy(profile, funding);
+  const financialPosition = calculateFinancialPosition(profile, funding, budget, fundingStrategy);
   const resourceSet = profile.international
     ? [resources.internationalAccount, funding.gap > 0 ? resources.gic : resources.internationalStudentPay, resources.advisor]
     : [resources.studentBanking, funding.gap > 0 ? resources.lineOfCredit : resources.budgetCalculator, resources.advisor];
@@ -1172,8 +1172,8 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
     : [
         "Which student account setup best separates tuition, rent, and everyday spending?",
         "How should I cover the temporary timing gap before OSAP arrives?",
-        "Should I adjust payment timing before considering borrowing?",
-        "What is the smallest amount worth discussing if a line of credit is needed?",
+        "Should I adjust payment timing before considering additional financing?",
+        "What funding option should I discuss if a gap still remains?",
         "Which credit routine should be set before the first statement arrives?"
       ];
   const briefText = createAdvisorBriefText(profile, funding, budget);
@@ -1226,7 +1226,7 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
           <p><ChevronRight size={15} /> Total first-semester money number: {formatCurrency(financialPosition.totalCost)}</p>
           <p><ChevronRight size={15} /> Confirmed funding: {formatCurrency(financialPosition.confirmedFunding)}</p>
           <p><ChevronRight size={15} /> Timing gap before September: {formatCurrency(financialPosition.timingGap)}</p>
-          <p><ChevronRight size={15} /> Borrow-only-if-needed estimate: {financialPosition.borrowingLow > 0 ? `${formatCurrency(financialPosition.borrowingLow)}-${formatCurrency(financialPosition.borrowingHigh)}` : "$0"}</p>
+          <p><ChevronRight size={15} /> Funding option discussion estimate: {financialPosition.discussionLow > 0 ? `${formatCurrency(financialPosition.discussionLow)}-${formatCurrency(financialPosition.discussionHigh)}` : "$0"}</p>
         </div>
         <ResourceGrid resources={resourceSet} />
         <button className="advisor-brief-generate" onClick={() => setShowAdvisorBrief(true)}>
@@ -1252,7 +1252,7 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
           <a className="primary-button" href={cibcLinks.appointment} target="_blank" rel="noreferrer"><CalendarDays size={18} /> Book CIBC student banking appointment</a>
           <a className="secondary-button" href={profile.international ? cibcLinks.internationalBankAccount : cibcLinks.studentBanking} target="_blank" rel="noreferrer"><Landmark size={18} /> Open student account</a>
           <a className="secondary-button" href={cibcLinks.creditCards} target="_blank" rel="noreferrer"><CreditCard size={18} /> Review student credit card options</a>
-          <a className="secondary-button" href={profile.international ? cibcLinks.internationalStudentPay : cibcLinks.educationLineOfCredit} target="_blank" rel="noreferrer"><CircleDollarSign size={18} /> {profile.international ? "Review tuition payment options" : "Learn about Education Line of Credit"}</a>
+          <a className="secondary-button" href={profile.international ? cibcLinks.internationalStudentPay : cibcLinks.educationLineOfCredit} target="_blank" rel="noreferrer"><CircleDollarSign size={18} /> {profile.international ? "Review tuition payment options" : "Review advisor discussion option"}</a>
         </div>
         <CampusCompanionTeaser onEnable={openCompanion} />
       </div>
@@ -1261,8 +1261,8 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
 }
 
 function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>) {
-  const borrowingStrategy = calculateBorrowingStrategy(profile, funding);
-  const position = calculateFinancialPosition(profile, funding, budget, borrowingStrategy);
+  const fundingStrategy = calculateFundingStrategy(profile, funding);
+  const position = calculateFinancialPosition(profile, funding, budget, fundingStrategy);
   if (profile.international) {
     return [
       "AI Advisor Brief",
@@ -1282,7 +1282,7 @@ function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof cal
       `Confirmed funding: ${formatCurrency(position.confirmedFunding)}`,
       `Arrival funding gap: ${formatCurrency(funding.gap)}`,
       `Timing gap before arrival: ${formatCurrency(position.timingGap)}`,
-      `Borrow-only-if-needed estimate: ${position.borrowingLow > 0 ? `${formatCurrency(position.borrowingLow)}-${formatCurrency(position.borrowingHigh)}` : "$0"}`,
+      `Funding option discussion estimate: ${position.discussionLow > 0 ? `${formatCurrency(position.discussionLow)}-${formatCurrency(position.discussionHigh)}` : "$0"}`,
       `GIC / proof-of-funds status: ${profile.gicStatus}`,
       `Study permit: ${profile.studyPermitStatus}`,
       `First-month result: ${budgetLabel(budget.surplus)}`,
@@ -1297,7 +1297,7 @@ function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof cal
       "- How should I prepare my GIC or proof-of-funds?",
       "- What is the safest way to pay tuition from overseas?",
       "- How much money should I have accessible when I land?",
-      "- Should I adjust payment timing before considering borrowing?",
+      "- Should I adjust payment timing before considering additional financing?",
       "- What should I do first after arriving in Canada?",
       "- How can I start building Canadian credit safely?",
       "- What alerts or automatic payments should I set up?",
@@ -1322,7 +1322,7 @@ function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof cal
     `Confirmed funding: ${formatCurrency(position.confirmedFunding)}`,
     `Funding gap: ${formatCurrency(funding.gap)}`,
     `Timing gap before September: ${formatCurrency(position.timingGap)}`,
-    `Borrow-only-if-needed estimate: ${position.borrowingLow > 0 ? `${formatCurrency(position.borrowingLow)}-${formatCurrency(position.borrowingHigh)}` : "$0"}`,
+    `Funding option discussion estimate: ${position.discussionLow > 0 ? `${formatCurrency(position.discussionLow)}-${formatCurrency(position.discussionHigh)}` : "$0"}`,
     `First-month result: ${budgetLabel(budget.surplus)}`,
     `OSAP: ${profile.international ? "Not applicable" : profile.osapStatus}`,
     `Student account: ${profile.hasCibcAccount ? "Opened" : "Not yet opened"}`,
@@ -1336,8 +1336,8 @@ function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof cal
     "- Should I open a CIBC student account before tuition payment deadlines?",
     "- How should I separate tuition money, rent money, and everyday spending?",
     "- How should I cover the temporary timing gap before OSAP arrives?",
-    "- Should I adjust payment timing before considering borrowing?",
-    "- What is the smallest amount worth discussing if a line of credit is needed?",
+    "- Should I adjust payment timing before considering additional financing?",
+    "- What funding option should I discuss if a gap still remains?",
     "- Which student credit card option is appropriate if I want to build credit safely?",
     "- What alerts or automatic payments should I set up before school starts?",
     "- What should I prepare if OSAP or family support arrives later than expected?",
@@ -1348,8 +1348,8 @@ function createAdvisorBriefText(profile: Profile, funding: ReturnType<typeof cal
 }
 
 function AdvisorBrief({ profile, funding, budget, resources: advisorResources, copied, onCopy, onDownload }: { profile: Profile; funding: ReturnType<typeof calculateFunding>; budget: ReturnType<typeof calculateBudget>; resources: ResourceCard[]; copied: boolean; onCopy: () => void; onDownload: () => void }) {
-  const borrowingStrategy = calculateBorrowingStrategy(profile, funding);
-  const position = calculateFinancialPosition(profile, funding, budget, borrowingStrategy);
+  const fundingStrategy = calculateFundingStrategy(profile, funding);
+  const position = calculateFinancialPosition(profile, funding, budget, fundingStrategy);
   const situation = profile.international
     ? [
         ["University", profile.university],
@@ -1362,7 +1362,7 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
         ["Confirmed funding", formatCurrency(position.confirmedFunding)],
         ["Arrival funding gap", formatCurrency(funding.gap)],
         ["Timing gap", formatCurrency(position.timingGap)],
-        ["Borrow-if-needed estimate", position.borrowingLow > 0 ? `${formatCurrency(position.borrowingLow)}-${formatCurrency(position.borrowingHigh)}` : "$0"],
+        ["Funding option discussion estimate", position.discussionLow > 0 ? `${formatCurrency(position.discussionLow)}-${formatCurrency(position.discussionHigh)}` : "$0"],
         ["GIC / proof of funds", profile.gicStatus],
         ["Study permit", profile.studyPermitStatus],
         ["Canadian bank account", profile.hasCibcAccount ? "Opened" : "Not yet"],
@@ -1378,7 +1378,7 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
         ["Confirmed funding", formatCurrency(position.confirmedFunding)],
         ["Funding gap", formatCurrency(funding.gap)],
         ["Timing gap", formatCurrency(position.timingGap)],
-        ["Borrow-if-needed estimate", position.borrowingLow > 0 ? `${formatCurrency(position.borrowingLow)}-${formatCurrency(position.borrowingHigh)}` : "$0"],
+        ["Funding option discussion estimate", position.discussionLow > 0 ? `${formatCurrency(position.discussionLow)}-${formatCurrency(position.discussionHigh)}` : "$0"],
         ["First-month result", budgetLabel(budget.surplus)],
         ["OSAP", profile.osapStatus],
         ["Student account", profile.hasCibcAccount ? "Opened" : "Not yet opened"],
@@ -1391,7 +1391,7 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
         "How should I prepare my GIC or proof-of-funds?",
         "What is the safest way to pay tuition from overseas?",
         "How much money should I have accessible when I land?",
-        "Should I adjust payment timing before considering borrowing?",
+        "Should I adjust payment timing before considering additional financing?",
         "What should I do first after arriving in Canada?",
         "How can I start building Canadian credit safely?",
         "What alerts or automatic payments should I set up?"
@@ -1400,8 +1400,8 @@ function AdvisorBrief({ profile, funding, budget, resources: advisorResources, c
         "Should I open a CIBC student account before tuition payment deadlines?",
         "How should I separate tuition money, rent money, and everyday spending?",
         "How should I cover the temporary timing gap before OSAP arrives?",
-        "Should I adjust payment timing before considering borrowing?",
-        "What is the smallest amount worth discussing if a line of credit is needed?",
+        "Should I adjust payment timing before considering additional financing?",
+        "What funding option should I discuss if a gap still remains?",
         "Which student credit card option is appropriate if I want to build credit safely?",
         "What alerts or automatic payments should I set up before school starts?",
         "What should I prepare if OSAP or family support arrives later than expected?"
@@ -2027,7 +2027,7 @@ function ProductFitGrid({ resources: cards, isInternational }: { resources: Reso
       <div className="product-fit-head">
         <span>Matched CIBC resources</span>
         <strong>{isInternational ? "Ranked for international arrival needs" : "Ranked for this funding position"}</strong>
-        <p>{isInternational ? "Student account and pre-arrival setup come first. Credit cards come later, after banking and cash access are clear." : "Education Line of Credit appears only when a real gap remains after confirmed funding, timing, and delayable costs."}</p>
+        <p>{isInternational ? "Student account and pre-arrival setup come first. Credit cards come later, after banking and cash access are clear." : "Advisor discussion options appear only when a real gap remains after confirmed funding, timing, and delayable costs."}</p>
       </div>
       <div className="resource-grid compact v2-resource-grid product-fit-grid">
         {cards.map((resource, index) => {
