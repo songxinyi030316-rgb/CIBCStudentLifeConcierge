@@ -1506,48 +1506,66 @@ function CampusCompanionTeaser({ onEnable }: { onEnable: () => void }) {
 }
 
 function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: ReturnType<typeof calculateBudget>; onBack: () => void }) {
-  const [checkIn, setCheckIn] = useState<string | null>(null);
-  const checkInResponses: Record<string, string> = {
-    well: "Great. Keep the routine simple: confirm tuition timing, pay statements on time, and review your budget once a month.",
-    tight: "Let's update your monthly budget together and look for one spending category to reduce first.",
-    expense: "Let's protect your emergency buffer and decide what can wait until next month."
+  const [missionComplete, setMissionComplete] = useState(false);
+  const [chatChoice, setChatChoice] = useState<string | null>(null);
+  const [reflection, setReflection] = useState<string | null>(null);
+  const [completedActions, setCompletedActions] = useState<string[]>([]);
+  const habitIndex = Math.abs(profile.university.length + profile.program.length) % 4;
+  const habits = [
+    "Don't mix tuition money with everyday spending.",
+    "Pay your statement balance, not only the minimum payment.",
+    "Keep credit utilization under 30%.",
+    "Review your budget once a week."
+  ];
+  const todayTask = profile.international ? "Confirm your tuition payment method" : "Confirm your tuition payment method";
+  const chatResponses: Record<string, { body: string; actions: string[] }> = {
+    well: {
+      body: "Good. Keep today simple: finish the tuition payment method check, then leave the rest for the next check-in.",
+      actions: ["View checklist", "Mark today's mission complete", "See milestones"]
+    },
+    tight: {
+      body: "Let's update your monthly budget together and find one cost that can move later.",
+      actions: ["Review budget", "Compare another scenario", "Prepare advisor questions"]
+    },
+    expense: {
+      body: "I remember your emergency buffer was smaller than recommended. Let's protect the semester before changing anything else.",
+      actions: ["Review budget", "Compare another scenario", "Prepare questions for your advisor"]
+    },
+    question: {
+      body: "You can ask about funding timing, move-in costs, credit habits, or what to bring to a CIBC conversation.",
+      actions: ["Funding timing", "Credit basics", "Advisor brief"]
+    }
   };
-  const timeline = [
-    ["Today", "Financial plan completed.", true],
-    [profile.international ? "August" : "September", profile.international ? "Arrival date and tuition payment check." : "Tuition payment reminder.", false],
-    ["Late September", profile.international ? "First credit routine setup." : "First credit card statement.", false],
-    ["October", "First month budget review.", false],
-    ["November", "Emergency fund check.", false],
-    ["December", "Prepare for next semester.", false]
+  const reflectionResponses: Record<string, string> = {
+    confident: "You've completed most of your plan. Keep momentum by closing one small task today.",
+    okay: "That's normal. Let's keep the next step small and review only the highest-priority item.",
+    stressed: "Let's slow it down. Start with cash timing, then decide what needs an advisor conversation."
+  };
+  const actionCards: [string, ElementType, string, string[]][] = profile.international
+    ? [
+        ["tuition", ReceiptText, "Confirm tuition payment method", ["View checklist", "Mark complete", "Remind me later"]],
+        ["gic", PiggyBank, "Check whether your GIC setup is complete", ["Learn why", "Already done"]],
+        ["cash", WalletCards, "Prepare first-month cash before landing", ["View cash plan", "Remind me later"]],
+        ["insurance", Home, "Review tenant insurance before signing", ["Learn why", "Already done"]]
+      ]
+    : [
+        ["tuition", ReceiptText, "Tuition due in 6 days", ["View checklist", "Mark complete", "Remind me later"]],
+        ["insurance", Home, "Tenant insurance", ["Learn why", "Already done"]],
+        ["credit", CreditCard, "First credit statement may arrive this month", ["View routine", "Mark complete"]],
+        ["transit", Train, "Student transit pass registration", ["Check details", "Remind me later"]]
+      ];
+  const milestones = [
+    ["Admission offer", true],
+    ["Funding plan", true],
+    ["Student account", profile.hasCibcAccount],
+    ["Tuition paid", completedActions.includes("tuition")],
+    ["First credit card payment", false],
+    ["Emergency fund", profile.emergencyBuffer >= 500],
+    ["First semester complete", false]
   ] as const;
-  const inboxItems: [ElementType, string][] = profile.international
-    ? [
-        [CalendarDays, "Your arrival date is coming up."],
-        [ReceiptText, "Confirm your tuition payment method."],
-        [PiggyBank, "Check whether your GIC setup is complete."],
-        [WalletCards, "Prepare first-month cash before landing."],
-        [Home, "Review tenant insurance before signing."]
-      ]
-    : [
-        [BookOpen, "Tuition deadline is coming next week."],
-        [CreditCard, "Your first statement may arrive this month."],
-        [Home, "Have you finished your tenant insurance?"],
-        [Train, "Student transit pass registration is now available."],
-        [CalendarDays, "Winter semester planning starts next month."]
-      ];
-  const companionCards: [ElementType, string][] = profile.international
-    ? [
-        [ReceiptText, "Confirm your tuition payment method before sending money from overseas."],
-        [PiggyBank, "Check whether your GIC/proof-of-funds setup is complete."],
-        [WalletCards, "Keep first-month cash accessible when you land."],
-        [CreditCard, "Set a reminder for your first credit card payment."]
-      ]
-    : [
-        [ReceiptText, "Tuition payment is due in 6 days. Review your funding plan."],
-        [CreditCard, "Your first credit statement may arrive this month. Pay the statement balance before the due date."],
-        [PiggyBank, `Your emergency buffer goal is ${formatCurrency(profile.emergencyBuffer)}. You currently have ${formatCurrency(Math.max(0, profile.emergencyBuffer - 80))}.`],
-        [BarChart3, budget.surplus < 0 ? "Food spending may be tighter than expected. Review your first-month budget." : "Your first-month budget is on track. Keep checking it monthly."]
-      ];
+  const toggleAction = (id: string) => {
+    setCompletedActions((current) => (current.includes(id) ? current : [...current, id]));
+  };
   return (
     <section className="campus-companion page" aria-label="Campus Companion">
       <button className="ghost-button companion-back" onClick={onBack}><ArrowLeft size={18} /> Back to money plan</button>
@@ -1556,64 +1574,107 @@ function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: 
         <div>
           <span>Campus Companion</span>
           <h1>Campus Companion</h1>
-          <p>Your first-semester financial check-ins, after the plan is built.</p>
+          <p>Planning ends. Guidance continues.</p>
         </div>
       </div>
 
-      <div className="companion-grid">
-        <div className="companion-panel whats-next">
-          <span className="section-kicker">What's Next Timeline</span>
-          <div className="semester-timeline">
-            {timeline.map(([label, body, done]) => (
-              <div key={label} className={done ? "done" : ""}>
-                <i>{done ? <Check size={13} /> : null}</i>
-                <strong>{label}</strong>
-                <p>{body}</p>
-              </div>
-            ))}
+      <div className="today-focus-card">
+        <AIOrb compact />
+        <div>
+          <span>Today's Focus</span>
+          <h2>Hi {profile.name}. You're about 3 weeks away from move-in.</h2>
+          <p>Today I only want you to focus on one thing.</p>
+          <strong>{todayTask}.</strong>
+          <small>Estimated time: 5 minutes</small>
+          <button className="primary-button" onClick={() => setMissionComplete(true)}><Check size={18} /> Start today's task</button>
+        </div>
+      </div>
+
+      <div className="companion-flow-grid">
+        <div className="companion-panel mission-card">
+          <span className="section-kicker">Today's Mission</span>
+          <strong>Complete tuition payment setup</strong>
+          <p><b>Why it matters:</b> Your tuition deadline is next week.</p>
+          <p><b>Estimated time:</b> 5 minutes</p>
+          <div className={missionComplete ? "mission-status complete" : "mission-status"}>
+            {missionComplete ? <Check size={16} /> : <CalendarDays size={16} />}
+            <span>{missionComplete ? "Mission completed. +5 Readiness" : "Status: Not started"}</span>
           </div>
+          <button className={missionComplete ? "secondary-button" : "primary-button"} onClick={() => setMissionComplete(true)}>
+            {missionComplete ? "Completed" : "Complete task"}
+          </button>
         </div>
 
-        <div className="companion-panel checkin-panel">
-          <span className="section-kicker">Monthly Check-in</span>
-          <div className="checkin-card">
+        <div className="companion-panel scripted-ai-card">
+          <span className="section-kicker">Ask CampusGo</span>
+          <div className="scripted-chat">
             <AIOrb compact />
             <div>
               <strong>Hi {profile.name}. How has your first month been?</strong>
-              <div className="checkin-actions">
-                <button onClick={() => setCheckIn("well")}>Everything is going well</button>
-                <button onClick={() => setCheckIn("tight")}>Money is tighter than expected</button>
-                <button onClick={() => setCheckIn("expense")}>I had an unexpected expense</button>
+              <div className="companion-choice-row">
+                <button onClick={() => setChatChoice("well")}>Everything is going well</button>
+                <button onClick={() => setChatChoice("tight")}>Money is tighter than expected</button>
+                <button onClick={() => setChatChoice("expense")}>I had an unexpected expense</button>
+                <button onClick={() => setChatChoice("question")}>I have another question</button>
               </div>
-              {checkIn && (
-                <div className="checkin-response">
-                  <p>{checkInResponses[checkIn]}</p>
-                  <button>Update Budget</button>
+              {chatChoice && (
+                <div className="scripted-response">
+                  <p>{chatResponses[chatChoice].body}</p>
+                  <div>
+                    {chatResponses[chatChoice].actions.map((action) => <button key={action}>{action}</button>)}
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div className="companion-panel campus-inbox">
-          <span className="section-kicker">CampusGo Inbox</span>
-          {inboxItems.map(([Icon, text]) => (
-            <div key={text}>
+        <div className="companion-panel action-card-list">
+          <span className="section-kicker">Action Cards</span>
+          {actionCards.map(([id, Icon, text, actions]) => (
+            <div key={id} className={completedActions.includes(id) ? "done" : ""}>
               <Icon size={17} />
-              <p>{text}</p>
+              <div>
+                <strong>{text}</strong>
+                <div>
+                  {actions.map((action) => (
+                    <button key={action} onClick={() => action.includes("complete") || action.includes("done") ? toggleAction(id) : undefined}>{action}</button>
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
 
-        <div className="companion-panel companion-cards">
-          <span className="section-kicker">AI Companion Cards</span>
-          <div>
-            {companionCards.map(([Icon, text]) => (
-              <article key={text}>
-                <Icon size={17} />
-                <p>{text}</p>
-              </article>
+        <div className="companion-panel milestone-panel">
+          <span className="section-kicker">Student Milestones</span>
+          <div className="milestone-list">
+            {milestones.map(([label, done]) => (
+              <div key={label} className={done ? "complete" : ""}>
+                <span>{done ? <Check size={13} /> : null}</span>
+                <p>{label}</p>
+              </div>
             ))}
+          </div>
+        </div>
+
+        <div className="companion-panel habit-reflection-grid">
+          <div className="daily-habit-card">
+            <Sparkles size={18} />
+            <div>
+              <span className="section-kicker">Today's Financial Habit</span>
+              <p>{habits[habitIndex]}</p>
+            </div>
+          </div>
+          <div className="weekly-reflection-card">
+            <span className="section-kicker">Weekly Reflection</span>
+            <strong>How do you feel about your finances this week?</strong>
+            <div className="companion-choice-row">
+              <button onClick={() => setReflection("confident")}>Confident</button>
+              <button onClick={() => setReflection("okay")}>Okay</button>
+              <button onClick={() => setReflection("stressed")}>Stressed</button>
+            </div>
+            {reflection && <p>{reflectionResponses[reflection]}</p>}
           </div>
         </div>
       </div>
@@ -1623,6 +1684,9 @@ function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: 
         <div>
           <strong>CampusGo starts before university. Campus Companion continues through the first semester.</strong>
           <p>Reminder, check-in, and milestone support only. No transaction monitoring.</p>
+          <span>After your first semester...</span>
+          <p>CampusGo can continue helping with internship, first job, first apartment, first car, and first home decisions.</p>
+          <button>Explore future journeys</button>
         </div>
       </div>
     </section>

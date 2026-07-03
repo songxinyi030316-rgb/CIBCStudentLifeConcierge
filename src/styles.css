@@ -1829,7 +1829,56 @@ input[type="range"] {
   line-height: 1.45;
 }
 
-.companion-grid {
+.today-focus-card {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  border: 1px solid rgba(143, 0, 52, 0.13);
+  border-radius: 8px;
+  padding: clamp(18px, 3vw, 24px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 246, 243, 0.84));
+  box-shadow: var(--shadow-soft);
+}
+
+.today-focus-card span,
+.mission-card .section-kicker,
+.scripted-ai-card .section-kicker,
+.action-card-list .section-kicker,
+.milestone-panel .section-kicker,
+.daily-habit-card .section-kicker,
+.weekly-reflection-card .section-kicker {
+  color: var(--burgundy);
+}
+
+.today-focus-card h2 {
+  margin: 0 0 6px;
+  font-size: clamp(28px, 3.8vw, 46px);
+  line-height: 1.08;
+}
+
+.today-focus-card p,
+.today-focus-card small {
+  display: block;
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.today-focus-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.18;
+}
+
+.today-focus-card .primary-button {
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.companion-flow-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.75fr);
   gap: 12px;
@@ -1843,6 +1892,44 @@ input[type="range"] {
   border-radius: 8px;
   padding: 14px;
   background: rgba(255, 255, 255, 0.72);
+}
+
+.mission-card {
+  align-content: start;
+}
+
+.mission-card > strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.18;
+}
+
+.mission-card b {
+  color: var(--ink);
+}
+
+.mission-card .primary-button,
+.mission-card .secondary-button {
+  width: fit-content;
+  min-height: 42px;
+}
+
+.mission-status {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(143, 0, 52, 0.13);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: var(--burgundy);
+  background: var(--cream-2);
+  font-weight: 900;
+}
+
+.mission-status.complete {
+  color: var(--teal);
+  background: var(--mint);
 }
 
 .whats-next {
@@ -1902,9 +1989,13 @@ input[type="range"] {
 }
 
 .checkin-card,
+.scripted-chat,
 .campus-inbox div,
+.action-card-list > div,
 .milestone-list div,
 .reflection-panel div,
+.daily-habit-card,
+.weekly-reflection-card,
 .daily-examples article,
 .companion-cards article,
 .companion-ending {
@@ -1913,14 +2004,16 @@ input[type="range"] {
   background: var(--cream-2);
 }
 
-.checkin-card {
+.checkin-card,
+.scripted-chat {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr);
   gap: 12px;
   padding: 12px;
 }
 
-.checkin-actions {
+.checkin-actions,
+.companion-choice-row {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -1928,7 +2021,11 @@ input[type="range"] {
 }
 
 .checkin-actions button,
-.checkin-response button {
+.checkin-response button,
+.companion-choice-row button,
+.scripted-response button,
+.action-card-list button,
+.companion-ending button {
   border: 1px solid rgba(143, 0, 52, 0.18);
   border-radius: 999px;
   padding: 8px 10px;
@@ -1938,7 +2035,8 @@ input[type="range"] {
   font-weight: 900;
 }
 
-.checkin-response {
+.checkin-response,
+.scripted-response {
   display: grid;
   gap: 9px;
   margin-top: 12px;
@@ -1946,12 +2044,20 @@ input[type="range"] {
   padding-left: 10px;
 }
 
-.checkin-response button {
+.checkin-response button,
+.scripted-response button {
   width: fit-content;
   background: var(--gold-soft);
 }
 
+.scripted-response > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
 .campus-inbox div,
+.action-card-list > div,
 .daily-examples article,
 .companion-cards article {
   display: grid;
@@ -1961,10 +2067,29 @@ input[type="range"] {
   padding: 10px;
 }
 
+.action-card-list > div.done {
+  background: var(--mint);
+}
+
+.action-card-list strong {
+  display: block;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.action-card-list > div > div > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 8px;
+}
+
 .campus-inbox svg,
+.action-card-list svg,
 .daily-examples svg,
 .companion-cards svg,
-.reflection-panel svg {
+.reflection-panel svg,
+.daily-habit-card svg {
   color: var(--gold);
 }
 
@@ -1998,8 +2123,47 @@ input[type="range"] {
 .milestone-list p,
 .daily-examples p,
 .companion-cards p,
-.campus-inbox p {
+.campus-inbox p,
+.action-card-list p {
   font-size: 13px;
+}
+
+.habit-reflection-grid {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.daily-habit-card {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 14px;
+  background: rgba(223, 240, 232, 0.72);
+}
+
+.daily-habit-card p {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 850;
+}
+
+.weekly-reflection-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.weekly-reflection-card > strong {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.weekly-reflection-card p {
+  border-left: 3px solid var(--gold);
+  padding-left: 10px;
 }
 
 .reflection-panel > strong {
@@ -2059,6 +2223,14 @@ input[type="range"] {
   margin-top: 10px;
   font-size: 13px;
   font-weight: 950;
+}
+
+.companion-ending button {
+  width: fit-content;
+  margin-top: 12px;
+  border-color: rgba(255, 255, 255, 0.28);
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .summary-item {
@@ -3427,6 +3599,9 @@ details > * + * {
   .ai-insight-card,
   .brief-grid,
   .companion-grid,
+  .companion-flow-grid,
+  .habit-reflection-grid,
+  .today-focus-card,
   .companion-teaser {
     grid-template-columns: 1fr;
   }
