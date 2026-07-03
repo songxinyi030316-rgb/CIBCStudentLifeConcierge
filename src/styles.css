@@ -60,8 +60,14 @@ a {
   padding: 22px clamp(16px, 3vw, 44px) 46px;
 }
 
+.journey-page-frame {
+  animation: page-transition 330ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: 50% 16px;
+  will-change: opacity, transform;
+}
+
 .page {
-  animation: rise-in 420ms ease both;
+  animation: rise-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .topbar {
@@ -153,7 +159,7 @@ a {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--burgundy), var(--gold));
-  transition: width 260ms ease;
+  transition: width 460ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .progress-steps {
@@ -190,6 +196,7 @@ a {
   padding: 8px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 250, 242, 0.66));
   box-shadow: 0 8px 22px rgba(71, 24, 34, 0.045);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
 }
 
 .timeline-steps div.current {
@@ -211,6 +218,7 @@ a {
 .timeline-steps div.done span {
   color: white;
   background: var(--burgundy);
+  animation: check-pop 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .timeline-steps strong {
@@ -297,7 +305,8 @@ p {
   padding: 0 18px;
   font-weight: 900;
   line-height: 1.15;
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  will-change: transform;
 }
 
 .primary-button {
@@ -320,7 +329,7 @@ p {
 .primary-button:hover,
 .secondary-button:hover,
 .ghost-button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.01);
   border-color: rgba(143, 0, 52, 0.26);
   box-shadow: var(--shadow-lift);
 }
@@ -328,7 +337,7 @@ p {
 .primary-button:active,
 .secondary-button:active,
 .ghost-button:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.985);
 }
 
 button:focus-visible,
@@ -607,7 +616,7 @@ summary:focus-visible {
   place-items: center;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.82);
-  animation: ai-float 4.8s ease-in-out infinite;
+  animation: ai-float 4.8s ease-in-out infinite, ai-breathe 5.6s ease-in-out infinite;
 }
 
 .ai-orb::before {
@@ -648,6 +657,7 @@ summary:focus-visible {
   height: 20px;
   border-radius: 999px;
   background: transparent;
+  animation: ai-face-tilt 6.8s ease-in-out infinite;
 }
 
 .ai-orb.compact .ai-orb-face {
@@ -663,6 +673,7 @@ summary:focus-visible {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+  animation: ai-blink 6.5s ease-in-out infinite;
 }
 
 .ai-orb-face b {
@@ -693,6 +704,7 @@ summary:focus-visible {
 .thinking-moment .ai-orb {
   width: 30px;
   height: 30px;
+  animation: ai-think-tilt 850ms ease-in-out infinite;
 }
 
 .thinking-moment .ai-orb-face {
@@ -1041,6 +1053,61 @@ summary:focus-visible {
   gap: 18px;
 }
 
+.v2-decision .flow-heading > *,
+.v2-decision .flow-content > *,
+.v2-decision .ai-insight-card,
+.v2-decision .flow-actions {
+  animation: card-build 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.v2-decision .flow-heading > :nth-child(1) {
+  animation-delay: 20ms;
+}
+
+.v2-decision .flow-heading > :nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.v2-decision .flow-heading > :nth-child(3) {
+  animation-delay: 125ms;
+}
+
+.v2-decision .flow-heading > :nth-child(4) {
+  animation-delay: 170ms;
+}
+
+.v2-decision .flow-content > * {
+  animation-delay: 205ms;
+}
+
+.v2-decision .flow-content .single-visual > * {
+  animation: card-build 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.v2-decision .flow-content .single-visual > :nth-child(1) {
+  animation-delay: 240ms;
+}
+
+.v2-decision .flow-content .single-visual > :nth-child(2) {
+  animation-delay: 310ms;
+}
+
+.v2-decision .flow-content .single-visual > :nth-child(3) {
+  animation-delay: 380ms;
+}
+
+.v2-decision .flow-content .single-visual > :nth-child(4) {
+  animation-delay: 450ms;
+}
+
+.v2-decision .ai-insight-card {
+  animation-delay: 500ms;
+}
+
+.v2-decision .flow-actions {
+  animation-delay: 560ms;
+}
+
 .transition-note {
   display: flex;
   gap: 10px;
@@ -1213,7 +1280,16 @@ summary:focus-visible {
   color: var(--ink);
   background: rgba(255, 255, 255, 0.72);
   font-weight: 900;
-  transition: 180ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.choice:hover,
+.option:hover,
+.transport:hover,
+.scenario-grid button:hover,
+.toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(71, 24, 34, 0.08);
 }
 
 .choice {
@@ -1229,6 +1305,7 @@ summary:focus-visible {
   color: var(--burgundy);
   background: var(--burgundy-soft);
   box-shadow: 0 8px 18px rgba(87, 0, 31, 0.08);
+  animation: selected-settle 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .choice:disabled {
@@ -1403,6 +1480,8 @@ input[type="range"] {
   display: block;
   height: 100%;
   border-radius: inherit;
+  transform-origin: left center;
+  animation: bar-grow 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .stack-line.need b {
@@ -1718,14 +1797,18 @@ input[type="range"] {
   width: 100%;
   border-radius: 8px 8px 3px 3px;
   background: linear-gradient(180deg, #a0003b, var(--burgundy-deep));
+  transform-origin: bottom center;
+  animation: bar-rise 760ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .waterfall-bar.positive i {
   background: linear-gradient(180deg, #46787d, var(--teal));
+  animation-delay: 80ms;
 }
 
 .waterfall-bar.buffer i {
   background: linear-gradient(180deg, #d5ad59, var(--gold));
+  animation-delay: 220ms;
 }
 
 .waterfall-bar span {
@@ -2842,6 +2925,7 @@ input[type="range"] {
   color: var(--burgundy);
   border-color: rgba(143, 0, 52, 0.22);
   background: var(--gold-soft);
+  animation: check-pop 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .future-reminder {
@@ -3076,6 +3160,8 @@ input[type="range"] {
   display: block;
   height: 100%;
   border-radius: inherit;
+  transform-origin: left center;
+  animation: bar-grow 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .money-map-line.need b,
@@ -3260,16 +3346,22 @@ input[type="range"] {
   fill: none;
   stroke: rgba(87, 0, 31, 0.14);
   stroke-width: 1;
+  animation: radar-line-in 620ms ease both;
 }
 
 .radar-chart .radar-fill {
   fill: rgba(143, 0, 52, 0.16);
   stroke: var(--burgundy);
   stroke-width: 3;
+  opacity: 0;
+  transform-origin: center;
+  animation: radar-fill-in 760ms 180ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .radar-chart circle {
   fill: var(--burgundy);
+  opacity: 0;
+  animation: check-pop 360ms 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .radar-chart text {
@@ -4152,6 +4244,7 @@ input[type="range"] {
   background: var(--burgundy);
   color: var(--white);
   box-shadow: 0 10px 22px rgba(143, 0, 52, 0.16);
+  animation: selected-settle 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .gap-hero {
@@ -4361,6 +4454,8 @@ input[type="range"] {
   display: block;
   height: 100%;
   border-radius: inherit;
+  transform-origin: left center;
+  animation: bar-grow 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .mini-money-row.in b,
@@ -4619,12 +4714,142 @@ details > * + * {
   }
 }
 
+@keyframes page-transition {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes card-build {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes selected-settle {
+  0% {
+    transform: scale(0.985);
+  }
+  60% {
+    transform: scale(1.018);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes check-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.74);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes bar-rise {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes radar-line-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+    transform-origin: center;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    transform-origin: center;
+  }
+}
+
+@keyframes radar-fill-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes ai-float {
   0%, 100% {
     transform: translateY(0);
   }
   50% {
     transform: translateY(-3px);
+  }
+}
+
+@keyframes ai-breathe {
+  0%, 100% {
+    filter: saturate(1) brightness(1);
+  }
+  50% {
+    filter: saturate(1.08) brightness(1.035);
+  }
+}
+
+@keyframes ai-face-tilt {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  45% {
+    transform: rotate(-2deg) translateY(1px);
+  }
+  70% {
+    transform: rotate(1.4deg) translateY(0);
+  }
+}
+
+@keyframes ai-blink {
+  0%, 92%, 100% {
+    transform: scaleY(1);
+  }
+  94%, 96% {
+    transform: scaleY(0.15);
+  }
+}
+
+@keyframes ai-think-tilt {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-1px) rotate(-3deg);
   }
 }
 
@@ -4662,6 +4887,17 @@ details > * + * {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
   }
 }
 

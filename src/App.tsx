@@ -34,7 +34,7 @@ import {
   WalletCards,
   X
 } from "lucide-react";
-import { type ElementType, type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ElementType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import heroImage from "../assets/generated/student-life-coach-hero.png";
 
 type StepId = "landing" | "offer" | "scan" | "city" | "funding" | "housing" | "credit" | "budget" | "score" | "summary";
@@ -499,6 +499,49 @@ function formatCurrency(value: number) {
     currency: "CAD",
     maximumFractionDigits: 0
   }).format(value);
+}
+
+function useAnimatedValue(value: number, duration = 720) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const previousValue = useRef(value);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDisplayValue(value);
+      previousValue.current = value;
+      return;
+    }
+    const startValue = previousValue.current;
+    const change = value - startValue;
+    const start = window.performance.now();
+    let frame = 0;
+
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(startValue + change * eased);
+      if (progress < 1) {
+        frame = window.requestAnimationFrame(tick);
+      } else {
+        previousValue.current = value;
+      }
+    };
+
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [duration, value]);
+
+  return displayValue;
+}
+
+function AnimatedCurrency({ value }: { value: number }) {
+  const displayValue = useAnimatedValue(value);
+  return <>{formatCurrency(Math.round(displayValue))}</>;
+}
+
+function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const displayValue = useAnimatedValue(value);
+  return <>{Math.round(displayValue)}{suffix}</>;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -1035,16 +1078,18 @@ function App() {
         </header>
       )}
 
-      {step === "landing" && <LandingScreen next={next} />}
-      {step === "offer" && <OfferScreen next={next} back={back} offerName={offerName} setOfferName={setOfferName} updateProfile={updateProfile} profile={profile} />}
-      {step === "scan" && <ScanScreen next={next} back={back} profile={profile} offerName={offerName} />}
-      {step === "city" && <CityInsightScreen profile={profile} next={applyCityContext} back={back} />}
-      {step === "funding" && <FundingScreen profile={profile} updateProfile={updateProfile} funding={funding} next={next} back={back} />}
-      {step === "housing" && <HousingScreen profile={profile} updateProfile={updateProfile} budget={budget} next={next} back={back} />}
-      {step === "credit" && <CreditScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
-      {step === "budget" && <BudgetScreen profile={profile} updateProfile={updateProfile} budget={budget} scenarioNote={scenarioNote} applyScenario={applyScenario} next={next} back={back} />}
-      {step === "score" && <ScoreScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} next={next} back={back} />}
-      {step === "summary" && <SummaryScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} back={back} setStepIndex={setStepIndex} openCompanion={() => setCompanionOpen(true)} />}
+      <div className="journey-page-frame" key={step}>
+        {step === "landing" && <LandingScreen next={next} />}
+        {step === "offer" && <OfferScreen next={next} back={back} offerName={offerName} setOfferName={setOfferName} updateProfile={updateProfile} profile={profile} />}
+        {step === "scan" && <ScanScreen next={next} back={back} profile={profile} offerName={offerName} />}
+        {step === "city" && <CityInsightScreen profile={profile} next={applyCityContext} back={back} />}
+        {step === "funding" && <FundingScreen profile={profile} updateProfile={updateProfile} funding={funding} next={next} back={back} />}
+        {step === "housing" && <HousingScreen profile={profile} updateProfile={updateProfile} budget={budget} next={next} back={back} />}
+        {step === "credit" && <CreditScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
+        {step === "budget" && <BudgetScreen profile={profile} updateProfile={updateProfile} budget={budget} scenarioNote={scenarioNote} applyScenario={applyScenario} next={next} back={back} />}
+        {step === "score" && <ScoreScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} next={next} back={back} />}
+        {step === "summary" && <SummaryScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} back={back} setStepIndex={setStepIndex} openCompanion={() => setCompanionOpen(true)} />}
+      </div>
       <FloatingCampusAssistant step={step} profile={profile} funding={funding} budget={budget} />
     </main>
   );
@@ -1694,22 +1739,22 @@ function FundingPictureCard({ totalNeed, confirmedFunding, difference, timingRis
       <div className="funding-picture-main">
         <div>
           <small>Total need</small>
-          <strong>{formatCurrency(totalNeed)}</strong>
+          <strong><AnimatedCurrency value={totalNeed} /></strong>
         </div>
         <div>
           <small>Confirmed funding</small>
-          <strong>{formatCurrency(confirmedFunding)}</strong>
+          <strong><AnimatedCurrency value={confirmedFunding} /></strong>
         </div>
         <div>
           <small>Current difference</small>
-          <strong>{formatCurrency(difference)}</strong>
+          <strong><AnimatedCurrency value={difference} /></strong>
         </div>
         <div>
           <small>Timing risk</small>
           <strong>{timingRisk}</strong>
         </div>
       </div>
-      <p>{timingGap > 0 ? `${formatCurrency(timingGap)} may be needed before later funding is available.` : "No timing gap is flagged based on current assumptions."}</p>
+      <p>{timingGap > 0 ? <><AnimatedCurrency value={timingGap} /> may be needed before later funding is available.</> : "No timing gap is flagged based on current assumptions."}</p>
     </section>
   );
 }
@@ -1898,8 +1943,8 @@ function ScoreScreen({ profile, readiness, semesterMoney, funding, budget, next,
       <div className="single-visual score-decision">
         <ReadinessDashboard readiness={readiness} />
         <div className="score-context-grid">
-          <div className="context-tile"><span>Money number</span><strong>{formatCurrency(semesterMoney.totalNeed)}</strong></div>
-          <div className="context-tile"><span>{profile.international ? "Arrival gap" : "Funding gap"}</span><strong>{formatCurrency(funding.gap)}</strong></div>
+          <div className="context-tile"><span>Money number</span><strong><AnimatedCurrency value={semesterMoney.totalNeed} /></strong></div>
+          <div className="context-tile"><span>{profile.international ? "Arrival gap" : "Funding gap"}</span><strong><AnimatedCurrency value={funding.gap} /></strong></div>
           <div className="context-tile"><span>Monthly result</span><strong>{budgetLabel(budget.surplus)}</strong></div>
         </div>
       </div>
@@ -1990,8 +2035,11 @@ function SummaryScreen({ profile, readiness, semesterMoney, funding, budget, bac
         <div className="summary-hero">
           <Gauge size={30} />
           <span>{profile.name} at {profile.university}</span>
-          <strong>{readiness.score}% first-semester ready</strong>
-          <p>{profile.international ? `${formatCurrency(funding.need)} arrival money number. ` : `${formatCurrency(semesterMoney.totalNeed)} estimated money number. `}{profile.international ? funding.gap > 0 ? `${formatCurrency(funding.gap)} arrival funding gap to review.` : "Arrival funding appears covered." : semesterMoney.gap > 0 ? `${formatCurrency(semesterMoney.gap)} still needs a plan.` : `${formatCurrency(Math.abs(semesterMoney.gap))} projected surplus.`}</p>
+          <strong><AnimatedNumber value={readiness.score} suffix="%" /> first-semester ready</strong>
+          <p>
+            {profile.international ? <><AnimatedCurrency value={funding.need} /> arrival money number. </> : <><AnimatedCurrency value={semesterMoney.totalNeed} /> estimated money number. </>}
+            {profile.international ? funding.gap > 0 ? <><AnimatedCurrency value={funding.gap} /> arrival funding gap to review.</> : "Arrival funding appears covered." : semesterMoney.gap > 0 ? <><AnimatedCurrency value={semesterMoney.gap} /> still needs a plan.</> : <><AnimatedCurrency value={Math.abs(semesterMoney.gap)} /> projected surplus.</>}
+          </p>
         </div>
         <div className="plan-section">
           <strong>Questions to ask CIBC</strong>
@@ -2691,7 +2739,7 @@ function MiniMoneyRow({ label, value, max, tone }: { label: string; value: numbe
     <div className={`mini-money-row ${tone}`}>
       <span>{label}</span>
       <i><b style={{ width: `${Math.max(3, (value / Math.max(max, 1)) * 100)}%` }} /></i>
-      <strong>{formatCurrency(value)}</strong>
+      <strong><AnimatedCurrency value={value} /></strong>
     </div>
   );
 }
@@ -2708,15 +2756,15 @@ function FinancialPositionCalculator({ position }: { position: ReturnType<typeof
         </div>
         <div>
           <small>Total first-semester cost</small>
-          <b>{formatCurrency(position.totalCost)}</b>
+          <b><AnimatedCurrency value={position.totalCost} /></b>
         </div>
         <div>
           <small>Total confirmed funding</small>
-          <b>{formatCurrency(position.confirmedFunding)}</b>
+          <b><AnimatedCurrency value={position.confirmedFunding} /></b>
         </div>
         <div className={position.remainingGap > 0 ? "warn" : "ok"}>
           <small>Remaining funding gap</small>
-          <b>{formatCurrency(position.remainingGap)}</b>
+          <b><AnimatedCurrency value={position.remainingGap} /></b>
         </div>
       </div>
       <div className="financial-position-grid">
@@ -2739,19 +2787,19 @@ function TimingGapBar({ position, isInternational }: { position: ReturnType<type
     <section className="timing-gap-card" aria-label="Timing Gap Bar">
       <div className="timing-gap-copy">
         <span>{isInternational ? "Before arrival timing gap" : "Pre-September timing gap"}</span>
-        <strong>{position.timingGap > 0 ? `${formatCurrency(position.timingGap)} temporary timing gap` : "No timing gap flagged"}</strong>
+        <strong>{position.timingGap > 0 ? <><AnimatedCurrency value={position.timingGap} /> temporary timing gap</> : "No timing gap flagged"}</strong>
         <p>{isInternational ? "Your total funding may be close, but tuition, deposits, transfer timing, and arrival costs can happen before all money is accessible." : "Your total funding may be close, but tuition, deposits, and move-in costs can happen before OSAP or later support arrives."}</p>
       </div>
       <div className="timing-bars">
         <div>
           <span>Money needed before September</span>
           <i><b className="need" style={{ width: `${(position.moneyNeededBeforeSeptember / max) * 100}%` }} /></i>
-          <strong>{formatCurrency(position.moneyNeededBeforeSeptember)}</strong>
+          <strong><AnimatedCurrency value={position.moneyNeededBeforeSeptember} /></strong>
         </div>
         <div>
           <span>Money available before September</span>
           <i><b className="available" style={{ width: `${(position.moneyAvailableBeforeSeptember / max) * 100}%` }} /></i>
-          <strong>{formatCurrency(position.moneyAvailableBeforeSeptember)}</strong>
+          <strong><AnimatedCurrency value={position.moneyAvailableBeforeSeptember} /></strong>
         </div>
       </div>
     </section>
@@ -2763,7 +2811,7 @@ function StackLine({ label, value, max, tone }: { label: string; value: number; 
     <div className={`stack-line ${tone}`}>
       <div>
         <span>{label}</span>
-        <strong>{formatCurrency(value)}</strong>
+        <strong><AnimatedCurrency value={value} /></strong>
       </div>
       <i><b style={{ width: `${Math.max(4, (value / max) * 100)}%` }} /></i>
     </div>
@@ -2825,10 +2873,10 @@ function BreakdownCard({ title, items, total }: { title: string; items: [string,
         <div className="breakdown-line" key={label}>
           <span>{label}</span>
           <i><b style={{ width: `${Math.max(5, (value / max) * 100)}%` }} /></i>
-          <strong>{formatCurrency(value)}</strong>
+          <strong><AnimatedCurrency value={value} /></strong>
         </div>
       ))}
-      <div className="total-row"><span>Total monthly cost</span><strong>{formatCurrency(total)}</strong></div>
+      <div className="total-row"><span>Total monthly cost</span><strong><AnimatedCurrency value={total} /></strong></div>
     </div>
   );
 }
@@ -2845,7 +2893,7 @@ function Waterfall({ budget, profile }: { budget: ReturnType<typeof calculateBud
   ];
   return (
     <div className="waterfall-card">
-      <div className="waterfall-top"><span>Cash flow waterfall</span><strong>{formatCurrency(budget.income)} in / {formatCurrency(budget.expenses)} out</strong></div>
+      <div className="waterfall-top"><span>Cash flow waterfall</span><strong><AnimatedCurrency value={budget.income} /> in / <AnimatedCurrency value={budget.expenses} /> out</strong></div>
       <div className="waterfall-bars">
         {bars.map(([label, value, tone]) => (
           <div className={`waterfall-bar ${tone}`} key={label}>
@@ -2863,7 +2911,7 @@ function ReadinessDashboard({ readiness }: { readiness: ReturnType<typeof calcul
   return (
     <div className="readiness-dashboard">
       <div className="score-head">
-        <strong>{readiness.score}%</strong>
+        <strong><AnimatedNumber value={readiness.score} suffix="%" /></strong>
         <div><h2>First Semester Readiness Score</h2><p>This is the reward after finishing the journey: strengths, risk, and next actions.</p></div>
         <span>{status}</span>
       </div>
@@ -2876,7 +2924,7 @@ function ReadinessDashboard({ readiness }: { readiness: ReturnType<typeof calcul
                 <Icon size={18} />
                 <span>{dimension.label}</span>
                 <i><b style={{ width: `${dimension.value}%` }} /></i>
-                <strong>{dimension.value}%</strong>
+                <strong><AnimatedNumber value={dimension.value} suffix="%" /></strong>
               </div>
             );
           })}
