@@ -3260,6 +3260,31 @@ input[type="range"] {
   max-width: 980px;
 }
 
+.action-plan .summary-hero {
+  min-height: 220px;
+  gap: 9px;
+  align-content: center;
+  padding: 20px;
+}
+
+.action-plan .summary-hero svg {
+  width: 24px;
+  height: 24px;
+}
+
+.action-plan .summary-hero span {
+  font-size: 11px;
+}
+
+.action-plan .summary-hero strong {
+  font-size: clamp(26px, 3.2vw, 38px);
+}
+
+.action-plan .summary-hero p {
+  max-width: 680px;
+  font-size: 17px;
+}
+
 .v2-routine {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
