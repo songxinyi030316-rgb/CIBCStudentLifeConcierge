@@ -1507,9 +1507,19 @@ function CampusCompanionTeaser({ onEnable }: { onEnable: () => void }) {
 
 function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: ReturnType<typeof calculateBudget>; onBack: () => void }) {
   const [missionComplete, setMissionComplete] = useState(false);
-  const [chatChoice, setChatChoice] = useState<string | null>(null);
   const [reflection, setReflection] = useState<string | null>(null);
   const [completedActions, setCompletedActions] = useState<string[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ sender: "ai" | "student"; text: string }[]>([
+    { sender: "ai", text: `Hi ${profile.name}. How has your first month been?` },
+    { sender: "student", text: profile.international ? "I think my family transfer may arrive late." : "I think my OSAP may arrive late." },
+    {
+      sender: "ai",
+      text: profile.international
+        ? "I checked your arrival funding timeline. Your tuition and rent deposit may happen before all transferred funds are accessible. Let's reduce that timing gap."
+        : "I checked your current funding timeline. Your tuition deadline happens before your expected OSAP payment. Let's see how we can reduce that timing gap."
+    }
+  ]);
+  const [aiThinking, setAiThinking] = useState(false);
   const habitIndex = Math.abs(profile.university.length + profile.program.length) % 4;
   const habits = [
     "Don't mix tuition money with everyday spending.",
@@ -1518,23 +1528,29 @@ function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: 
     "Review your budget once a week."
   ];
   const todayTask = profile.international ? "Confirm your tuition payment method" : "Confirm your tuition payment method";
-  const chatResponses: Record<string, { body: string; actions: string[] }> = {
-    well: {
-      body: "Good. Keep today simple: finish the tuition payment method check, then leave the rest for the next check-in.",
-      actions: ["View checklist", "Mark today's mission complete", "See milestones"]
-    },
-    tight: {
-      body: "Let's update your monthly budget together and find one cost that can move later.",
-      actions: ["Review budget", "Compare another scenario", "Prepare advisor questions"]
-    },
-    expense: {
-      body: "I remember your emergency buffer was smaller than recommended. Let's protect the semester before changing anything else.",
-      actions: ["Review budget", "Compare another scenario", "Prepare questions for your advisor"]
-    },
-    question: {
-      body: "You can ask about funding timing, move-in costs, credit habits, or what to bring to a CIBC conversation.",
-      actions: ["Funding timing", "Credit basics", "Advisor brief"]
-    }
+  const suggestedReplies = ["Review my funding plan", "Estimate my timing gap", "Prepare advisor questions", "Compare another scenario"];
+  const scriptedChatReplies: Record<string, string> = {
+    "Review my funding plan": "Here is the simplest view: confirmed funding first, timing gap second, advisor questions only if a gap remains after available options.",
+    "Estimate my timing gap": profile.international
+      ? "Your key timing gap is between tuition, rent deposit, and when transferred funds are accessible in Canada. Keep first-month cash separate from tuition funds."
+      : "Your key timing gap is before September: tuition and deposits are due before later funding may arrive. The next step is to confirm payment dates.",
+    "Prepare advisor questions": "Start with timing, not products. Ask what to prepare if funding arrives after tuition or rent deadlines.",
+    "Compare another scenario": "Try one realistic change at a time: delayed funding, higher rent, or first-month spending. Then review whether the plan still works."
+  };
+  const sendScriptedChat = (studentText?: string) => {
+    const fallbackPrompts = [
+      "What should I do first?",
+      "Can you help me with my timing gap?",
+      "What should I ask an advisor?"
+    ];
+    const text = studentText || fallbackPrompts[(chatMessages.length + profile.name.length) % fallbackPrompts.length];
+    const response = scriptedChatReplies[text] || "I would focus on one decision first: confirm the date money is needed, then compare it with when funding is actually available.";
+    setChatMessages((current) => [...current, { sender: "student", text }]);
+    setAiThinking(true);
+    window.setTimeout(() => {
+      setChatMessages((current) => [...current, { sender: "ai", text: response }]);
+      setAiThinking(false);
+    }, 750);
   };
   const reflectionResponses: Record<string, string> = {
     confident: "You've completed most of your plan. Keep momentum by closing one small task today.",
@@ -1607,25 +1623,35 @@ function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: 
 
         <div className="companion-panel scripted-ai-card">
           <span className="section-kicker">Ask CampusGo</span>
-          <div className="scripted-chat">
-            <AIOrb compact />
-            <div>
-              <strong>Hi {profile.name}. How has your first month been?</strong>
-              <div className="companion-choice-row">
-                <button onClick={() => setChatChoice("well")}>Everything is going well</button>
-                <button onClick={() => setChatChoice("tight")}>Money is tighter than expected</button>
-                <button onClick={() => setChatChoice("expense")}>I had an unexpected expense</button>
-                <button onClick={() => setChatChoice("question")}>I have another question</button>
-              </div>
-              {chatChoice && (
-                <div className="scripted-response">
-                  <p>{chatResponses[chatChoice].body}</p>
-                  <div>
-                    {chatResponses[chatChoice].actions.map((action) => <button key={action}>{action}</button>)}
+          <div className="ai-chat-demo">
+            <div className="chat-thread" aria-live="polite">
+              {chatMessages.map((message, index) => (
+                <div key={`${message.sender}-${index}`} className={`chat-bubble-row ${message.sender}`}>
+                  {message.sender === "ai" && <AIOrb compact />}
+                  <div className="chat-bubble">
+                    <span>{message.sender === "ai" ? "CampusGo AI" : profile.name}</span>
+                    <p>{message.text}</p>
+                  </div>
+                </div>
+              ))}
+              {aiThinking && (
+                <div className="chat-bubble-row ai">
+                  <AIOrb compact />
+                  <div className="chat-bubble thinking">
+                    <span>CampusGo is thinking...</span>
+                    <i><b /><b /><b /></i>
                   </div>
                 </div>
               )}
             </div>
+            <div className="suggested-replies">
+              {suggestedReplies.map((reply) => <button key={reply} onClick={() => sendScriptedChat(reply)}>{reply}</button>)}
+            </div>
+            <div className="chat-input-demo">
+              <span>Ask CampusGo...</span>
+              <button onClick={() => sendScriptedChat()}>Send</button>
+            </div>
+            <small>Prototype demo. Future versions can connect to a live AI assistant.</small>
           </div>
         </div>
 
