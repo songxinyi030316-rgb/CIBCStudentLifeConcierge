@@ -21,14 +21,17 @@ import {
   Home,
   KeyRound,
   Landmark,
+  MessageCircle,
   PiggyBank,
   ReceiptText,
+  Send,
   ShieldCheck,
   Sparkles,
   Train,
   TrendingUp,
   Upload,
-  WalletCards
+  WalletCards,
+  X
 } from "lucide-react";
 import { type ElementType, type ReactNode, useEffect, useMemo, useState } from "react";
 import heroImage from "../assets/generated/student-life-coach-hero.png";
@@ -101,6 +104,13 @@ type FutureReminder = {
   title: string;
   body: string;
   icon: ElementType;
+};
+
+type AssistantMessage = {
+  id: number;
+  role: "ai" | "student" | "typing";
+  text: string;
+  resources?: ResourceCard[];
 };
 
 const cibcLinks = {
@@ -561,6 +571,127 @@ function getFundingResourceSet(profile: Profile, funding: ReturnType<typeof calc
   return cards;
 }
 
+function getAssistantPageLabel(step: StepId | "companion") {
+  const labels: Record<StepId | "companion", string> = {
+    landing: "CampusGo Welcome",
+    offer: "Offer Upload",
+    scan: "Offer Scan",
+    funding: "Funding Readiness",
+    housing: "Move-in Readiness",
+    credit: "Credit Routine",
+    budget: "Budget Simulator",
+    score: "Readiness Score",
+    summary: "First-Semester Money Plan",
+    companion: "Campus Companion"
+  };
+  return labels[step];
+}
+
+function getAssistantSuggestions(step: StepId | "companion", profile: Profile) {
+  if (profile.international && ["offer", "scan", "funding"].includes(step)) {
+    return [
+      "What should I do before landing?",
+      "What is the GIC for?",
+      "How much cash should I have when I arrive?",
+      "How do I start Canadian credit?"
+    ];
+  }
+  if (step === "funding") {
+    return [
+      "What does this gap mean?",
+      "How can I reduce this gap?",
+      "What should I ask CIBC?",
+      "Which CIBC resources should I review?"
+    ];
+  }
+  if (step === "credit") {
+    return [
+      "How do I build credit safely?",
+      "What is a statement balance?",
+      "What is credit utilization?",
+      "Should I get a student credit card?"
+    ];
+  }
+  if (step === "budget") {
+    return [
+      "Why did my shortfall change?",
+      "What if OSAP is delayed?",
+      "What if rent increases?",
+      "How can I stay within budget?"
+    ];
+  }
+  if (step === "housing") {
+    return [
+      "What move-in cost do students forget?",
+      "Do I need tenant insurance?",
+      "What should I prepare before move-in?"
+    ];
+  }
+  if (step === "summary" || step === "score") {
+    return [
+      "What should I ask my advisor?",
+      "What should I bring to my appointment?",
+      "Can you summarize my biggest risk?"
+    ];
+  }
+  return [
+    "What should I do next?",
+    "Explain this page",
+    "Which CIBC resource is relevant?",
+    "How does CampusGo help me?"
+  ];
+}
+
+function getAssistantResponse(question: string, step: StepId | "companion", profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>) {
+  const text = question.toLowerCase();
+  if (profile.international && (text.includes("international") || text.includes("gic") || text.includes("arrival") || text.includes("landing") || ["offer", "scan"].includes(step))) {
+    return {
+      text: "For an international student, I would review GIC or proof-of-funds status, arrival banking, tuition payment method, first-month cash, and debit card setup before landing. Your Canadian credit history may start from scratch, so build slowly with on-time payments and low utilization.",
+      resources: [resources.internationalAccount, resources.gic, resources.internationalStudentPay]
+    };
+  }
+  if (text.includes("credit") || text.includes("statement") || text.includes("utilization") || step === "credit") {
+    return {
+      text: "For safe credit building, pay on time, understand statement balance versus minimum payment, keep utilization low, and do not treat credit as extra income. Reminders or autopay may be worth setting up before your first statement arrives.",
+      resources: [resources.creditCard, resources.creditGuide, resources.studentBanking]
+    };
+  }
+  if (text.includes("loan") || text.includes("borrow") || text.includes("line of credit")) {
+    return {
+      text: "A remaining funding difference is first a planning question, not a product decision. Review confirmed funding, scholarships, family support, savings, part-time income, and delayable expenses first. If a gap still remains, an Education Line of Credit is one possible funding option to discuss with a CIBC advisor. This is educational guidance, not final financial advice.",
+      resources: [resources.budgetCalculator, resources.lineOfCredit, resources.advisor]
+    };
+  }
+  if (text.includes("osap") || text.includes("funding") || text.includes("gap") || step === "funding") {
+    return {
+      text: `This gap may be about timing, not only total money. Your current funding picture shows ${formatCurrency(funding.gap)} to review. Check confirmed funding, OSAP or transfer timing, savings, scholarships, family support, part-time income, and costs that can wait. If a gap remains, it may be worth discussing funding options with a CIBC advisor.`,
+      resources: profile.international ? [resources.internationalAccount, resources.gic, resources.advisor] : [resources.budgetCalculator, resources.studentBanking, resources.advisor]
+    };
+  }
+  if (text.includes("budget") || text.includes("rent") || text.includes("car") || step === "budget") {
+    return {
+      text: `Your monthly result is currently ${budgetLabel(budget.surplus)}. If rent, car costs, or delayed funding changes, compare another scenario and look for fixed costs first because they are hardest to adjust once school starts.`,
+      resources: [resources.budgetCalculator, resources.studentBanking]
+    };
+  }
+  if (step === "housing" || text.includes("move") || text.includes("tenant") || text.includes("insurance")) {
+    return {
+      text: "Before move-in, students often forget first and last month’s rent, utilities, furniture, internet setup, tenant insurance, and transit costs. The next best step is to confirm which costs happen before classes begin.",
+      resources: [resources.studentBanking, resources.budgetCalculator, resources.advisor]
+    };
+  }
+  if (step === "summary" || step === "score" || text.includes("advisor") || text.includes("appointment")) {
+    return {
+      text: "Bring your plan, current funding picture, timing risk, move-in costs, and credit questions to your CIBC conversation. CampusGo prepares the discussion, but your advisor can help confirm the right next steps for your situation.",
+      resources: [resources.advisor, resources.studentBanking, profile.international ? resources.internationalAccount : resources.budgetCalculator]
+    };
+  }
+  return {
+    text: "CampusGo helps turn your university offer into a first-semester readiness journey. I can explain the current page, help you understand your funding picture, point to official CIBC resources, or prepare advisor questions. This is educational guidance, not final financial advice.",
+    resources: [profile.international ? resources.internationalAccount : resources.studentBanking, resources.advisor]
+  };
+}
+
 function calculateSemesterMoney(profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>) {
   const semesterLiving = budget.expenses * 4;
   const partTime = profile.partTimeIncome * 4;
@@ -682,6 +813,7 @@ function App() {
     return (
       <main className="app-shell v2-shell">
         <CompanionPage profile={profile} budget={budget} onBack={() => setCompanionOpen(false)} />
+        <FloatingCampusAssistant step="companion" profile={profile} funding={funding} budget={budget} />
       </main>
     );
   }
@@ -710,6 +842,7 @@ function App() {
       {step === "budget" && <BudgetScreen profile={profile} updateProfile={updateProfile} budget={budget} scenarioNote={scenarioNote} applyScenario={applyScenario} next={next} back={back} />}
       {step === "score" && <ScoreScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} next={next} back={back} />}
       {step === "summary" && <SummaryScreen profile={profile} readiness={readiness} semesterMoney={semesterMoney} funding={funding} budget={budget} back={back} setStepIndex={setStepIndex} openCompanion={() => setCompanionOpen(true)} />}
+      <FloatingCampusAssistant step={step} profile={profile} funding={funding} budget={budget} />
     </main>
   );
 }
@@ -737,6 +870,96 @@ function FixedTimeline({ stepIndex }: { stepIndex: number }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function FloatingCampusAssistant({ step, profile, funding, budget }: { step: StepId | "companion"; profile: Profile; funding: ReturnType<typeof calculateFunding>; budget: ReturnType<typeof calculateBudget> }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [messages, setMessages] = useState<AssistantMessage[]>([
+    {
+      id: 1,
+      role: "ai",
+      text: "Hi Maya. I can help explain your first-semester money plan, answer quick questions, and point you to official CIBC resources."
+    }
+  ]);
+  const pageLabel = getAssistantPageLabel(step);
+  const suggestions = getAssistantSuggestions(step, profile);
+
+  const askAssistant = (question: string) => {
+    const cleanQuestion = question.trim();
+    if (!cleanQuestion) return;
+    const studentMessage: AssistantMessage = { id: Date.now(), role: "student", text: cleanQuestion };
+    const typingMessage: AssistantMessage = { id: Date.now() + 1, role: "typing", text: "CampusGo is thinking..." };
+    setMessages((current) => [...current, studentMessage, typingMessage]);
+    setDraft("");
+    window.setTimeout(() => {
+      const response = getAssistantResponse(cleanQuestion, step, profile, funding, budget);
+      setMessages((current) => [
+        ...current.filter((message) => message.id !== typingMessage.id),
+        { id: Date.now() + 2, role: "ai", text: response.text, resources: response.resources }
+      ]);
+    }, 650);
+  };
+
+  return (
+    <div className={`floating-assistant ${open ? "open" : ""}`} aria-live="polite">
+      {open && (
+        <section className="assistant-panel" aria-label="CampusGo Assistant">
+          <div className="assistant-panel-head">
+            <AIOrb compact />
+            <div>
+              <strong>CampusGo Assistant</strong>
+              <span>Ask about your first-semester money plan</span>
+            </div>
+            <button onClick={() => setOpen(false)} aria-label="Close CampusGo Assistant"><X size={18} /></button>
+          </div>
+          <div className="assistant-context">You're viewing: <strong>{pageLabel}</strong></div>
+          <div className="assistant-thread">
+            {messages.map((message) => (
+              <div key={message.id} className={`assistant-message ${message.role}`}>
+                {message.role === "typing" ? (
+                  <span className="typing-dots">CampusGo is thinking<i /><i /><i /></span>
+                ) : (
+                  <>
+                    <p>{message.text}</p>
+                    {message.resources && message.resources.length > 0 && (
+                      <div className="assistant-resource-list">
+                        {message.resources.slice(0, 3).map((resource) => {
+                          const Icon = resource.icon;
+                          return (
+                            <a key={resource.title} href={resource.url} target="_blank" rel="noreferrer">
+                              <Icon size={15} />
+                              <span>{resource.title}</span>
+                              <small>Official CIBC resource</small>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="assistant-suggestions">
+            {suggestions.map((suggestion) => (
+              <button key={suggestion} onClick={() => askAssistant(suggestion)}>{suggestion}</button>
+            ))}
+          </div>
+          <form className="assistant-input" onSubmit={(event) => { event.preventDefault(); askAssistant(draft); }}>
+            <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask CampusGo..." aria-label="Ask CampusGo" />
+            <button type="submit"><Send size={16} /> Send</button>
+          </form>
+          <small className="assistant-demo-note">Prototype demo. Future versions can connect to a live AI assistant.</small>
+        </section>
+      )}
+      <button className="assistant-orb-button" onClick={() => setOpen((current) => !current)} aria-label="Ask CampusGo">
+        <AIOrb compact />
+        <span>Ask CampusGo</span>
+        <MessageCircle size={18} />
+      </button>
     </div>
   );
 }
