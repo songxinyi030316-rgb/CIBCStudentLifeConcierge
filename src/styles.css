@@ -2941,6 +2941,194 @@ input[type="range"] {
   line-height: 1.15;
 }
 
+.financial-position-card,
+.timing-gap-card,
+.product-fit-section {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(143, 0, 52, 0.12);
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.financial-position-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(130px, 0.5fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.financial-position-head > div {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--cream-2);
+}
+
+.financial-position-head > div:first-child {
+  background: transparent;
+  padding-left: 0;
+}
+
+.financial-position-head span,
+.financial-position-head small,
+.timing-gap-copy span,
+.product-fit-head span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.financial-position-head strong,
+.timing-gap-copy strong,
+.product-fit-head strong {
+  display: block;
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.financial-position-head b {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.financial-position-head .warn b {
+  color: var(--burgundy);
+}
+
+.financial-position-head .ok b {
+  color: var(--teal);
+}
+
+.financial-position-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.financial-position-grid > div {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(87, 0, 31, 0.08);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--cream-2);
+}
+
+.mini-money-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 88px;
+  gap: 10px;
+  align-items: center;
+}
+
+.mini-money-row span {
+  color: var(--ink);
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.mini-money-row i,
+.timing-bars i {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(87, 0, 31, 0.08);
+}
+
+.mini-money-row b,
+.timing-bars b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.mini-money-row.in b,
+.timing-bars .available {
+  background: var(--teal);
+}
+
+.mini-money-row.out b,
+.timing-bars .need {
+  background: linear-gradient(90deg, var(--burgundy), var(--gold));
+}
+
+.mini-money-row strong {
+  color: var(--burgundy);
+  text-align: right;
+}
+
+.timing-gap-card {
+  grid-template-columns: minmax(240px, 0.65fr) minmax(0, 1fr);
+  align-items: center;
+  background: linear-gradient(180deg, rgba(255, 246, 243, 0.9), rgba(255, 255, 255, 0.92));
+}
+
+.timing-gap-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.timing-gap-copy p,
+.product-fit-head p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.timing-bars {
+  display: grid;
+  gap: 12px;
+}
+
+.timing-bars div {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr) 92px;
+  gap: 10px;
+  align-items: center;
+}
+
+.timing-bars span {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.timing-bars strong {
+  color: var(--burgundy);
+  text-align: right;
+}
+
+.product-fit-head {
+  display: grid;
+  gap: 5px;
+}
+
+.product-fit-grid .resource-card {
+  position: relative;
+  padding-top: 38px;
+}
+
+.product-fit-grid .resource-card em {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  color: white;
+  background: var(--burgundy);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 950;
+}
+
 .progressive-panel {
   grid-column: 1 / -1;
   display: grid;
