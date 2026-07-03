@@ -975,6 +975,53 @@ function calculateReadiness(profile: Profile, funding: ReturnType<typeof calcula
   return { score, dimensions, focus };
 }
 
+function TechField() {
+  return (
+    <div className="tech-field" aria-hidden="true">
+      <div className="tf-aurora" />
+      <div className="tf-grid" />
+      <div className="tf-scan" />
+      <i className="tf-stream s1" />
+      <i className="tf-stream s2" />
+      <i className="tf-stream s3" />
+      <i className="tf-stream s4" />
+      <div className="tf-dust">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <b
+            key={i}
+            style={{
+              left: `${(i * 100) / 20 + (i % 3) * 1.5}%`,
+              animationDelay: `${-i * 0.9}s`,
+              animationDuration: `${8 + (i % 6)}s`,
+              opacity: i % 4 === 0 ? 0.9 : 0.5
+            }}
+          />
+        ))}
+      </div>
+      <span className="tf-corner tl" />
+      <span className="tf-corner tr" />
+      <span className="tf-corner bl" />
+      <span className="tf-corner br" />
+      <div className="tf-rail left">
+        <span className="tf-rail-cap">AI&nbsp;ENGINE</span>
+        <div className="tf-rail-line"><i /><i /><i /><i /><i /><i /></div>
+        <div className="tf-chip"><b />SECURE&nbsp;LINK</div>
+        <div className="tf-chip"><b />MODEL&nbsp;v3</div>
+        <div className="tf-meter"><i /><i /><i /><i /><i /><i /><i /><i /></div>
+        <span className="tf-rail-cap dim">STREAM&nbsp;●</span>
+      </div>
+      <div className="tf-rail right">
+        <span className="tf-rail-cap">TELEMETRY</span>
+        <div className="tf-readout"><span>LATENCY</span><em>12<u>ms</u></em></div>
+        <div className="tf-readout"><span>FLOW</span><em>1.4<u>k/s</u></em></div>
+        <div className="tf-chip"><b />ENCRYPTED</div>
+        <div className="tf-rail-line"><i /><i /><i /><i /><i /><i /></div>
+        <div className="tf-chip"><b />LIVE&nbsp;SYNC</div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [stepIndex, setStepIndex] = useState(0);
   const [companionOpen, setCompanionOpen] = useState(false);
@@ -1057,6 +1104,7 @@ function App() {
   if (companionOpen) {
     return (
       <main className="app-shell v2-shell">
+      <TechField />
         <CompanionPage profile={profile} budget={budget} onBack={() => setCompanionOpen(false)} />
         <FloatingCampusAssistant step="companion" profile={profile} funding={funding} budget={budget} />
       </main>
@@ -1065,6 +1113,7 @@ function App() {
 
   return (
     <main className="app-shell v2-shell">
+      <TechField />
       {stepIndex >= 3 && (
         <header className="topbar v2-topbar">
           <button className="brand-button" onClick={() => setStepIndex(0)}>
@@ -1110,7 +1159,7 @@ function FixedTimeline({ stepIndex }: { stepIndex: number }) {
           const Icon = stage.icon;
           const done = stepIndex >= stage.unlockStep;
           return (
-            <div key={stage.label} className={done ? "done" : ""}>
+            <div key={stage.label} className={`pop tip-below ${done ? "done" : ""}`} data-tip={`${stage.label}: ${stage.detail}${done ? " · complete" : ""}`}>
               <span>{done ? <Check size={13} /> : <Icon size={13} />}</span>
               <strong>{stage.label}</strong>
               <small>{stage.detail}</small>
@@ -1737,19 +1786,19 @@ function FundingPictureCard({ totalNeed, confirmedFunding, difference, timingRis
     <section className={`funding-picture-card ${statusClass}`} aria-label="Your Funding Picture">
       <span className="section-kicker">Your Funding Picture</span>
       <div className="funding-picture-main">
-        <div>
+        <div className="pop" data-tip="Everything your first semester needs: tuition, books, move-in, and living costs.">
           <small>Total need</small>
           <strong><AnimatedCurrency value={totalNeed} /></strong>
         </div>
-        <div>
+        <div className="pop" data-tip="Money you've confirmed: savings, family support, OSAP or transfer, scholarships, and part-time income.">
           <small>Confirmed funding</small>
           <strong><AnimatedCurrency value={confirmedFunding} /></strong>
         </div>
-        <div>
+        <div className="pop" data-tip="Total need minus confirmed funding. This is the gap left to plan for.">
           <small>Current difference</small>
           <strong><AnimatedCurrency value={difference} /></strong>
         </div>
-        <div>
+        <div className="pop" data-tip="Whether money is needed before later funding (OSAP or transfer) actually arrives.">
           <small>Timing risk</small>
           <strong>{timingRisk}</strong>
         </div>
@@ -1943,9 +1992,9 @@ function ScoreScreen({ profile, readiness, semesterMoney, funding, budget, next,
       <div className="single-visual score-decision">
         <ReadinessDashboard readiness={readiness} />
         <div className="score-context-grid">
-          <div className="context-tile"><span>Money number</span><strong><AnimatedCurrency value={semesterMoney.totalNeed} /></strong></div>
-          <div className="context-tile"><span>{profile.international ? "Arrival gap" : "Funding gap"}</span><strong><AnimatedCurrency value={funding.gap} /></strong></div>
-          <div className="context-tile"><span>Monthly result</span><strong>{budgetLabel(budget.surplus)}</strong></div>
+          <div className="context-tile pop" data-tip="Your total estimated first-semester cost across tuition, move-in, and living."><span>Money number</span><strong><AnimatedCurrency value={semesterMoney.totalNeed} /></strong></div>
+          <div className="context-tile pop" data-tip="Funding still to arrange after your confirmed sources."><span>{profile.international ? "Arrival gap" : "Funding gap"}</span><strong><AnimatedCurrency value={funding.gap} /></strong></div>
+          <div className="context-tile pop" data-tip="Your projected monthly surplus or shortfall once school starts."><span>Monthly result</span><strong>{budgetLabel(budget.surplus)}</strong></div>
         </div>
       </div>
     </DecisionScreen>
@@ -2601,6 +2650,50 @@ function CompanionPage({ profile, budget, onBack }: { profile: Profile; budget: 
   );
 }
 
+const workflowNodes: { label: string; icon: ElementType }[] = [
+  { label: "Ingest", icon: Upload },
+  { label: "Extract", icon: FileText },
+  { label: "Context", icon: MapPin },
+  { label: "Model", icon: BarChart3 },
+  { label: "Simulate", icon: Gauge },
+  { label: "Advise", icon: ShieldCheck }
+];
+
+const stageByEyebrow: Record<string, number> = {
+  Onboarding: 0,
+  "AI scan": 1,
+  "City insight": 2,
+  "Tuition deadline": 3,
+  "Move-in": 3,
+  "First week": 3,
+  "First month": 4,
+  "Readiness score": 5,
+  "Action plan": 5
+};
+
+function WorkflowStrip({ stage }: { stage: number }) {
+  const active = workflowNodes[Math.min(stage, workflowNodes.length - 1)];
+  return (
+    <div className="workflow-strip" role="img" aria-label={`AI workflow: stage ${stage + 1} of ${workflowNodes.length}, ${active.label}`}>
+      <span className="wf-title">AI&nbsp;WORKFLOW</span>
+      <div className="wf-track">
+        {workflowNodes.map((node, index) => {
+          const Icon = node.icon;
+          const state = index < stage ? "done" : index === stage ? "live" : "idle";
+          return (
+            <div className={`wf-node ${state}`} key={node.label}>
+              {index > 0 && <span className="wf-link" />}
+              <span className="wf-dot"><Icon size={12} /></span>
+              <em>{node.label}</em>
+            </div>
+          );
+        })}
+      </div>
+      <span className="wf-gen">generating output<i /><i /><i /></span>
+    </div>
+  );
+}
+
 function DecisionScreen({
   eyebrow,
   title,
@@ -2637,6 +2730,7 @@ function DecisionScreen({
     return () => window.clearTimeout(timer);
   }, [title, coach, thinkingText]);
 
+  const stage = stageByEyebrow[eyebrow] ?? 0;
   return (
     <section className="flow-screen page v2-decision">
       <div className="flow-heading">
@@ -2646,6 +2740,7 @@ function DecisionScreen({
           <SupportBuddy />
           <p>{coach}</p>
         </div>
+        <WorkflowStrip stage={stage} />
         {thinking && <ThinkingMoment text={thinkingText} />}
       </div>
       <div className="flow-content">{children}</div>
@@ -2920,7 +3015,7 @@ function ReadinessDashboard({ readiness }: { readiness: ReturnType<typeof calcul
           {readiness.dimensions.map((dimension) => {
             const Icon = dimension.icon;
             return (
-              <div className="dimension-row" key={dimension.label}>
+              <div className="dimension-row pop" key={dimension.label} data-tip={`${dimension.label}: ${dimension.value}% ready. This factor is weighted into your overall readiness score.`}>
                 <Icon size={18} />
                 <span>{dimension.label}</span>
                 <i><b style={{ width: `${dimension.value}%` }} /></i>
