@@ -3618,6 +3618,150 @@ input[type="range"] {
   align-content: start;
 }
 
+.city-map-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(143, 0, 52, 0.1);
+  border-radius: 8px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 250, 242, 0.78)),
+    var(--cream-2);
+}
+
+.city-map-head {
+  display: grid;
+  gap: 4px;
+}
+
+.city-map-head strong {
+  color: var(--ink);
+  font-size: 21px;
+  line-height: 1.16;
+}
+
+.city-map-visual {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(87, 0, 31, 0.08);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.72), transparent 26%),
+    linear-gradient(135deg, #e8f6f0, #fff3dc 72%);
+}
+
+.city-map-visual > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.city-map-visual > svg > rect {
+  fill: transparent;
+}
+
+.city-map-visual > svg > path {
+  fill: none;
+  stroke: rgba(143, 0, 52, 0.22);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.city-map-visual > svg > path:nth-of-type(2) {
+  stroke: rgba(46, 102, 106, 0.24);
+  stroke-width: 5;
+}
+
+.city-map-visual > svg > path:nth-of-type(3),
+.city-map-visual > svg > path:nth-of-type(4) {
+  stroke: rgba(212, 162, 59, 0.34);
+  stroke-width: 4;
+  stroke-dasharray: 9 9;
+}
+
+.campus-pulse {
+  fill: rgba(143, 0, 52, 0.12);
+  stroke: rgba(143, 0, 52, 0.18);
+  stroke-width: 1;
+}
+
+.campus-marker circle {
+  fill: var(--burgundy);
+  stroke: white;
+  stroke-width: 3;
+}
+
+.campus-marker path {
+  fill: white;
+  stroke: none;
+}
+
+.map-area-pin circle {
+  fill: var(--gold);
+  stroke: white;
+  stroke-width: 2;
+}
+
+.map-area-pin text {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: rgba(255, 250, 242, 0.92);
+  stroke-width: 4px;
+}
+
+.city-map-campus {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  max-width: 72%;
+  border: 1px solid rgba(143, 0, 52, 0.12);
+  border-radius: 999px;
+  padding: 8px 11px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 24px rgba(71, 24, 34, 0.1);
+}
+
+.city-map-campus svg {
+  color: var(--burgundy);
+}
+
+.city-map-campus span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.city-map-campus strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.city-map-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.city-map-tags span {
+  border: 1px solid rgba(143, 0, 52, 0.12);
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: var(--yellow-soft);
+  color: var(--burgundy);
+  font-size: 12px;
+  font-weight: 950;
+}
+
 .student-quote-list {
   display: grid;
   gap: 10px;

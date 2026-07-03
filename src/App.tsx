@@ -21,6 +21,7 @@ import {
   Home,
   KeyRound,
   Landmark,
+  MapPin,
   MessageCircle,
   PiggyBank,
   ReceiptText,
@@ -117,6 +118,13 @@ type CityInsight = {
   cityName: string;
   summary: string;
   indicators: { label: string; value: string; icon: ElementType }[];
+  map: {
+    label: string;
+    campus: string;
+    marker: { x: number; y: number };
+    areas: { name: string; x: number; y: number }[];
+    transit: string[];
+  };
   domesticFocus: string[];
   internationalFocus: string[];
   quotes: string[];
@@ -366,6 +374,18 @@ const cityInsights: Record<string, CityInsight> = {
       { label: "Program", value: "Computer Science, St. George campus context", icon: GraduationCap },
       { label: "International note", value: "UHIP / health coverage should be confirmed before arrival", icon: ShieldCheck }
     ],
+    map: {
+      label: "Downtown Toronto student map",
+      campus: "UofT St. George",
+      marker: { x: 50, y: 45 },
+      areas: [
+        { name: "Annex", x: 38, y: 38 },
+        { name: "Kensington", x: 38, y: 58 },
+        { name: "Financial District", x: 66, y: 64 },
+        { name: "Union", x: 72, y: 76 }
+      ],
+      transit: ["Line 1", "Line 2", "TTC"]
+    },
     domesticFocus: ["Rent or residence choice will drive the monthly budget.", "OSAP timing should be compared against tuition and deposit dates.", "Part-time work is possible, but commute time matters."],
     internationalFocus: ["Keep arrival cash accessible before the first week.", "Confirm GIC / proof-of-funds and health coverage before landing.", "Plan for temporary housing and overseas transfer timing."],
     quotes: [
@@ -386,6 +406,18 @@ const cityInsights: Record<string, CityInsight> = {
       { label: "Campus note", value: "Western campus life can reduce commute pressure", icon: GraduationCap },
       { label: "OSAP timing", value: "Compare funding release dates with rent deposit dates", icon: CalendarDays }
     ],
+    map: {
+      label: "London student map",
+      campus: "Western University",
+      marker: { x: 42, y: 36 },
+      areas: [
+        { name: "Old North", x: 50, y: 49 },
+        { name: "Downtown", x: 62, y: 66 },
+        { name: "Richmond Row", x: 56, y: 56 },
+        { name: "Masonville", x: 34, y: 23 }
+      ],
+      transit: ["Campus routes", "Downtown bus", "Student pass"]
+    },
     domesticFocus: ["Rent deposits can arrive before OSAP is fully available.", "Transit and campus proximity can protect both time and money.", "A part-time job may help monthly spending after classes settle."],
     internationalFocus: ["Temporary housing is usually less expensive than Toronto, but arrival setup still matters.", "Confirm phone, transit, and winter basics before the first week.", "Keep transfer timing separate from everyday spending."],
     quotes: [
@@ -406,6 +438,18 @@ const cityInsights: Record<string, CityInsight> = {
       { label: "Program note", value: "Co-op and tech programs may need laptop / software planning", icon: GraduationCap },
       { label: "Part-time context", value: "Work opportunities exist, but workload can be heavy", icon: BriefcaseBusiness }
     ],
+    map: {
+      label: "Waterloo student map",
+      campus: "University district",
+      marker: { x: 47, y: 42 },
+      areas: [
+        { name: "Uptown", x: 58, y: 58 },
+        { name: "Northdale", x: 43, y: 31 },
+        { name: "ION stop", x: 54, y: 48 },
+        { name: "Tech park", x: 70, y: 35 }
+      ],
+      transit: ["ION", "GRT bus", "Campus routes"]
+    },
     domesticFocus: ["Lease timing and deposits can matter as much as total rent.", "Co-op culture makes income planning useful, but first term still needs cash flow.", "Laptop or program costs should be separated from everyday spending."],
     internationalFocus: ["Temporary housing and lease deposits may happen before campus routines begin.", "Keep first-month cash available for transit, phone, and groceries.", "Confirm health coverage and banking access before arrival."],
     quotes: [
@@ -426,6 +470,18 @@ const cityInsights: Record<string, CityInsight> = {
       { label: "Campus note", value: "Commute time can be a major student-life cost", icon: GraduationCap },
       { label: "Insurance note", value: "Confirm health coverage and tenant insurance early", icon: ShieldCheck }
     ],
+    map: {
+      label: "Vancouver student map",
+      campus: "Campus area",
+      marker: { x: 28, y: 48 },
+      areas: [
+        { name: "Kitsilano", x: 48, y: 54 },
+        { name: "Downtown", x: 65, y: 35 },
+        { name: "Broadway", x: 58, y: 62 },
+        { name: "SkyTrain", x: 76, y: 58 }
+      ],
+      transit: ["Bus routes", "SkyTrain", "TransLink"]
+    },
     domesticFocus: ["Rent and commute distance are the biggest planning variables.", "Groceries and eating out can rise quickly in high-cost neighbourhoods.", "Transit zone choices should be built into the monthly budget."],
     internationalFocus: ["Arrival cash should account for temporary housing and deposits.", "Overseas transfer timing can matter in a high-rent city.", "Rain gear, phone setup, and health coverage should be ready early."],
     quotes: [
@@ -1291,6 +1347,7 @@ function CityInsightScreen({ profile, next, back }: { profile: Profile; next: ()
           </div>
         </section>
         <aside className="city-student-voice">
+          <CityMapCard insight={insight} />
           <div>
             <span className="section-kicker">Straight from students who've been there</span>
             <div className="student-quote-list">
@@ -1312,6 +1369,53 @@ function CityInsightScreen({ profile, next, back }: { profile: Profile; next: ()
         </aside>
       </div>
     </DecisionScreen>
+  );
+}
+
+function CityMapCard({ insight }: { insight: CityInsight }) {
+  return (
+    <section className="city-map-card" aria-label={`${insight.cityName} map`}>
+      <div className="city-map-head">
+        <span className="section-kicker">City map</span>
+        <strong>{insight.map.label}</strong>
+      </div>
+      <div className="city-map-visual">
+        <svg viewBox="0 0 320 190" role="img" aria-label={`${insight.cityName} student area map`}>
+          <defs>
+            <linearGradient id={`mapWater-${insight.cityName.replace(/\W/g, "")}`} x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stopColor="#e9f7f1" />
+              <stop offset="100%" stopColor="#fff4dc" />
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="320" height="190" rx="18" />
+          <path d="M20 134 C68 108 96 116 130 88 S218 48 300 28" />
+          <path d="M34 44 C78 66 116 58 156 82 S230 124 292 108" />
+          <path d="M84 18 C92 58 92 91 112 126 S160 160 186 176" />
+          <path d="M224 12 C198 52 200 88 218 124 S250 164 290 176" />
+          <circle className="campus-pulse" cx={insight.map.marker.x * 3.2} cy={insight.map.marker.y * 1.9} r="18" />
+          <g className="campus-marker" transform={`translate(${insight.map.marker.x * 3.2} ${insight.map.marker.y * 1.9})`}>
+            <circle r="9" />
+            <path d="M-4 0 L0 -5 L4 0 L0 5 Z" />
+          </g>
+          {insight.map.areas.map((area) => (
+            <g key={area.name} className="map-area-pin" transform={`translate(${area.x * 3.2} ${area.y * 1.9})`}>
+              <circle r="5" />
+              <text x="9" y="4">{area.name}</text>
+            </g>
+          ))}
+        </svg>
+        <div className="city-map-campus">
+          <MapPin size={18} />
+          <div>
+            <span>Campus focus</span>
+            <strong>{insight.map.campus}</strong>
+          </div>
+        </div>
+      </div>
+      <div className="city-map-tags">
+        {insight.map.transit.map((tag) => <span key={tag}>{tag}</span>)}
+      </div>
+    </section>
   );
 }
 
