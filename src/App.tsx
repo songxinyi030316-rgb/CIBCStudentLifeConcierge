@@ -36,7 +36,7 @@ import {
 import { type ElementType, type ReactNode, useEffect, useMemo, useState } from "react";
 import heroImage from "../assets/generated/student-life-coach-hero.png";
 
-type StepId = "landing" | "offer" | "scan" | "funding" | "housing" | "credit" | "budget" | "score" | "summary";
+type StepId = "landing" | "offer" | "scan" | "city" | "funding" | "housing" | "credit" | "budget" | "score" | "summary";
 type Concern = "Paying tuition" | "Finding rent money" | "OSAP" | "Building credit" | "Managing monthly spending" | "Working part-time" | "I'm not sure";
 type Living = "Residence" | "Renting off-campus" | "Living at home";
 type Transport = "Transit" | "Car" | "Ride share" | "Walking/biking";
@@ -111,6 +111,16 @@ type AssistantMessage = {
   role: "ai" | "student" | "typing";
   text: string;
   resources?: ResourceCard[];
+};
+
+type CityInsight = {
+  cityName: string;
+  summary: string;
+  indicators: { label: string; value: string; icon: ElementType }[];
+  domesticFocus: string[];
+  internationalFocus: string[];
+  quotes: string[];
+  assumptions: Partial<Profile>;
 };
 
 const cibcLinks = {
@@ -226,6 +236,7 @@ const steps: { id: StepId; label: string }[] = [
   { id: "landing", label: "Start" },
   { id: "offer", label: "Offer" },
   { id: "scan", label: "Scan" },
+  { id: "city", label: "City" },
   { id: "funding", label: "Funding" },
   { id: "housing", label: "Move-in" },
   { id: "credit", label: "Credit" },
@@ -236,12 +247,12 @@ const steps: { id: StepId; label: string }[] = [
 
 const timelineStages = [
   { label: "Today", detail: "Offer scanned", unlockStep: 3, icon: Sparkles },
-  { label: "Before July", detail: "Funding strategy", unlockStep: 3, icon: ReceiptText },
-  { label: "Before August", detail: "Banking setup", unlockStep: 5, icon: WalletCards },
-  { label: "Move-in", detail: "Deposit ready", unlockStep: 4, icon: KeyRound },
-  { label: "Tuition deadline", detail: "Payment timing", unlockStep: 3, icon: CalendarDays },
-  { label: "First week", detail: "Credit routine", unlockStep: 5, icon: ShieldCheck },
-  { label: "First month", detail: "Budget tested", unlockStep: 6, icon: Coffee }
+  { label: "Before July", detail: "Funding strategy", unlockStep: 4, icon: ReceiptText },
+  { label: "Before August", detail: "Banking setup", unlockStep: 6, icon: WalletCards },
+  { label: "Move-in", detail: "Deposit ready", unlockStep: 5, icon: KeyRound },
+  { label: "Tuition deadline", detail: "Payment timing", unlockStep: 4, icon: CalendarDays },
+  { label: "First week", detail: "Credit routine", unlockStep: 6, icon: ShieldCheck },
+  { label: "First month", detail: "Budget tested", unlockStep: 7, icon: Coffee }
 ];
 
 const habitItems = [
@@ -343,6 +354,89 @@ const internationalProfile: Profile = {
   currencyBuffer: 1200
 };
 
+const cityInsights: Record<string, CityInsight> = {
+  toronto: {
+    cityName: "Toronto",
+    summary: "Canada's largest and most diverse city - fast-paced, expensive, and full of student opportunities.",
+    indicators: [
+      { label: "Rent", value: "$1,500-$2,300 / room near St. George", icon: Home },
+      { label: "Transit", value: "TTC pass around $128/month", icon: Train },
+      { label: "Weather", value: "Cold winters, humid summers", icon: Coffee },
+      { label: "Groceries", value: "Downtown groceries may be expensive; budget carefully", icon: ReceiptText },
+      { label: "Program", value: "Computer Science, St. George campus context", icon: GraduationCap },
+      { label: "International note", value: "UHIP / health coverage should be confirmed before arrival", icon: ShieldCheck }
+    ],
+    domesticFocus: ["Rent or residence choice will drive the monthly budget.", "OSAP timing should be compared against tuition and deposit dates.", "Part-time work is possible, but commute time matters."],
+    internationalFocus: ["Keep arrival cash accessible before the first week.", "Confirm GIC / proof-of-funds and health coverage before landing.", "Plan for temporary housing and overseas transfer timing."],
+    quotes: [
+      "Live near Line 1 or Line 2 if you can. A long commute can drain time and money.",
+      "Budget more for groceries and eating out than you think.",
+      "Confirm health coverage before arrival. Walk-in costs can be expensive without coverage."
+    ],
+    assumptions: { rent: 1850, groceries: 620, utilities: 140, transport: "Transit", temporaryHousing: 1400, arrivalEssentials: 1000, winterClothing: 750, currencyBuffer: 1800 }
+  },
+  london: {
+    cityName: "London, Ontario",
+    summary: "A student-heavy university city with a calmer pace, strong campus culture, and more manageable living costs than Toronto.",
+    indicators: [
+      { label: "Rent", value: "$850-$1,350 / room near campus", icon: Home },
+      { label: "Transit", value: "Student transit is often campus-connected", icon: Train },
+      { label: "Weather", value: "Cold winters; plan for snow and bus delays", icon: Coffee },
+      { label: "Groceries", value: "Lower than downtown Toronto, but delivery adds up", icon: ReceiptText },
+      { label: "Campus note", value: "Western campus life can reduce commute pressure", icon: GraduationCap },
+      { label: "OSAP timing", value: "Compare funding release dates with rent deposit dates", icon: CalendarDays }
+    ],
+    domesticFocus: ["Rent deposits can arrive before OSAP is fully available.", "Transit and campus proximity can protect both time and money.", "A part-time job may help monthly spending after classes settle."],
+    internationalFocus: ["Temporary housing is usually less expensive than Toronto, but arrival setup still matters.", "Confirm phone, transit, and winter basics before the first week.", "Keep transfer timing separate from everyday spending."],
+    quotes: [
+      "Being close to campus helps more than people expect during first year.",
+      "Budget for winter gear early. It is not a fun emergency purchase.",
+      "Rent is manageable if you check utilities and lease timing carefully."
+    ],
+    assumptions: { rent: 1125, groceries: 420, utilities: 95, transport: "Transit", temporaryHousing: 900, arrivalEssentials: 650, winterClothing: 600, currencyBuffer: 900 }
+  },
+  waterloo: {
+    cityName: "Waterloo",
+    summary: "A tech-focused student city where co-op culture is strong, housing can be competitive, and transit planning matters.",
+    indicators: [
+      { label: "Rent", value: "$1,000-$1,600 / room near campus", icon: Home },
+      { label: "Transit", value: "ION / bus access helps if housing is farther out", icon: Train },
+      { label: "Weather", value: "Cold winters; walking distance changes in January", icon: Coffee },
+      { label: "Groceries", value: "Student areas are convenient but not always cheapest", icon: ReceiptText },
+      { label: "Program note", value: "Co-op and tech programs may need laptop / software planning", icon: GraduationCap },
+      { label: "Part-time context", value: "Work opportunities exist, but workload can be heavy", icon: BriefcaseBusiness }
+    ],
+    domesticFocus: ["Lease timing and deposits can matter as much as total rent.", "Co-op culture makes income planning useful, but first term still needs cash flow.", "Laptop or program costs should be separated from everyday spending."],
+    internationalFocus: ["Temporary housing and lease deposits may happen before campus routines begin.", "Keep first-month cash available for transit, phone, and groceries.", "Confirm health coverage and banking access before arrival."],
+    quotes: [
+      "Housing goes fast, so budget for deposits before you find the perfect place.",
+      "If you are not near campus, check the transit route before signing.",
+      "Program costs can sneak up; separate tech purchases from food money."
+    ],
+    assumptions: { rent: 1350, groceries: 470, utilities: 110, transport: "Transit", temporaryHousing: 1000, arrivalEssentials: 850, winterClothing: 650, currencyBuffer: 1100 }
+  },
+  vancouver: {
+    cityName: "Vancouver",
+    summary: "A beautiful, high-cost student city where rent, transit distance, and rainy-season planning can shape the semester.",
+    indicators: [
+      { label: "Rent", value: "$1,600-$2,600 / room depending on commute", icon: Home },
+      { label: "Transit", value: "TransLink zones can affect monthly cost", icon: Train },
+      { label: "Weather", value: "Mild winters, heavy rain, fewer snow days", icon: Coffee },
+      { label: "Groceries", value: "High cost; plan carefully for fresh food and eating out", icon: ReceiptText },
+      { label: "Campus note", value: "Commute time can be a major student-life cost", icon: GraduationCap },
+      { label: "Insurance note", value: "Confirm health coverage and tenant insurance early", icon: ShieldCheck }
+    ],
+    domesticFocus: ["Rent and commute distance are the biggest planning variables.", "Groceries and eating out can rise quickly in high-cost neighbourhoods.", "Transit zone choices should be built into the monthly budget."],
+    internationalFocus: ["Arrival cash should account for temporary housing and deposits.", "Overseas transfer timing can matter in a high-rent city.", "Rain gear, phone setup, and health coverage should be ready early."],
+    quotes: [
+      "A cheaper room with a hard commute can cost you time every day.",
+      "Rainy-season setup is not huge, but it is immediate.",
+      "Plan the first grocery shop before relying on takeout."
+    ],
+    assumptions: { rent: 2050, groceries: 650, utilities: 130, transport: "Transit", temporaryHousing: 1600, arrivalEssentials: 1050, winterClothing: 450, currencyBuffer: 1700 }
+  }
+};
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-CA", {
     style: "currency",
@@ -353,6 +447,37 @@ function formatCurrency(value: number) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
+}
+
+function getCityKey(city: string) {
+  const normalized = city.toLowerCase();
+  if (normalized.includes("toronto")) return "toronto";
+  if (normalized.includes("waterloo")) return "waterloo";
+  if (normalized.includes("vancouver")) return "vancouver";
+  return "london";
+}
+
+function getCityInsight(profile: Profile) {
+  return cityInsights[getCityKey(profile.city)] ?? cityInsights.london;
+}
+
+function applyCityAssumptions(profile: Profile, insight: CityInsight): Partial<Profile> {
+  const assumptions = insight.assumptions;
+  if (profile.international) {
+    return {
+      ...assumptions,
+      needsDeposit: true,
+      tenantInsurance: true
+    };
+  }
+  return {
+    rent: assumptions.rent,
+    groceries: assumptions.groceries,
+    utilities: assumptions.utilities,
+    transport: assumptions.transport,
+    needsDeposit: true,
+    tenantInsurance: true
+  };
 }
 
 function calculateBudget(profile: Profile) {
@@ -576,6 +701,7 @@ function getAssistantPageLabel(step: StepId | "companion") {
     landing: "CampusGo Welcome",
     offer: "Offer Upload",
     scan: "Offer Scan",
+    city: "City Insight",
     funding: "Funding Readiness",
     housing: "Move-in Readiness",
     credit: "Credit Routine",
@@ -588,12 +714,20 @@ function getAssistantPageLabel(step: StepId | "companion") {
 }
 
 function getAssistantSuggestions(step: StepId | "companion", profile: Profile) {
-  if (profile.international && ["offer", "scan", "funding"].includes(step)) {
+  if (profile.international && ["offer", "scan", "city", "funding"].includes(step)) {
     return [
       "What should I do before landing?",
       "What is the GIC for?",
       "How much cash should I have when I arrive?",
       "How do I start Canadian credit?"
+    ];
+  }
+  if (step === "city") {
+    return [
+      "Explain this city briefing",
+      "What costs should I adjust?",
+      "What should I check before funding?",
+      "Which assumption matters most?"
     ];
   }
   if (step === "funding") {
@@ -644,7 +778,7 @@ function getAssistantSuggestions(step: StepId | "companion", profile: Profile) {
 
 function getAssistantResponse(question: string, step: StepId | "companion", profile: Profile, funding: ReturnType<typeof calculateFunding>, budget: ReturnType<typeof calculateBudget>) {
   const text = question.toLowerCase();
-  if (profile.international && (text.includes("international") || text.includes("gic") || text.includes("arrival") || text.includes("landing") || ["offer", "scan"].includes(step))) {
+  if (profile.international && (text.includes("international") || text.includes("gic") || text.includes("arrival") || text.includes("landing") || ["offer", "scan", "city"].includes(step))) {
     return {
       text: "For an international student, I would review GIC or proof-of-funds status, arrival banking, tuition payment method, first-month cash, and debit card setup before landing. Your Canadian credit history may start from scratch, so build slowly with on-time payments and low utilization.",
       resources: [resources.internationalAccount, resources.gic, resources.internationalStudentPay]
@@ -672,6 +806,13 @@ function getAssistantResponse(question: string, step: StepId | "companion", prof
     return {
       text: `Your monthly result is currently ${budgetLabel(budget.surplus)}. If rent, car costs, or delayed funding changes, compare another scenario and look for fixed costs first because they are hardest to adjust once school starts.`,
       resources: [resources.budgetCalculator, resources.studentBanking]
+    };
+  }
+  if (step === "city" || text.includes("city") || text.includes("cost of living")) {
+    const insight = getCityInsight(profile);
+    return {
+      text: `${insight.cityName} context helps set realistic assumptions before funding. I would check rent, transit, groceries, move-in timing, and ${profile.international ? "arrival cash or health coverage" : "OSAP timing or part-time income"} before adjusting the next page.`,
+      resources: [resources.budgetCalculator, profile.international ? resources.internationalAccount : resources.studentBanking]
     };
   }
   if (step === "housing" || text.includes("move") || text.includes("tenant") || text.includes("insurance")) {
@@ -751,6 +892,11 @@ function App() {
   const next = () => setStepIndex((current) => Math.min(current + 1, steps.length - 1));
   const back = () => setStepIndex((current) => Math.max(current - 1, 0));
   const updateProfile = (updates: Partial<Profile>) => setProfile((current) => ({ ...current, ...updates }));
+  const applyCityContext = () => {
+    const insight = getCityInsight(profile);
+    setProfile((current) => ({ ...current, ...applyCityAssumptions(current, insight) }));
+    next();
+  };
 
   const applyScenario = (scenario: string) => {
     const before = budget.surplus;
@@ -836,6 +982,7 @@ function App() {
       {step === "landing" && <LandingScreen next={next} />}
       {step === "offer" && <OfferScreen next={next} back={back} offerName={offerName} setOfferName={setOfferName} updateProfile={updateProfile} profile={profile} />}
       {step === "scan" && <ScanScreen next={next} back={back} profile={profile} offerName={offerName} />}
+      {step === "city" && <CityInsightScreen profile={profile} next={applyCityContext} back={back} />}
       {step === "funding" && <FundingScreen profile={profile} updateProfile={updateProfile} funding={funding} next={next} back={back} />}
       {step === "housing" && <HousingScreen profile={profile} updateProfile={updateProfile} budget={budget} next={next} back={back} />}
       {step === "credit" && <CreditScreen profile={profile} updateProfile={updateProfile} next={next} back={back} />}
@@ -1058,11 +1205,11 @@ function ScanScreen({ next, back, profile, offerName }: { next: () => void; back
       coach={done ? profile.international ? "I noticed you are preparing to arrive in Canada as an international student. Before we talk about products, let's make sure your arrival money, banking setup, and first-month cash flow are ready." : "Great. I found your admission offer. Before we think about banking products, let's understand your first semester." : "I'm reading the offer first, so I do not have to ask for everything manually."}
       thinkingText={done ? "Building your readiness path..." : "Reading admission details..."}
       aiTip="Students often make better money decisions when they separate admission costs from first-month living costs."
-      nextAction="Begin the readiness journey"
+      nextAction="Review city context"
       completedHabits={0}
       futureReminder={{ title: "Upcoming reminder", body: "Your tuition payment is due in 5 days.", icon: CalendarDays }}
       back={back}
-      ctaLabel="Begin the readiness journey"
+      ctaLabel="Review city insight"
       next={next}
       ctaDisabled={!done}
     >
@@ -1097,6 +1244,72 @@ function ScanScreen({ next, back, profile, offerName }: { next: () => void; back
             )}
           </div>
         )}
+      </div>
+    </DecisionScreen>
+  );
+}
+
+function CityInsightScreen({ profile, next, back }: { profile: Profile; next: () => void; back: () => void }) {
+  const insight = getCityInsight(profile);
+  const focusItems = profile.international ? insight.internationalFocus : insight.domesticFocus;
+  const persona = profile.international ? `Personalized for an international student from ${profile.countryOfOrigin}` : `Personalized for a first-year student at ${profile.university}`;
+  return (
+    <DecisionScreen
+      eyebrow="City insight"
+      title={`What ${insight.cityName} is really like`}
+      coach={`I found ${profile.city} in your offer. Before we estimate funding, let's use city context to set realistic rent, transit, groceries, and move-in assumptions.`}
+      thinkingText="Building your city-life context..."
+      aiTip={profile.international ? "Arrival costs often happen before campus routines begin: temporary housing, phone setup, transit, groceries, health coverage, and winter basics." : "Rent, transit, groceries, and OSAP timing often shape the first-semester budget more than small daily purchases."}
+      nextAction="Use this city context in my funding plan"
+      completedHabits={0}
+      futureReminder={{ title: "City context saved", body: "Rent, transit, groceries, and move-in assumptions will carry into your funding plan.", icon: Home }}
+      back={back}
+      ctaLabel="Use this city context in my funding plan"
+      next={next}
+    >
+      <div className="single-visual city-insight-layout">
+        <section className="city-summary-card">
+          <div className="city-summary-head">
+            <span className="section-kicker">{persona}</span>
+            <strong>{insight.summary}</strong>
+          </div>
+          <div className="city-indicator-grid">
+            {insight.indicators.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label}>
+                  <Icon size={18} />
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </div>
+              );
+            })}
+          </div>
+          <div className="city-focus-list">
+            <span>{profile.international ? "International arrival checks" : "Domestic student checks"}</span>
+            {focusItems.map((item) => <p key={item}><Check size={15} /> {item}</p>)}
+          </div>
+        </section>
+        <aside className="city-student-voice">
+          <div>
+            <span className="section-kicker">Straight from students who've been there</span>
+            <div className="student-quote-list">
+              {insight.quotes.map((quote) => (
+                <blockquote key={quote}>{quote}</blockquote>
+              ))}
+            </div>
+          </div>
+          <div className="city-ai-note">
+            <AIOrb compact />
+            <p>I'll use this city context to estimate your rent, transit, move-in costs, and first-month cash needs. You can adjust everything on the next page.</p>
+          </div>
+          <div className="city-assumption-preview">
+            <span>Will prefill</span>
+            <strong>{formatCurrency(insight.assumptions.rent || profile.rent)} rent</strong>
+            <strong>{formatCurrency(insight.assumptions.groceries || profile.groceries)} groceries</strong>
+            {profile.international && <strong>{formatCurrency(insight.assumptions.temporaryHousing || profile.temporaryHousing)} temporary housing</strong>}
+          </div>
+        </aside>
       </div>
     </DecisionScreen>
   );
